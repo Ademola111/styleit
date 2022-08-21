@@ -1,0 +1,40 @@
+{% extends 'user/base.html' %}
+{% block title %}
+Styleit | Designer Profile
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-12 mt-3 mb-3" id="alldesigner">
+                        <div class="row">
+                            <div class="col-md-12" style="display:flex; flex-direction: row; background-color: rgb(77, 10, 141);">
+                                
+                                <div>
+                                    <img src="/static/images/profile/designer/{{design.desi_pic}}" alt="{{design.desi_businessName}}"  style="width:50; height:50; border-radius: 50%; object-fit:cover;" width="150">
+                                </div>
+                                
+                                <div class="p-2 text-center" style="line-height:2; color:white"> 
+                                <p class="fs-1"><b>{{design.desi_businessName}}</b></p>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-2">                                
+                                <p>First Name: <b>{{design.desi_fname}}</b></p>
+                                <p>Last Name: <b>{{design.desi_lname}}</b></p>
+                                <p>State: <b>{{design.stateobj2.state_name}}</b></p>
+                                <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                                <p>Phone Number: <b>{{design.desi_phone}}</b></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

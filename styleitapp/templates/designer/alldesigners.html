@@ -1,0 +1,33 @@
+{% extends 'user/base.html' %}
+{% block title %}
+Styleit | All designers
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <div class="row">
+                    {% for desi in design %}
+                    <div class="col-md-12 mt-3 mb-3" id="alldesigner">
+                        <div class="row">
+                            <div class="col-md-5"><a href="/designer/{{desi.desi_id}}">
+                                <img src="/static/images/profile/designer/{{desi.desi_pic}}" alt="{{desi.desi_businessName}}" class="img-fluid" width="150">  
+                            </a></div>
+                            <div class="col-md-7 mt-3"><a href="/designer/{{desi.desi_id}}">
+                                <p><b>{{desi.desi_businessName}}</b></p>
+                                <p>{{desi.stateobj2.state_name}}</p>
+                                <p>{{desi.lgaobj2.lga_name}}</p>
+                            </a></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

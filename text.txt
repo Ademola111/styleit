@@ -1,0 +1,32 @@
+"""like and unlike sessions"""
+def like_post(self, post):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if not self.has_liked_post(post):
+        if desiloggedin:
+            like = Like(like_desiid=self.like_id, like_postid=post.id)
+            db.session.add(like)
+        elif loggedin:
+            like = Like(like_cusid=self.like_id, like_postid=post.id)
+            db.session.add(like)
+    
+def unlike_post(self, post):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if self.has_liked_post(post):
+        if desiloggedin:
+            Like.query.filter_by(Like.like_desiid==self.like_id, Like.like_postid==post.id).delete()
+        elif loggedin:
+            Like.query.filter_by(Like.like_cusid==self.like_id, Like.like_postid==post.id).delete()
+
+def has_liked_post(self, post):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin:
+        return Like.query.filter(Like.like_desiid==self.like_id, Like.like_postid==post.id).count() > 0
+    elif loggedin:
+        return Like.query.filter(Like.like_cusid==self.like_id, Like.like_postid==post.id).count() > 0
+
+
+request.referrer is used to redirect to same page
+app.like/ route is used to redirect to same page

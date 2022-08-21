@@ -1,0 +1,155 @@
+{% extends 'user/base.html' %}
+{% block title %}
+Styleit | Post details
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col mt-3 mb-3">
+                        <div class="col mt-3 mb-3" id="divdisplay">
+                            <span class="p-3">
+                                <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
+                                <b>{{pstn.post_title}}</b>
+                                <span style="font-size:10px;">Posted by: {{pstn.designerobj.desi_businessName}}</span>
+                                <span style="font-size:10px;">{{pstn.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+                            </span>
+                            <p class="m-3 p-3 text-justify">{{pstn.post_body}}</p>
+                            <div class="row">
+                                {% for x in pstn.imagepostobj %}
+                                {% if x.image_url %}
+                                <div class="col-md-3 m-3 p-3">
+                                    <img src="/static/images/postpic/{{x.image_url}}" alt="{{x.image_name}}" width="250" class="img img-fluid">
+                                </div> 
+                                {% else %}
+                                <div class="col-md-3" style="display:none ;">
+                                    
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="row">
+                                
+                                <div class="col-3 mt-3 mb-3 text-center">
+                                <!-- checking if designer has liked the post -->
+                                    {% if desiloggedin in pstn.likes|map(attribute='like_desiid')| list %}
+                                        <!-- checking the numbers of likes to know the singular/plural display -->
+                                        {% if pstn.likes.count() == 1 %}
+                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
+                                        <a href="/like/{{pstn.post_id}}">Like</a>
+                                        {% elif pstn.likes.count() > 1 %}
+                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
+                                        <a href="/like/{{pstn.post_id}}">Likes</a>
+                                        {% endif %}
+                                <!-- checking if customer has liked the post -->
+                                    {% elif loggedin in pstn.likes|map(attribute='like_custid')| list %}
+                                        <!-- checking the numbers of likes to know the singular/plural display -->
+                                        {% if pstn.likes.count() == 1 %}
+                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
+                                        <a href="/like/{{pstn.post_id}}">Like</a>
+                                        {% elif pstn.likes.count() > 1 %}
+                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
+                                        <a href="/like/{{pstn.post_id}}">Likes</a>
+                                        {% endif %}
+                                    {% else %}
+                                    {{ pstn.likes.count() }}<i class="far fa-thumbs-up"></i>
+                                    <a href="/like/{{pstn.post_id}}">Like</a>
+                                    {% endif %}
+
+                                </div>
+                                
+                                <div class="col-5 mt-3 mb-3 text-center" id="commint">
+                                    {% if comnt|length == 1 %}
+                                    <i class="fas fa-comment"></i>
+                                    <span>{{ comnt| length}} Comment</span>
+                                    {% else %}
+                                    <i class="fas fa-comment"></i>
+                                    <span>{{ comnt| length}} Comments</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-2 mt-3 mb-3 text-center">
+                                    <i class="fas fa-save"></i>
+                                    <span>Save</span>
+                                </div>
+                                <div class="col-2 mt-3 mb-3 text-center">
+                                    <i class="fas fa-share-alt"></i>
+                                    <span>Share</span>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-2 p-3 send" id="commentform">
+                                <form action="{{url_for('comment', postid=pstn.post_id)}}" method="POST" id="form2">
+                                    <div style="display:flex; direction:row; justify-content:space-between;">
+                                        <textarea id="comment" name="comment" class="comment form-control" required="required"></textarea>
+                                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                        <button id="btn2" type="submit" class="btn fa fa-paper-plane"></button>
+                                    </div>
+                                </form>
+                            </div>                            
+                            <div class="col-md-12">
+                                <div class ='row'>
+                                    {% for y in comnt %}
+                                    <div class="col-md-12 p-2" id="commint">
+                                        <!-- comment indentation starts here -->
+                                        {% if y.level() == 0 %}
+                                        <div class="col-md-12 border-start border-primary">
+                                            {% elif y.level() == 1 %}
+                                            <div class="col-md-11 offset-md-1 border-start border-secondary">
+                                                {% elif y.level() == 2 %}
+                                                <div class="col-md-10 offset-md-2 border-start border-secondary">
+                                                    {% elif y.level() == 3 %}
+                                                    <div class="col-md-9 offset-md-3 border-start border-secondary">
+                                                        {% elif y.level() == 4 %}
+                                                        <div class="col-md-8 offset-md-4 border-start border-secondary">
+                                                            {% else %}
+                                                            <div class="col-md-7 offset-md-5 border-start border-primary">
+                                                                {% endif %}
+                                                                <!-- end of comment indentation -->
+                                                                <div>
+                                                                    {% if y.comdesiobj %}
+                                                                    <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle">{{y.comdesiobj.desi_fname}}</span>
+                                                                    {% elif y.comcustobj %}
+                                                                    <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle">{{y.comcustobj.cust_fname}} </span>
+                                                                    {% endif %}
+                                                                    <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br> 
+                                                                                                        
+                                                                    <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')">{{y.com_body}}</span>
+                                                                </div>
+                                                                    <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >
+                                                                        <form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">
+                                                                            <div style="display:flex; direction:row; justify-content:space-between;">
+                                                                                <textarea id="comrep" name="comrep" class="comment form-control" required="required"></textarea>
+                                                                                <input type="hidden" id="csrf" name="csrf_token" value="{{csrf_token()}}">
+                                                                                <button type="submit" id="replybtn" class="btn fa fa-paper-plane"></button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div> 
+                                                                <!-- end of form, comment and reply display -->
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>   
+                                            </div>
+                                        </div>
+                                    </div> 
+                                                                
+                                </div>
+                            </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

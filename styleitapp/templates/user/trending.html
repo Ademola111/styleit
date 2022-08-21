@@ -1,0 +1,46 @@
+{% extends 'user/base.html' %}
+
+{% block title %}
+Styleit | Trending
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-12 mt-3 mb-3">
+                        {% for y in pstn %}
+                        <div class="col mt-3 mb-3" id="divdisplay">
+                            <a href="/post/{{y.post_id}}">
+                            <span class="p-3">
+                                <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
+                                
+                                <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
+                                <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+                            </span>
+                            
+                            <p class="m-3 p-3 text-justify"><b>{{y.post_title}}</b></p>
+                            </a>
+                            <!-- numbers of likes  -->
+                            {% if y.likes.count() == 1 %}
+                            <span class="p-3 m-3">{{ y.likes.count() }} <i class="fas fa-thumbs-up"></i> Like</span>
+                            {% elif y.likes.count() > 1 %}
+                            <span class="p-3 m-3">{{ y.likes.count() }} <i class="fas fa-thumbs-up"></i> Likes</span>
+                            {% else %}
+                            <span class="p-3 m-3"><i class="far fa-thumbs-up"></i> Like</span>
+                            {% endif %}
+                            
+                        </div> 
+                                 
+                        {% endfor %}          
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

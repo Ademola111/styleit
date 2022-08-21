@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <!-- External stylesheet-->
+		<link href="{{url_for('static', filename='css/styleit.css')}}" rel="stylesheet" type="text/css">
+		<!-- bootstrap -->
+		<link href="{{url_for('static', filename='css/css/bootstrap.css')}}" rel="stylesheet" type="text/css">
+
+		<!-- metas-->
+		<meta charset="utf-8">
+		<meta name="description" content="styleit your No1 fashion hub in Nigeria">
+		<meta name="author" content="styleit.com">
+		<meta name="keywords" content="styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya">
+		
+		<!--facebook meta integration-->
+		<meta property="og:styleit.com" content="Hola Cakes your No1 cake shop in Nigeria"/>
+		<meta property="og:www.styleit.com/home" content="website"/>
+		<meta property="og:image" content="images/ceo.jpg"/>
+		<meta property="og:image-width" content="400"/>
+		<meta property="og:image-height" content="300"/>
+		<meta property="og:locale:alternative" content="fr_FR"/>
+		<meta property="og:url" content="www.styleit.com"/>
+		
+		<!-- twitter meta integeration-->
+		<meta name="twitter.www.styleit.com" content="@holacakes"/>
+		<meta name="twitter.title" content="@styleit"/>
+		<meta name="twitter.card" content="styleit is your No1 fashion hub in Nigeria"/>
+		<meta name="twitter.description" content="Styleit your No1 cake shop in Nigeria where yu can get high quality salivating designer wears for your next occasion"/>
+		<meta name="twitter.url" content="www.styleit.com"/>
+
+		<!-- font awesome -->
+		<link href="{{url_for('static', filename='fa/css/all.min.css')}}" rel="stylesheet">
+
+
+		<!-- jquery animation-->
+		<link href="{{url_for('static', filename='css/css/animate.min.css')}}" rel="stylesheet">
+
+		<!-- internal stylesheet-->
+		<style type="text/css">
+			
+		
+		</style>
+</head>
+
+<body id="body">
+    <!-- header section -->
+<div class="container-fluid">
+    <div class="container-fluid" id="header">
+        <header>
+            <div class="row">
+                <div class="col-md-2 mt-5 mb-5" id="logo">
+                    <h1 id="logoname">Styleit</h1>
+                </div>
+                <div class="col-md-10 mt-5 b-5" id="banner">
+                    <img src="{{url_for('static', filename='images/girl.jpg')}}" alt="girl fashion" width="100%" height="200">
+                </div>
+            </div>
+        </header>
+    </div>
+</div>
+<div class="container-fluid sticky-top">
+  <!-- navigation section -->
+  <div class="row mt-2" id="navi">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{{url_for('home')}}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
+              </li>
+              </ul>
+              <form class="d-flex" id="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>
+              <ul class="navbar-nav">
+                {% if session.get('customer') != None: %}
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('customerProfile')}}">Profile</a>
+                </li>
+                {% elif session.get('designer') != None: %}
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle">{{des.desi_fname}}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('designerProfile')}}">Profile</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{{url_for('login')}}">Login</a>
+                </li>
+                {% endif %}
+            </ul>
+          </div>
+        </div>
+      </nav>
+  </div>
+</div>  
+
+{% block content %}
+
+
+{% endblock %}
+
+    <!-- footer section -->
+<div class="container-fluid">
+  <div class="container-fluid" id="footer">
+    <div class="row">
+        <div class="col-md-3 m-2 text-center" id="socials">
+          <p class="text-center text-dark"><b><i>Connect</i></b><hr></p>
+          <span class="card-text fs-1"><a href="#"><i class="fab fa-facebook"></i></a></span>
+					<span class="card-text fs-1"><a href="#"><i class="fab fa-twitter"></i></a></span>
+					<span class="card-text fs-1"><a href="#"><i class="fab fa-linkedin"></i></a></span>
+					<span class="card-text fs-1"><a href="#"><i class="fab fa-instagram"></i></a></span>
+        </div>
+        <div class="col-md-3 m-2" id="quicklinks">
+          <p class="text-center text-dark"><b><i>Quick Links</i></b><hr></p>
+        </div>
+        <div class="col-md-3 m-2" id="subscribe">
+          <p class=" text-center text-dark"><b><i>Subscribe</i></b><hr></p>
+        </div>
+        <div class="col-md-3 m-2" id="locations">
+          <p class="text-center text-dark"><b><i>Locations</i></b><hr></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 text-end">
+            <p>designed by:AdemolaCode &copysr; 2022 </i></b></p>
+        </div>
+    </div>
+
+    <footer>
+        <script src="{{url_for('static', filename='js/jquery-3.6.0.min.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
+        
+        <script type="text/javascript">
+          $(document).ready(function(){
+             $('#state').change(function(){
+                 var stateid = $(this).val()
+                 var csrf = "{{ csrf_token() }}"
+                 data2send = {"stateid":stateid, "csrf_token":csrf}
+ 
+                 ///make ajax call
+                 $.ajax({
+                     url:"/load/lga",
+                     data:data2send,
+                     type:'post',
+                     success:function(msg){
+                     $('#lga').html(msg)
+                     }
+                 })
+             })
+             
+             //activating signup
+             $('#agree').click(function(){
+               var dis = $(this).prop('checked')
+               if(dis == false){
+                 $('#btn').attr('disabled', 'disabled')
+               }else{
+                $('#btn').removeAttr('disabled')
+               }
+             })
+
+             
+             //switching profile picture 
+             $('#profiletoggler').click(function(){
+               $('#divbody').toggleClass('col-md-9')
+              })
+            
+              //ajax for comment
+            // {#$('#btn2').click(function(){
+            //   var postid=$('#postid').val()
+            //   var comtid=$('#comment').val()
+            //   var csrf="{{csrf_token()}}"
+
+            //   if(postid !="" && comment !=""){
+            //     data3=$('#form2').serialize()
+            //     alert(data3)
+
+            //     $.ajax({
+            //       url:"{{url_for('comment')}}",
+            //       data:data3,
+            //       type:"POST",
+            //       success:function(msg){
+            //         console.log(msg);
+            //         $('#comment').val("");
+            //         location.reload(true)
+            //       },
+            //       error:function(err){
+            //         console.log(err)
+            //       },
+            //     })
+            //   }else{
+            //     alert("one or more field is empty")
+            //   }
+            // })#}
+          })
+
+//Javascript to change multiple divs
+          function divchange(){
+                document.getElementById("Sameprofile").style.display='block';
+                document.getElementById("Samelike").style.display='none';
+                document.getElementById("Sameunlike").style.display='none';
+                document.getElementById("editprofile").style.display='none';
+            }
+            function divchange2(){
+                document.getElementById("Sameprofile").style.display='none';
+                document.getElementById("Samelike").style.display='block';
+                document.getElementById("Sameunlike").style.display='none';
+                document.getElementById("editprofile").style.display='none';
+            }
+            function divchange3(){
+                document.getElementById("Sameprofile").style.display='none';
+                document.getElementById("Samelike").style.display='none';
+                document.getElementById("Sameunlike").style.display='block';
+                document.getElementById("editprofile").style.display='none';
+            }
+
+            function divchange4(){
+                document.getElementById("Sameprofile").style.display='none';
+                document.getElementById("Samelike").style.display='none';
+                document.getElementById("Sameunlike").style.display='none';
+                document.getElementById("editprofile").style.display='block';
+            }
+            
+            function reply(id){
+              document.getElementById(id).style.display='block';
+            }
+            
+      </script>
+    </footer>
+  </div>
+</div>
+  <!-- footer ends -->
+</body>
+</html>

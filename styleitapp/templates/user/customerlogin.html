@@ -1,0 +1,51 @@
+{% extends 'user/base.html' %}
+
+{% block title %}
+Styleit|Login
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                    
+            </div>
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col">
+                        {% with m = get_flashed_messages() %}
+                        {% for i in m %}
+                        <p class="fw-4">{{i}}</p>
+                        {% endfor %}
+                        {% endwith %}
+                        <form action="{{url_for('customerLogin')}}" method="POST">
+                            {{login.csrf_token()}}
+                            <div>
+                                {{login.email.label}}
+                                {% if login.email.errors %}
+                                <span class='text-danger'>{{login.email.errors}}</span>
+                                {% endif %}
+                                {{login.email (class_="form-control mt-3 mb-3", placeholder="Ademolacode65@gmail.com")}}
+                            </div>
+                            <div>
+                                {{login.pwd.label}}
+                                {% if login.pwd.errors %}
+                                <span class='text-danger'>{{login.pwd.errors}}</span>
+                                {% endif %}
+                                {{login.pwd (class_="form-control mt-3 mb-3", placeholder="password")}}
+                            </div>
+                            <div>
+                                {{login.loginbtn (class_="form-control btn btn-outline-danger mt-3 mb-2", id="btn2")}}
+                            </div>
+                            <span class="me-3"><a href="{{url_for('customerforgottenpass')}}"> Forgotten Password?</a></span><br>
+                            <span>Don't have an account click signup to begin. <a href="{{url_for('customerSignup')}}" class="btn btn-outline-success mt-1 mb-2">Sign Up</a></span>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

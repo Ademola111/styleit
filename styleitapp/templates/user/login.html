@@ -1,0 +1,28 @@
+{% extends 'user/base.html' %}
+
+{% block title %}
+    Styleit|Login
+{% endblock %}
+
+{% block content %}
+<div class="contain-fluid">
+    <div class="row">
+        <div class="col-md-1 mt-3 mb-3"></div>
+        <div class="col-md-4 offset-md-1 mt-3 mb-3 loginbox" >
+            <div class="head mt-3 mb-3 text-center" id="logininnerbox1">
+                <h1 class="mt-3 mb-3">Designer's Login</h1>
+                <hr class="hr text-center">
+                <p class="btn btn-dark mt-3 mb-3"><a href="{{url_for('designerLogin')}}" class="text-warning">Login Here</a></p>
+            </div>
+        </div>
+        <div class="col-md-4 offset-md-1 mt-3 mb-3 loginbox">
+            <div class="head mt-3 mb-3 text-center" id="logininnerbox2">
+                <h1 class="mt-3 mb-3">Customer's Login</h1>
+                <hr class="hr text-center">
+                <p class="btn btn-dark mt-3 mb-3"><a href="{{url_for('customerLogin')}}" class="text-warning">Login Here</a></p>
+            </div>
+        </div>
+        <div class="col-md-1 mt-3 mb-3"></div>
+    </div>
+</div>
+{% endblock %}

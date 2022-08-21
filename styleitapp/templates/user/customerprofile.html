@@ -1,0 +1,144 @@
+{% extends 'user/base.html' %}
+{% block title %}
+Styleit|Profile
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <span>{% with m = get_flashed_messages() %}
+            {% for i in m %}
+            <span class="fw-4">{{i}}</span>
+            {% endfor %}
+            {% endwith %}</span>
+        <div class="col-md-1" id="tog">
+            <span id="profiletoggler" data-bs-toggle="collapse" data-bs-target="#profilewhole" class="toggler-icon" aria-expanded="false" ><img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="50px" class="img rounded-circle p-1"></span>
+        </div>
+        
+        <div class="col-md-3 text-center"id="profile" onclick="divchange()">
+            <span id="pro">Profile</span>
+        </div>
+        <div class="col-md-4 text-center" id="Liked" onclick="divchange2()">
+            <span id="Lik">Liked Post</span>
+        </div>
+        <div class="col-md-4 text-center" id="Unliked" onclick="divchange3()">
+            <span id="Unlik">Unliked Post</span>
+        </div>
+        
+    </div>
+        <div class="row">
+            <div class="col-md-3 collapse" id="profilewhole">
+                <div class="row" >
+                    <div class="col-md-3 mb-2 mt-2" >
+                        <img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="70px" class="p-1" id="profilediv">
+                    </div>
+                    <div class="col-md-9 mt-2 mb-2">
+                        <h5 class="col-md-12 m-2 p-2 text-center" id="profilename">{{cus.cust_username}}</h5>
+                        {% if session.get('customer')!= None: %}
+                        <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Online</i></span>
+                        {% else %}
+                        <span id="online2" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Offline</i></span>
+                        {% endif %}
+                        <span id="logout"><a href="{{url_for('customerlogout')}}">Logout</a></span>
+                    </div>
+
+                    <div class="col-md-12" id="profilebottom">
+                        <span id="settings"><a href="#">Settings</a></span>
+                        <span id="edit" onclick="divchange4()"><a href="#">Edit</a></span>
+                    </div>
+                </div>
+            </div>
+            <div  id="divbody">
+                <div class="row">
+                    <div class="col-md-12 mt-3 mb-3" id="Sameprofile" style="display:none">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="100px" class=" img img-fluid p-1">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>First Name:</b></label>
+                                    <p>{{cus.cust_fname}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Last Name:</b></label>
+                                    <p>{{cus.cust_lname}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Gender:</b></label>
+                                    <p>{{cus.cust_gender}}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Email:</b></label>
+                                    <p>{{cus.cust_email}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Mobile No:</b></label>
+                                    <p>{{cus.cust_phone}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>State:</b></label>
+                                    <p>{{cus.stateobj.state_name}}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>L.G.A:</b></label>
+                                    <p>{{cus.lgaobj.lga_name}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Contact Address:</b></label>
+                                    <p>{{cus.cust_address}}</p>
+                                </div>
+                            </div>
+                            
+                    </div>
+                    <div class="col-md-12 mt-3 mb-3" id="Samelike" style="display:none">
+                        <span>You like this </span>
+                    </div>
+                    <div class="col-md-12 mt-3 mb-3" id="Sameunlike" style="display:none">
+                        <span>You unlike this </span>
+                    </div>
+                    <div class="col-md-12 mt-3 mb-3" id="editprofile" style="display:none">
+                        <h3>Edit Profile</h3>
+                        
+                            <form action="{{url_for('customerProfile')}}" method="POST">
+                                <div class="row">
+                                    <div class="col-md-6 mt-3 mb-3">
+                                        <label><b>First Name:</b></label>
+                                        <input type="text" name="fname" value="{{cus.cust_fname}}" class="form-control" >
+                                    </div>
+                                    <div class="col-md-6 mt-3 mb-3">
+                                        <label><b>Last Name:</b></label>
+                                        <input type="text" name="lname" value="{{cus.cust_lname}}" class="form-control" >
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mt-3 mb-3">
+                                        <label><b>Email:</b></label>
+                                        <input type="email" name="email" value="{{cus.cust_email}}" class="form-control" >
+                                    </div>
+                                    <div class="col-md-6 mt-3 mb-3">
+                                        <label><b>Mobile No:</b></label>
+                                        <input type="text" name="phone" value="{{cus.cust_phone}}" class="form-control" >
+                                    </div>
+                                    <div class="col-md-6 mt-3 mb-3">
+                                        <label><b>Contact Address:</b></label>
+                                        <input type="text" name="address" value="{{cus.cust_address}}" class="form-control" >
+                                    </div>
+                                </div>
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                <div class="col-md-12">
+                                    <button type='submit' class="form-control mt-3 mb-3 btn btn-secondary">Update</button>
+                                </div>
+                            </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}

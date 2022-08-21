@@ -1,0 +1,252 @@
+/* styleit css file */
+
+a{
+  text-decoration: none !important;
+  color:none !important;
+}
+
+div ul li a:hover{
+  color:rgb(255, 98, 125) !important;
+  
+}
+
+@import url('{{url_for("static", filename="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap")}}');
+			
+@font-face {
+  font-family: styleit;
+  src: url("../font/Poppins-Medium.woff");
+}
+@font-face {
+  font-family: styleitbold;
+  src: url("../font/Poppins-SemiBold.woff");
+}
+@font-face {
+  font-family: styleitregular;
+  src: url("../font/Poppins-Regular.woff");
+}
+
+#body{
+  background-color: white;
+  
+}
+
+#cont{
+    background-image: url('../images/man.jpg');
+    background-size: cover;
+}
+#logoname{
+  color:rgb(255, 98, 125);
+  font-family: styleitbold;
+}
+
+#footer{
+background-color:rgb(255, 98, 125);
+min-height: 50px;
+}
+
+#socials, #quicklinks, #subscribe, #locations{
+ background-color: rgb(217, 237, 255);
+ min-height: 50px;
+ width: 23%;       
+}
+
+@media all and (max-width:480px){
+#socials, #quicklinks, #subscribe, #locations{
+  width:95%;
+}
+}
+
+#navi{
+  font-family:styleitbold, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+#searchdiv{
+ height: 100px;
+ box-shadow:1px 2px 1px 2px rgb(190, 177, 180);
+ font-family:styleitbold, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ font-size:bold;
+ 
+ background-color: white;
+}
+
+#indexdesignerformdiv2, #indexdesignerformdiv21{
+ background-color:transparent;
+}
+
+#indexinnderdesignerformdiv2, #indexinnderdesignerformdiv21{
+ background-color: rgb(240, 240, 240);
+}
+
+#indexdesignerhead, #indexdesignerhead1{
+ color:rgb(231, 85, 109);
+ font-family: styleit,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ font-size: small;
+}
+
+#indexdesignertitle, #indexdesignertitle1{
+ font-family: styleitbold, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ font-size:bold;
+}
+
+#features1, #features2{
+ font-family: styleitregular, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ font-size: smaller;
+}
+#indexfeaturelist, #indexfeaturelist1{
+font-family: styleitregular, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ font-size: smaller;
+}
+#indexgetstarted, #indexgetstarted1{
+font-family: styleitregular, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+font-size: smaller;
+background-color: rgb(235, 81, 107);
+color:white;
+padding: 10px;
+margin: auto;
+border-radius: 50px;
+}
+
+.clientback{
+  background-color: antiquewhite;
+  height: 150px !important;
+}
+
+.hr{
+  border-top: 5px solid purple;
+  width: 15%;
+  position:relative;
+  left:43%;
+}
+
+#logininnerbox1, #logininnerbox2{
+  background-color: rgb(255, 137, 156);
+  box-shadow:1px 2px 1px 2px rgb(88, 86, 86);
+  
+}
+
+#online{
+  color:rgb(4, 255, 4);
+  font-family: stylitregular;
+}
+
+#online2{
+  color:gray;
+  font-family: stylitregular;
+}
+
+#profilediv{
+  border-radius: 50%;
+  border: 5px solid #e026c1d5;
+  display:inline-block;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+#profilewhole{
+  background-color: rgb(97, 7, 97);
+}
+
+#profilename{
+  background-color: rgb(201, 109, 201);
+  border-radius: 45%;
+  width: 80%;
+}
+
+#profilebottom{
+  background-color: rgb(146, 64, 146);
+}
+
+#profile, #tog{
+  background-color: rgba(122, 5, 133, 0.384);
+}
+
+#pro, #Lik, #Unlik{
+    color: rgb(0, 0, 0);
+    font-family: styleit;
+    position: relative;
+    top:15px;
+}
+
+@media all and (max-width:480px){
+  #pro, #Lik, #Unlik{
+    color: rgb(0, 0, 0);
+    font-family: styleit;
+    position: relative;
+    top:0px;
+  }
+}
+
+#Liked{
+  background-color: rgb(245, 221, 89);
+  font-family: styleitregular;
+}
+
+#Unliked{
+  background-color: rgb(102, 245, 89);
+  font-family: styleitregular;
+}
+
+
+@media all and (max-width:480px){
+  #profiletoggler{
+    display:inherit;
+  }
+}
+
+#edit{
+  color:rgb(68, 87, 255);
+  
+}
+#prorow{
+  font-family: styleitregular;
+}
+
+#divbody{
+  background-color: rgb(255, 244, 245);
+  font-family: styleitregular;
+}
+
+#createpost, #subscription{
+  background-color:rgb(245, 169, 235);
+  border-radius:10px 10px;
+  font-family: styleitregular;
+}
+
+#divdisplay, #alldesigner{
+  border: 1px solid rgb(250, 241, 250);
+}
+
+#comment, #comrep{
+  min-height:25px;
+}
+
+.comment{
+  height:30px;
+  padding: 10px;
+  border-radius:50px;
+  resize:none;
+}
+
+.send{
+  position:relative;
+}
+
+.send textarea{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.send button{
+  height: 60px !important;
+  border:none;
+  position:absolute;
+  top:0;
+  right:10px;
+}
+
+div a{
+  color:black;
+}
+div a:hover{
+  color:black !important;
+}
