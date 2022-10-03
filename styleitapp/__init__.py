@@ -4,6 +4,7 @@ from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+# from flask_share import Share
 
 
 #instantiate an object of Flask app
@@ -18,6 +19,7 @@ app.config.from_pyfile('config.py', silent=False) #this is the config in instanc
 #database connection
 db=SQLAlchemy(app)
 migrate=Migrate(app,db)
+# share = Share(app)
 
 
 #load your routes here

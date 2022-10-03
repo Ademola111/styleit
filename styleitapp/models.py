@@ -1,4 +1,5 @@
 import datetime
+from email.policy import default
 
 from sqlalchemy import ForeignKey
 from styleitapp import db
@@ -14,7 +15,9 @@ class Posting(db.Model):
     imagepostobj = db.relationship("Image", back_populates='postimageobj')
     designerobj = db.relationship("Designer", back_populates='designerpostobj')
     postcomobj = db.relationship('Comment', back_populates='compostobj')
-    likes = db.relationship('Like', backref='posting', lazy='dynamic')
+    # likes = db.relationship('Like', backref='posting', lazy='dynamic')
+    likes = db.relationship('Like', back_populates='posts')
+    sharepostobj = db.relationship('Share', back_populates='postshareobj')
 
 class Image(db.Model):
     image_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -78,6 +81,8 @@ class Customer(db.Model):
     lgaobj = db.relationship('Lga', back_populates='lgacustomerobj')
     custcomobj = db.relationship('Comment', back_populates='comcustobj')
     likecustobj = db.relationship('Like', back_populates='custlikesobj')
+    sharecustobj = db.relationship('Share', back_populates='custshareobj')
+    bacustobj = db.relationship('Bookappointment', back_populates='custbaobj')
 
 class State(db.Model): 
     state_id = db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -119,12 +124,16 @@ class Designer(db.Model):
     desicomobj = db.relationship('Comment', back_populates='comdesiobj')
     desisubobj = db.relationship('Subscription', back_populates='subdesiobj')
     likedesiobj = db.relationship('Like', back_populates='desilikesobj')
-    
+    sharedesiobj = db.relationship('Share', back_populates='desishareobj')
+    badesiobj = db.relationship('Bookappointment', back_populates='desibaobj')
+    paymentdesiobj=db.relationship('Payment', back_populates='desipaymentobj')
+
 class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    sub_plan = db.Column(db.Enum('monthly','quarterly', 'half-year','yearly'), nullable=False)
-    sub_startdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
-    sub_enddate = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    sub_plan = db.Column(db.Enum('500','1350', '2400','4200'), nullable=False)
+    sub_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    sub_startdate = db.Column(db.String(255), nullable=False)
+    sub_enddate = db.Column(db.String(255), nullable=False)
     sub_ref = db.Column(db.Integer(), nullable=True)
     sub_status = db.Column(db.Enum('active', 'deactive'), server_default='active')
     sub_paystatus = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
@@ -132,6 +141,22 @@ class Subscription(db.Model):
     sub_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     #relationship
     subdesiobj = db.relationship('Designer', back_populates='desisubobj')
+    paysubobj=db.relationship('Payment', back_populates='subpaymentobj')
+
+
+class Payment(db.Model):
+    payment_id=db.Column(db.Integer(), primary_key=True,autoincrement=True)
+    payment_transNo=db.Column(db.Integer(), nullable=True)
+    payment_transdate=db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    payment_amount=db.Column(db.Float(), nullable=False)
+    payment_status = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
+    #foreignkey
+    payment_desiid = db.Column(db.Integer(), db.ForeignKey("designer.desi_id"))
+    payment_subid = db.Column(db.Integer(), db.ForeignKey("subscription.sub_id"))
+    #relationship
+    desipaymentobj=db.relationship('Designer', back_populates='paymentdesiobj')
+    subpaymentobj=db.relationship('Subscription', back_populates='paysubobj')
+
 
 class Admin (db.Model):
     admin_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -155,3 +180,33 @@ class Like(db.Model):
     #relationship
     desilikesobj = db.relationship('Designer', back_populates='likedesiobj')
     custlikesobj = db.relationship('Customer', back_populates='likecustobj')
+    posts = db.relationship('Posting', back_populates='likes')
+
+class Share(db.Model):
+    share_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    share_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    share_webname = db.Column(db.String(255), nullable=False)
+    #foreignKey
+    share_postid = db.Column(db.Integer(), db.ForeignKey('posting.post_id'))
+    share_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    share_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desishareobj = db.relationship('Designer', back_populates='sharedesiobj')
+    custshareobj = db.relationship('Customer', back_populates='sharecustobj')
+    postshareobj = db.relationship('Posting', back_populates='sharepostobj')
+
+class Bookappointment(db.Model):
+    ba_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    ba_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    ba_bookingDate = db.Column(db.String(255), nullable=False)
+    ba_bookingTime = db.Column(db.String(255), nullable=False)
+    ba_collectionDate = db.Column(db.String(255), nullable=False)
+    ba_collectionTime = db.Column(db.String(255), nullable=False)
+    ba_status = db.Column(db.Enum('accept', 'decline', 'not decided'), nullable=False, default='not decided')
+
+    #foreignKey
+    ba_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    ba_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desibaobj = db.relationship('Designer', back_populates='badesiobj')
+    custbaobj = db.relationship('Customer', back_populates='bacustobj')

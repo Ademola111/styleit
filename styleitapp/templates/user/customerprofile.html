@@ -22,7 +22,7 @@ Styleit|Profile
             <span id="Lik">Liked Post</span>
         </div>
         <div class="col-md-4 text-center" id="Unliked" onclick="divchange3()">
-            <span id="Unlik">Unliked Post</span>
+            <span id="Unlik">Appointment Details</span>
         </div>
         
     </div>
@@ -45,6 +45,9 @@ Styleit|Profile
                     <div class="col-md-12" id="profilebottom">
                         <span id="settings"><a href="#">Settings</a></span>
                         <span id="edit" onclick="divchange4()"><a href="#">Edit</a></span>
+                    </div>
+                    <div class="col-md-12">
+                        <p class="mt-3 mb-3" id="appointment"><a href="{{url_for('book_appointment')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-calendar"></i> Book Appointment</a></p>
                     </div>
                 </div>
             </div>
@@ -97,10 +100,53 @@ Styleit|Profile
                             
                     </div>
                     <div class="col-md-12 mt-3 mb-3" id="Samelike" style="display:none">
-                        <span>You like this </span>
+                        {% if mylike %}
+                        {% for like in mylike %}
+                        <span><span>{{like.like_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br>
+                        <span>{{like.posts.post_title}} </span><br>
+                        <span>{{like.posts.post_body| truncate(50)}}</span></span>
+                        {% endfor %}
+                        {% else %}
+                        <div class="col-md-12 text-center">
+                            <span>You haven't like any post. Attempt to like a post today.</span>
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="col-md-12 mt-3 mb-3" id="Sameunlike" style="display:none">
-                        <span>You unlike this </span>
+                        <div class="row">
+                            
+                            <div class="col-md-12 text-center">
+                                <h4>Appointment Details</h4>
+                            </div>
+                            <div class="row">
+                            {% if getbk %}
+                            {% for bk in getbk %}
+                            <div class="col-md-3">                           
+                                <span class="card m-2 p-2">
+                                    <span>Your appointment with <strong> {{bk.desibaobj.desi_businessName}} </strong>
+                                    {% if bk.ba_status == 'accept' %}
+                                        was <strong> accepted. </strong>You can reach out at <strong> {{bk.desibaobj.desi_phone}} </strong> to makeup decisions.
+                                    {% elif bk.ba_status == 'decline' %}
+                                        was <strong> declined. </strong> Click <a href="{{url_for('designers')}}" class="text-primary">Designers</a> to view list of designers and book here <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a>
+                                    {% else %}
+                                        still <strong>{{bk.ba_status}}.</strong> Kindly book another if urgent. Click <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a> to book now.
+                                    {% endif %}
+                                    </span><br>
+                                    <span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span><br>
+                                    <span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span><br>
+                                    <span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span><br>
+                                    <span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span><br>
+                                </span>                               
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="col-md-12 text-center">
+                                <span>You have no appointment. Click <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a> to book now</span><br>
+                                <span>To view list of designers click <a href="{{url_for('designers')}}" class="text-primary">Designers</a> </span>
+                            </div>
+                            {% endif %}
+                            </div>
+                        </div> <!--end of appointment details-->
                     </div>
                     <div class="col-md-12 mt-3 mb-3" id="editprofile" style="display:none">
                         <h3>Edit Profile</h3>

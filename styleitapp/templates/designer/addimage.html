@@ -14,7 +14,7 @@ Styleit |post
                 <span class="fw-4">{{i}}</span>
                 {% endfor %}
                 {% endwith %}</p>
-                <div class="row">
+                {#<div class="row">
                     <div class="col">
                         <span class="">
                             <h5>{{pst.post_title}}</h5>
@@ -22,12 +22,12 @@ Styleit |post
                             <span>{{pst.post_body}}</span>
                         </span>
                     </div>
-                </div>
+                </div>#}
             <div class="row">
                 <div class="col mt-3 mb-3" id="contentrow">
                     <form action="{{url_for('image')}}" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                        <input type="hidden" name="postid" value="{{pst.post_id}}">
+                        {#<input type="hidden" name="postid" value="{{pst.post_id}}">#}
                         <div class="col-md-12">
                             <label for="name">Image Name</label>
                             <input type="text" name="name" id="imagename" placeholder="Image Name" required class="form-control mt-3 mb-3">

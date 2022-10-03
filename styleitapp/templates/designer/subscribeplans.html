@@ -1,0 +1,46 @@
+{% extends 'user/base.html' %}
+{% block title %}
+Styleit | Subscription
+{% endblock %}
+
+{% block content %}
+<div class="container-flluid">
+    <div class="row">
+        <div class="col-md-12 text-center mt-5">
+            <h2>Subscription Plans</h2>
+        </div>
+        <div class="col-md-3 mt-5 mb-5" style="background-color: rgba(190, 190, 216, 0.521);">
+            <div class="mt-3 mb-3 text-center">
+            <h3>Monthly Plan</h3>
+            <span class="mt-2 mb-2">No discount benefits</span><br>
+            <span class="mt-2 mb-2">N500.00</span><br>
+            <span class="btn btn-success mt-2 mb-2"><a href="{{url_for('subscribe')}}"> Subscribe Now</a></span>
+            </div>
+        </div>
+        <div class="col-md-3 mt-5 mb-5" style="background-color: rgba(134, 134, 240, 0.521);">
+            <div class="mt-3 mb-3 text-center">
+            <h3>Quarterly Plan</h3>
+            <span class="mt-2 mb-2">Enjoy 10% discount</span><br>
+            <span class="mt-2 mb-2">N1350.00</span><br>
+            <span class="btn btn-success mt-2 mb-2"><a href="{{url_for('subscribe')}}"> Subscribe Now</a></span>
+            </div>
+        </div>
+        <div class="col-md-3 mt-5 mb-5" style="background-color: rgba(190, 190, 216, 0.521);">
+            <div class="mt-3 mb-3 text-center">
+            <h3>Half Year Plan</h3>
+            <span class="mt-2 mb-2">Enjoy 20% discount</span><br>
+            <span class="mt-2 mb-2">N2400.00</span><br>
+            <span class="btn btn-success mt-2 mb-2"><a href="{{url_for('subscribe')}}"> Subscribe Now</a></span>
+            </div>
+        </div>
+        <div class="col-md-3 mt-5 mb-5" style="background-color:  rgba(134, 134, 240, 0.521);">
+            <div class="mt-3 mb-3 text-center">
+            <h3>Yearly Plan</h3>
+            <span class="mt-2 mb-2">Enjoy 30% discount</span><br>
+            <span class="mt-2 mb-2">N4200.00</span><br>
+            <span class="btn btn-success mt-2 mb-2"><a href="{{url_for('subscribe')}}"> Subscribe Now</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

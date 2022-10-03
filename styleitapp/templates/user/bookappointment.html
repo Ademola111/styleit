@@ -1,0 +1,53 @@
+{% extends "user/base.html" %}
+{% block title %}
+Styleit | Book Appointment
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <span>{% with m = get_flashed_messages() %}
+                {% for i in m %}
+                <span class="fw-4">{{i}}</span>
+                {% endfor %}
+                {% endwith %}</span>
+            <div><h2>Book an apppointment with your designer</h2></div>
+            <div>
+                <form action="{{url_for('book_appointment')}}" method="post">
+                <span>Designer Name </span>
+                <select name="dsignername" class="form-control mt-3 mb-3">
+                    {% for ap in apnt %}
+                    <option  id="{{ap.desi_id}}" value="{{ap.desi_id}}">{{ap.desi_fname}} {{ap.desi_lname}} - {{ap.desi_businessName}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                <div class="row">
+                    <div class="col-md-6">
+                    <span>Booking Date</span>
+                    <input type="date" class="form-control mt-3 mb-3" id="bdate" name="bdate">
+                    </div>
+                    <div class="col-md-6">
+                    <span> Booking Time</span>
+                    <input type="time" class="form-control mt-3 mb-3" id="btime" name="btime">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                    <span> Collection Date</span>
+                    <input type="date" class="form-control mt-3 mb-3" id="cdate" name="cdate">
+                    </div>
+                    <div class="col-md-6">
+                    <span> Colection Time</span>
+                    <input type="time" class="form-control mt-3 mb-3" id="ctime" name="ctime">
+                    </div>
+                </div>
+                <button type="submit" class="form-control btn btn-success mt-3 mb-3">Book Appointment</button>
+            </form>
+            </div>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+</div>
+{% endblock %}

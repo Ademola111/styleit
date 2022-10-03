@@ -7,6 +7,8 @@
     <title>{% block title %} {% endblock %}</title>
     <!-- External stylesheet-->
 		<link href="{{url_for('static', filename='css/styleit.css')}}" rel="stylesheet" type="text/css">
+    <!-- Share on cdn -->
+    <link href="https://cdn.jsdelivr.net/npm/shareon@2/dist/shareon.min.css" rel="stylesheet">
 		<!-- bootstrap -->
 		<link href="{{url_for('static', filename='css/css/bootstrap.css')}}" rel="stylesheet" type="text/css">
 
@@ -44,6 +46,7 @@
 			
 		
 		</style>
+    
 </head>
 
 <body id="body">
@@ -70,22 +73,30 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
+          <form class="d-flex" id="search">
+            <button class="btn btn-outline-success me-2" type="submit">Search</button>
+            <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+            
+          </form>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{url_for('home')}}">Home</a>
-              </li>
+              {% if session.get('customer') != None: %}
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
               </li>
+              {% elif session.get('designer') != None: %}
+              <li class="nav-item">
+                <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
+              </li>
+              {% endif %}
               </ul>
-              <form class="d-flex" id="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-              </form>
+              
               <ul class="navbar-nav">
                 {% if session.get('customer') != None: %}
                 <li class="nav-item">
@@ -102,6 +113,9 @@
                   <a class="nav-link" href="{{url_for('designerProfile')}}">Profile</a>
                 </li>
                 {% else %}
+                <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{{url_for('home')}}">Home</a>
+              </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{url_for('login')}}">Login</a>
                 </li>
@@ -145,10 +159,15 @@
         </div>
     </div>
 
+
     <footer>
+      <!-- jquery -->
         <script src="{{url_for('static', filename='js/jquery-3.6.0.min.js')}}"></script>
+        <!-- bootstrap js bundle -->
         <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
-        
+        <!-- share on js bundle -->
+        <script src="https://cdn.jsdelivr.net/npm/shareon@2/dist/shareon.iife.js" defer init></script>
+
         <script type="text/javascript">
           $(document).ready(function(){
              $('#state').change(function(){
@@ -183,6 +202,108 @@
                $('#divbody').toggleClass('col-md-9')
               })
             
+              // share buttons
+              $('#facebook').click(function(){
+                $('#shareon').css("display", "none");
+                $('#share').css("display", "block");
+                var name="facebook";
+                var sharepost=$("#sharepost").val();
+                var user=$("#user").val();
+                var csrf = "{{ csrf_token() }}";
+                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
+                 //Ajax call
+                 $.ajax({
+                     url:"/share",
+                     data:data2send,
+                     type:'POST',
+                     success:function(msg){
+                     console.log(msg);
+                     $('#share').load(location.href + " #share")
+                     }
+                  })
+              })
+
+              $('#linkedin').click(function(){
+                $('#shareon').css("display", "none")
+                $('#share').css("display", "block")
+                var name="linkedin"
+                var sharepost=$("#sharepost").val();
+                var user=$("#user").val();
+                var csrf = "{{ csrf_token() }}";
+                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
+                 //Ajax call
+                 $.ajax({
+                     url:"/share",
+                     data:data2send,
+                     type:'POST',
+                     success:function(msg){
+                     console.log(msg);
+                     $('#share').load(location.href + " #share")
+                     }
+                  })
+              })
+
+              $('#telegram').click(function(){
+                $('#shareon').css("display", "none")
+                $('#share').css("display", "block")
+                var name="telegram"
+                var sharepost=$("#sharepost").val();
+                var user=$("#user").val();
+                var csrf = "{{ csrf_token() }}";
+                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
+                 //Ajax call
+                 $.ajax({
+                     url:"/share",
+                     data:data2send,
+                     type:'POST',
+                     success:function(msg){
+                     console.log(msg);
+                     $('#share').load(location.href + " #share")
+                     }
+                  })
+              })
+
+              $('#twitter').click(function(){
+                $('#shareon').css("display", "none")
+                $('#share').css("display", "block")
+                var name="twitter"
+                var sharepost=$("#sharepost").val();
+                var user=$("#user").val();
+                var csrf = "{{ csrf_token() }}";
+                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
+                 //Ajax call
+                 $.ajax({
+                     url:"/share",
+                     data:data2send,
+                     type:'POST',
+                     success:function(msg){
+                     console.log(msg);
+                     $('#share').load(location.href + " #share")
+                     }
+                  })
+              })
+
+              $('#whatsapp').click(function(){
+                $('#shareon').css("display", "none")
+                $('#share').css("display", "block")
+                var name="whatsapp"
+                var sharepost=$("#sharepost").val();
+                var user=$("#user").val();
+                var csrf = "{{ csrf_token() }}";
+                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
+                 //Ajax call
+                 $.ajax({
+                     url:"/share",
+                     data:data2send,
+                     type:'POST',
+                     success:function(msg){
+                     console.log(msg);
+                     $('#share').load(location.href + " #share")
+                     }
+                  })
+              })
+              
+             
               //ajax for comment
             // {#$('#btn2').click(function(){
             //   var postid=$('#postid').val()
@@ -243,6 +364,11 @@
               document.getElementById(id).style.display='block';
             }
             
+            function share(){
+              document.getElementById('shareon').style.display='block';
+              document.getElementById('share').style.display='none';
+
+            }
       </script>
     </footer>
   </div>

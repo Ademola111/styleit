@@ -20,19 +20,27 @@ Styleit | Trending
                                 
                                 <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
                                 <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
-                            </span>
+                            </span><br>
                             
-                            <p class="m-3 p-3 text-justify"><b>{{y.post_title}}</b></p>
+                            <span class="m-3 p-3 text-justify"><b>{{y.post_title}}</b></spam><br>
+                            <span class="m-3 p-3 text-justify">{{y.post_body| truncate(50)}}</span><br>
                             </a>
                             <!-- numbers of likes  -->
-                            {% if y.likes.count() == 1 %}
-                            <span class="p-3 m-3">{{ y.likes.count() }} <i class="fas fa-thumbs-up"></i> Like</span>
-                            {% elif y.likes.count() > 1 %}
-                            <span class="p-3 m-3">{{ y.likes.count() }} <i class="fas fa-thumbs-up"></i> Likes</span>
+                            {% if y.likes| length == 1 %}
+                            <span class="p-3 m-3">{{ y.likes| length }} <i class="fas fa-thumbs-up"></i> Like</span>
+                            {% elif y.likes| length > 1 %}
+                            <span class="p-3 m-3">{{ y.likes| length }} <i class="fas fa-thumbs-up"></i> Likes</span>
                             {% else %}
                             <span class="p-3 m-3"><i class="far fa-thumbs-up"></i> Like</span>
                             {% endif %}
-                            
+                            <!-- numbers of shares -->
+                            {% if y.sharepostobj|length == 1 %}
+                            <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
+                            {% elif y.sharepostobj|length > 1 %}
+                            <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Shares</span>
+                            {% else %}
+                            <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
+                            {% endif %}
                         </div> 
                                  
                         {% endfor %}          

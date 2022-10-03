@@ -39,46 +39,97 @@ Styleit | Post details
                                 <!-- checking if designer has liked the post -->
                                     {% if desiloggedin in pstn.likes|map(attribute='like_desiid')| list %}
                                         <!-- checking the numbers of likes to know the singular/plural display -->
-                                        {% if pstn.likes.count() == 1 %}
-                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
-                                        <a href="/like/{{pstn.post_id}}">Like</a>
-                                        {% elif pstn.likes.count() > 1 %}
-                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
-                                        <a href="/like/{{pstn.post_id}}">Likes</a>
+                                        {% if i.like_postid == desiloggedin %}
+                                        <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                        <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Liked</a>
+                                        {% else %}
+                                            {% if pstn.likes| length == 1 %}
+                                            <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                            <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Like</a>
+                                            {% elif pstn.likes| length > 1 %}
+                                            <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                            <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Likes</a>
+                                            {% endif %}
                                         {% endif %}
+                                        <!-- end of singular /plural count check for designer -->
                                 <!-- checking if customer has liked the post -->
                                     {% elif loggedin in pstn.likes|map(attribute='like_custid')| list %}
                                         <!-- checking the numbers of likes to know the singular/plural display -->
-                                        {% if pstn.likes.count() == 1 %}
-                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
-                                        <a href="/like/{{pstn.post_id}}">Like</a>
-                                        {% elif pstn.likes.count() > 1 %}
-                                        {{ pstn.likes.count() }} <i class="fas fa-thumbs-up"></i>
-                                        <a href="/like/{{pstn.post_id}}">Likes</a>
+                                        {% if i.like_postid == loggedin %}
+                                        <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                        <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Liked</a>
+                                        {% else %}
+                                            {% if pstn.likes| length == 1 %}
+                                            <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                            <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Like</a>
+                                            {% elif pstn.likes| length > 1 %}
+                                            <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
+                                            <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Likes</a>
+                                            {% endif %}
                                         {% endif %}
+                                        <!-- end of singular /plural count check for customer -->
+                                    <!-- checking if use has not like the post -->
                                     {% else %}
-                                    {{ pstn.likes.count() }}<i class="far fa-thumbs-up"></i>
-                                    <a href="/like/{{pstn.post_id}}">Like</a>
+                                        {{pstn.likes| length}} <i class="far fa-thumbs-up"></i>
+                                        <a href="/like/{{pstn.post_id}}" style="color:rgb(0, 0, 0);"> Like</a>                                    
                                     {% endif %}
-
+                                    <!-- end of like checks -->
                                 </div>
                                 
                                 <div class="col-5 mt-3 mb-3 text-center" id="commint">
                                     {% if comnt|length == 1 %}
-                                    <i class="fas fa-comment"></i>
-                                    <span>{{ comnt| length}} Comment</span>
+                                    <span style="color:rgb(235, 81, 107);"><i class="fas fa-comment"></i> {{ comnt| length}} Comment</span>
+                                    {% elif comnt|length > 1 %}
+                                    <span style="color:rgb(235, 81, 107);"><i class="fas fa-comment"></i> {{ comnt| length}} Comments</span>
                                     {% else %}
-                                    <i class="fas fa-comment"></i>
-                                    <span>{{ comnt| length}} Comments</span>
+                                    <span> <i class="fas fa-comment"></i> {{ comnt| length}} Comment</span>
                                     {% endif %}
                                 </div>
-                                <div class="col-2 mt-3 mb-3 text-center">
-                                    <i class="fas fa-save"></i>
-                                    <span>Save</span>
-                                </div>
-                                <div class="col-2 mt-3 mb-3 text-center">
-                                    <i class="fas fa-share-alt"></i>
-                                    <span>Share</span>
+                                {#<div class="col-2 mt-3 mb-3 text-center">
+                                    <span style="color:rgb(235, 81, 107);"> <i class="fas fa-save"></i> Save</span>
+                                </div>#}
+                                <div class="col-4 mt-3 mb-3 text-center">
+                                    {% if desiloggedin %}
+                                        {% if share|length == 1 %}                                   
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
+                                        {% elif share|length > 1 %}
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Shares</span>
+                                        {% else %}
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
+                                        {% endif %}
+                                    
+                                    <div id="shareon" style="display:none;">
+                                        <div class="shareon d-flex overflow col-md-12">
+                                            <input type="hidden" id="user" value="{{desiloggedin}}">
+                                            <input type="hidden" id="sharepost" value="{{pstn.post_id}}">
+                                            <a class="facebook" id="facebook" value="facebook"></a>
+                                            <a class="linkedin" id="linkedin" value="linkedin"></a>
+                                            <a class="telegram" id="telegram" value="telegram"></a>
+                                            <a class="twitter" id="twitter" value="twitter"></a>
+                                            <a class="whatsapp" id="whatsapp" value="whatsapp"></a>
+                                        </div>
+                                    </div>
+                                    {% elif loggedin %}
+                                        {% if share|length == 1 %}                                   
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
+                                        {% elif share|length > 1 %}
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Shares</span>
+                                        {% else %}
+                                        <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
+                                        {% endif %}
+                                
+                                    <div id="shareon" style="display:none;">
+                                        <div class="shareon d-flex overflow col-md-12">
+                                            <input type="hidden" id="user" value="{{loggedin}}">
+                                            <input type="hidden" id="sharepost" value="{{pstn.post_id}}">
+                                            <a class="facebook" id="facebook" value="facebook"></a>
+                                            <a class="linkedin" id="linkedin" value="linkedin"></a>
+                                            <a class="telegram" id="telegram" value="telegram"></a>
+                                            <a class="twitter" id="twitter" value="twitter"></a>
+                                            <a class="whatsapp" id="whatsapp" value="whatsapp"></a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-12 mb-2 p-3 send" id="commentform">
@@ -92,7 +143,7 @@ Styleit | Post details
                             </div>                            
                             <div class="col-md-12">
                                 <div class ='row'>
-                                    {% for y in comnt %}
+                                    {% for y in comnt %}                                    
                                     <div class="col-md-12 p-2" id="commint">
                                         <!-- comment indentation starts here -->
                                         {% if y.level() == 0 %}
@@ -110,6 +161,7 @@ Styleit | Post details
                                                                 {% endif %}
                                                                 <!-- end of comment indentation -->
                                                                 <div>
+                                                                    
                                                                     {% if y.comdesiobj %}
                                                                     <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle">{{y.comdesiobj.desi_fname}}</span>
                                                                     {% elif y.comcustobj %}
@@ -118,6 +170,7 @@ Styleit | Post details
                                                                     <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br> 
                                                                                                         
                                                                     <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')">{{y.com_body}}</span>
+                                                                    
                                                                 </div>
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >
                                                                         <form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">
@@ -131,6 +184,7 @@ Styleit | Post details
                                                                 <!-- end of form, comment and reply display -->
                                                             </div>
                                                         </div>
+                                                        
                                                         {% endfor %}
                                                     </div>
                                                 </div>   

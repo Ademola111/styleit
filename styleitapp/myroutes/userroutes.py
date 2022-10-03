@@ -1,12 +1,13 @@
-import re, os, math, random
+import re, os, math, random, json
 from sqlalchemy import desc
-from flask import render_template, request, redirect, flash, session, url_for
-from flask_cors import cross_origin
+from flask import render_template, request, redirect, flash, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+# from flask_share import Share
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
+
 
 """homepage"""
 @app.route('/')
@@ -15,10 +16,16 @@ def home():
     loggedin = session.get('customer')
     des=Designer.query.get(desiloggedin)
     cus=Customer.query.get(loggedin)
-    return render_template('user/index.html', cus=cus, des=des)
+    
+    if desiloggedin:
+        return redirect('/designer/profile/')
+    elif loggedin:
+        return redirect('/customer/profile/')
+    else:
+        return render_template('user/index.html', cus=cus, des=des)
 
 """login"""
-@app.route('/login')
+@app.route('/login/')
 def login():
     loggedin = session.get('customer')
     desiloggedin = session.get('designer')
@@ -27,7 +34,7 @@ def login():
     return render_template('user/login.html', cus=cus, des=des)
 
 """ loading local govt area using ajax"""
-@app.route('/load/lga', methods=['POST'])
+@app.route('/load/lga/', methods=['POST'])
 def lgacheck():
     state=request.form.get('stateid')
     # querying lga table
@@ -41,7 +48,7 @@ def lgacheck():
     return select_html
 
 """Trending section"""
-@app.route('/trending', methods=['GET', 'POST'])
+@app.route('/trending/', methods=['GET', 'POST'])
 def trending():
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -56,7 +63,7 @@ def trending():
 
 
 """ post detail session """
-@app.route('/post/<id>')
+@app.route('/post/<id>/')
 def post(id):
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -67,13 +74,17 @@ def post(id):
         des=Designer.query.get(desiloggedin)
         cus = Customer.query.get(loggedin)
         pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid, Posting.post_id==id).first()
-        comnt=db.session.query(Comment).filter(Posting.post_id==id).order_by(Comment.path.asc()).all()
-        # lik=db.session.query(Like).filter(Like.like_postid==id).all()
-        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn)
+        compost = Posting.query.filter_by(post_id=id).first_or_404()
+        comnt=db.session.query(Comment).filter(Comment.com_postid==compost.post_id).order_by(Comment.path.asc()).all()
+        share = db.session.query(Share).filter(Share.share_postid==compost.post_id).all()
+        lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
+        for i in lk:
+            print(i)
+        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn, share=share, i=i)
 
 
 """All Designers """
-@app.route('/alldesigners', methods=['GET', 'POST'])
+@app.route('/alldesigners/', methods=['GET', 'POST'])
 def designers():
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -87,7 +98,7 @@ def designers():
         return render_template('designer/alldesigners.html', design=design, des=des, cus=cus)
 
 """Designers Details """
-@app.route('/designer/<id>', methods=['GET', 'POST'])
+@app.route('/designer/<id>/', methods=['GET', 'POST'])
 def desi_detail(id):
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -101,7 +112,7 @@ def desi_detail(id):
         return render_template('designer/designerdetail.html', design=design, des=des, cus=cus)
 
 """Comment session"""
-@app.route('/comment/<int:postid>', methods=['GET', 'POST'])
+@app.route('/comment/<int:postid>/', methods=['GET', 'POST'])
 def comment(postid):
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -109,7 +120,7 @@ def comment(postid):
         return redirect('/')
     
     if request.method == 'GET':
-        return redirect('/trending')
+        return redirect('/trending/')
 
     if request.method == 'POST':
         if desiloggedin:
@@ -117,16 +128,16 @@ def comment(postid):
             com=request.form.get('comment')
             m=Comment(com_body=com, com_postid=postid, com_desiid=des.desi_id)
             m.save()
-            return redirect(f'/post/{postid}')
+            return redirect(f'/post/{postid}/')
         elif loggedin:
             cus = Customer.query.get(loggedin)
             com=request.form.get('comment')
             k=Comment(com_body=com, com_postid=postid, com_custid=cus.cust_id)
             k.save()
-            return redirect(f'/post/{postid}')
+            return redirect(f'/post/{postid}/')
 
 """Reply Session """
-@app.route('/reply/<int:postid>/<int:commentid>', methods=['POST', 'GET'])
+@app.route('/reply/<int:postid>/<int:commentid>/', methods=['POST', 'GET'])
 def reply(postid, commentid):
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -134,7 +145,7 @@ def reply(postid, commentid):
         return redirect('/')
     
     if request.method == 'GET':
-        return redirect('/trending')
+        return redirect('/trending/')
 
     if request.method == 'POST':
         if desiloggedin:
@@ -142,16 +153,16 @@ def reply(postid, commentid):
             repl=request.form.get('comrep')
             m=Comment(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid)
             m.save()
-            return redirect(f'/post/{postid}')
+            return redirect(f'/post/{postid}/')
 
         elif loggedin:
             cus = Customer.query.get(loggedin)
             repl=request.form.get('comrep')
             k=Comment(com_body=repl, com_postid=postid, com_custid=cus.cust_id, parent_id=commentid)
             k.save()
-            return redirect(f'/post/{postid}')
+            return redirect(f'/post/{postid}/')
 
-@app.route('/like/<int:post_id>', methods=['GET'])
+@app.route('/like/<int:post_id>/', methods=['GET'])
 def like(post_id):
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
@@ -167,7 +178,7 @@ def like(post_id):
             liking=Like(like_desiid=desiloggedin, like_postid=post_id)
             db.session.add(liking)
             db.session.commit()
-        return redirect(f'/post/{post_id}')
+        return redirect(f'/post/{post_id}/')
         
     elif loggedin:
         liking = Like.query.filter_by(like_custid=loggedin, like_postid=post_id).first()
@@ -180,17 +191,47 @@ def like(post_id):
             liking=Like(like_custid=loggedin, like_postid=post_id)
             db.session.add(liking)
             db.session.commit()
-        return redirect(f'/post/{post_id}')
+        return redirect(f'/post/{post_id}/')
+
+"""Share buttons"""
+@app.route('/share/', methods=['GET','POST'])
+def share():
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin:
+        name = request.form.get('name')
+        postid = request.form.get('sharepost')
+        user = request.form.get('user')
+        if name !="" and postid !="" and user !="":
+            sh=Share(share_webname=name, share_postid=postid, share_desiid=user)
+            db.session.add(sh)
+            db.session.commit()
+            # return redirect(f'/post/{postid}')
+            return ('', 204)
+    elif loggedin:
+        name = request.form.get('name')
+        postid = request.form.get('sharepost')
+        user = request.form.get('user')
+        if name !="" and postid !="" and user !="":
+            sh=Share(share_webname=name, share_postid=postid, share_custid=user)
+            db.session.add(sh)
+            db.session.commit()
+            # return redirect(f'/post/{postid}')
+            return ('', 204)
 
 # Customers sections
 """Custormer Signup"""
-@app.route('/user/customer/signup', methods=['GET', 'POST'])
+@app.route('/user/customer/signup/', methods=['GET', 'POST'])
 def customerSignup():
     loggedin = session.get('customer')
     cus=Customer.query.get(loggedin)
     state=State.query.all()
+    if loggedin:
+        return redirect('/customer/profile/')
+
     if request.method == 'GET':
         return render_template('user/customersignup.html', state=state, cus=cus)
+
     if request.method == 'POST':
         fname=request.form.get('fname')
         lname=request.form.get('lname')
@@ -208,11 +249,11 @@ def customerSignup():
 
         if fname=="" or lname=="" or username=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
             flash('One or more field is empty', 'danger')
-            return redirect('/user/customer/signup')
+            return redirect('/user/customer/signup/')
         # compairing password match
         elif pwd !=cpwd:
             flash('Password match error', 'danger')
-            return redirect('/user/customer/signup')
+            return redirect('/user/customer/signup/')
         else:
             # hashing password
             formated = generate_password_hash(pwd)
@@ -229,15 +270,17 @@ def customerSignup():
                     db.session.add(k)
                     db.session.commit()
                     flash('Profile setup completed', 'success')
-                    return redirect('/user/customer/login')
+                    return redirect('/user/customer/login/')
 
 
 """Custormer Login"""
-@app.route('/user/customer/login', methods=['GET', 'POST'])
+@app.route('/user/customer/login/', methods=['GET', 'POST'])
 def customerLogin():
     loggedin = session.get('customer')       
     cus=Customer.query.get(loggedin)
     login = CustomerLoginForm()
+    if loggedin:
+        return redirect('/customer/profile/')
     # rendering login template
     if request.method == 'GET':
         return render_template('user/customerlogin.html', login=login, cus=cus)
@@ -248,7 +291,7 @@ def customerLogin():
         # validating form data field
         if email=="" or pwd=="":
             flash('Invalid Credentials', 'danger')
-            return redirect('/user/customer/login')
+            return redirect('/user/customer/login/')
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             user=db.session.query(Customer).filter(Customer.cust_email==email).first()
@@ -264,8 +307,11 @@ def customerLogin():
 
 
 """Customer Forgotten Password"""
-@app.route('/user/customer/forgottenpassword', methods=['POST', 'GET'])
+@app.route('/user/customer/forgottenpassword/', methods=['POST', 'GET'])
 def customerforgottenpass():
+    loggedin = session.get('customer')
+    if loggedin:
+        return redirect('/customer/profile/')
     if request.method == "GET":
         return render_template('user/forgottenpassword.html')
     if request.method == "POST":
@@ -280,7 +326,7 @@ def customerforgottenpass():
             return render_template('user/forgottenpassword.html')
         elif pwd != cpwd:
             flash('invalid credential supplied', 'danger')
-            return redirect('/user/customer/forgottenpassword')
+            return redirect('/user/customer/forgottenpassword/')
         else:
             formated = generate_password_hash(pwd)
             cust=Customer.query.filter(Customer.cust_email==email).first()
@@ -288,10 +334,10 @@ def customerforgottenpass():
                 cust.cust_pass=formated
                 db.session.commit()
                 flash('password updated successfully', 'success')
-                return redirect('/user/customer/login')
+                return redirect('/user/customer/login/')
             else:
                 flash('invalid busiess name or email address', 'danger')
-                return redirect('/user/customer/forgottenpassword')
+                return redirect('/user/customer/forgottenpassword/')
 
                 
 """Customer Profile"""
@@ -304,7 +350,9 @@ def customerProfile():
     if request.method == 'GET':
         state=State.query.all()
         cus=Customer.query.get(loggedin)
-        return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state)
+        mylike = Like.query.filter(Like.like_postid==Like.like_custid, Like.like_date==Like.like_custid).all()
+        getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).limit(10).all()
+        return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk)
     if request.method == 'POST':
         fname=request.form.get('fname')
         lname=request.form.get('lname')
@@ -326,7 +374,7 @@ def customerProfile():
             return redirect('/customer/profile/')
 
 """customer logout session"""
-@app.route('/customer/logout')
+@app.route('/customer/logout/')
 def customerlogout():
     loggedin = session.get('customer')
     if loggedin==None:
@@ -334,17 +382,52 @@ def customerlogout():
         
     if request.method == 'GET':
         session.pop('customer')
-        return redirect('/login')
+        return redirect('/')
+
+
+"""book appointment"""
+@app.route('/bookappointment/', methods=['GET', 'POST'])
+def book_appointment():
+    loggedin = session.get('customer')
+    if loggedin==None:
+        return redirect('/')
+
+    if request.method == 'GET':
+        cus=Customer.query.get(loggedin)
+        apnt = Designer.query.all()
+        return render_template('user/bookappointment.html', apnt=apnt, cus=cus)
+
+    if request.method == 'POST':
+        getfor = request.form
+        dsignername = getfor.get('dsignername')
+        bdate = getfor.get('bdate')
+        btime = getfor.get('btime')
+        cdate = getfor.get('cdate')
+        ctime = getfor.get('ctime')
+        if dsignername =="" or bdate =="" or btime =="" or cdate =="" or ctime=="":
+            flash('Kindly fill each fields')
+            return redirect(request.url)
+        else:
+            bookapp=Bookappointment(ba_desiid=dsignername, ba_custid=loggedin, ba_bookingDate=bdate, ba_bookingTime=btime, ba_collectionDate=cdate, ba_collectionTime=ctime)
+            db.session.add(bookapp)
+            db.session.commit()
+        return redirect('/customer/profile/')
 
 # customer section ends
 
 # designer section begins
 """Designer Signup"""
-@app.route('/user/designer/signup', methods=['GET', 'POST'])
+@app.route('/user/designer/signup/', methods=['GET', 'POST'])
 def designerSignup():
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
     state=State.query.all()
+    if desiloggedin:
+        return redirect('/designer/profile/')
+
     if request.method == 'GET':
-        return render_template('designer/designersignup.html', state=state)
+        return render_template('designer/designersignup.html', state=state, des=des)
+    
     if request.method == 'POST':
         fname=request.form.get('fname')
         busname=request.form.get('busname')
@@ -363,11 +446,11 @@ def designerSignup():
         # validating form fields
         if fname=="" or lname=="" or busname=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
             flash('One or more field is empty', 'warning')
-            return redirect('/user/designer/signup')
+            return redirect('/user/designer/signup/')
         # compairing password match
         elif pwd !=cpwd:
             flash('Password match error', 'danger')
-            return redirect('/user/designer/signup')
+            return redirect('/user/designer/signup/')
         else:
             # hashing password
             formated = generate_password_hash(pwd)
@@ -384,18 +467,22 @@ def designerSignup():
                     db.session.add(dk)
                     db.session.commit()
                     flash('Profile setup completed', 'success')
-                    return redirect('/user/designer/login')
+                    return redirect('/user/designer/login/')
 
 
 """Designer Login"""
-@app.route('/user/designer/login', methods=['GET', 'POST'])
+@app.route('/user/designer/login/', methods=['GET', 'POST'])
 def designerLogin():
     logins = DesignerLoginForm()
     desiloggedin = session.get('designer')
     des=Designer.query.get(desiloggedin)
+    if desiloggedin:
+        return redirect('/designer/profile/')
+
     # rendering login template
     if request.method == 'GET':
         return render_template('designer/designerlogin.html', logins=logins, des=des)
+    
     if request.method == 'POST':
         # getting form data
         email=request.form.get('email')
@@ -403,7 +490,7 @@ def designerLogin():
         # validating form data field
         if email=="" or pwd=="":
             flash('Invalid Credentials', 'danger')
-            return redirect('/user/designer/login')
+            return redirect('/user/designer/login/')
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             designer=db.session.query(Designer).filter(Designer.desi_email==email).first()
@@ -428,7 +515,8 @@ def designerProfile():
         des=Designer.query.get(desiloggedin)
         pos=Posting.query.filter(Posting.post_desiid==des.desi_id).all()
         state=State.query.all()
-        return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos)
+        getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).limit(10).all()
+        return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -452,11 +540,11 @@ def designerProfile():
             return redirect('/designer/profile/')
 
 """Designer Forgotten Password"""
-@app.route('/user/designer/forgottenpassword', methods=['POST', 'GET'])
+@app.route('/user/designer/forgottenpassword/', methods=['POST', 'GET'])
 def designerforgottenpass():
     desiloggedin = session.get('designer')
-    if desiloggedin==None:
-        return redirect('/')
+    if desiloggedin:
+        return redirect('/designer/profile/')
 
     if request.method == "GET":
         return render_template('designer/forgottenpassword.html')
@@ -471,7 +559,7 @@ def designerforgottenpass():
             return render_template('designer/forgottenpassword.html')
         elif pwd != cpwd:
             flash('invalid credential supplied', 'danger')
-            return redirect('/user/designer/forgottenpassword')
+            return redirect('/user/designer/forgottenpassword/')
         else:
             formated = generate_password_hash(pwd)
             desi=Designer.query.filter(Designer.desi_email==email).first()
@@ -479,13 +567,13 @@ def designerforgottenpass():
                 desi.desi_pass=formated
                 db.session.commit()
                 flash('password updated successfully', 'success')
-                return redirect('/user/designer/login')
+                return redirect('/user/designer/login/')
             else:
                 flash('invalid busiess name or email address', 'danger')
-                return redirect('/user/designer/forgottenpassword')
+                return redirect('/user/designer/forgottenpassword/')
 
 """designer logout session"""
-@app.route('/designer/logout')
+@app.route('/designer/logout/')
 def designerlogout():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
@@ -493,10 +581,10 @@ def designerlogout():
 
     if request.method == 'GET':
         session.pop('designer')
-        return redirect('/login')
+        return redirect('/')
 
 """Posting section"""
-@app.route('/posting', methods=['GET', 'POST'])
+@app.route('/posting/', methods=['GET', 'POST'])
 def posting():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
@@ -521,24 +609,15 @@ def posting():
                 pos=Posting(post_title=head, post_body=body, post_desiid=des.desi_id)
                 db.session.add(pos)
                 db.session.commit()      
-                flash('Post successfully, check post to add image', 'success')
-                return redirect('/designer/profile/')
+                flash('Post saved successfully, proceed to add image', 'success')
+                posimg = Posting.query.filter(Posting.post_title==head, Posting.post_desiid==des.desi_id).first()
+                posimg2={posimg.post_id:{"head":posimg.post_title, "body":posimg.post_body, "desiid":posimg.post_desiid}}            
+                session['postId']=posimg2
+                return redirect('/image/')
                 
 
-"""Post detail"""
-@app.route('/addimage/<id>', methods=['GET','POST'])
-def postdetail(id):
-    desiloggedin = session.get('designer')
-    if desiloggedin==None:
-        return redirect('/')
-
-    if request.method == 'GET':
-        des=Designer.query.get(desiloggedin)
-        pst=Posting.query.filter(Posting.post_id==id).first()
-        return render_template('designer/addimage.html', des=des, pst=pst)
-
 """image upload"""
-@app.route('/image', methods=['GET','POST'])
+@app.route('/image/', methods=['GET','POST'])
 def image():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
@@ -546,16 +625,19 @@ def image():
 
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        return render_template('designer/post.html', des=des)
+        return render_template('designer/addimage.html', des=des)
 
     if request.method == 'POST':
         imgname=request.form.get('name')
         imgs=request.files.getlist('img')
-        postid=request.form.get('postid')
+       
         if imgname=="":
             flash('fill all required fields', 'warning')
-            return redirect('/posting')
+            return redirect('/posting/')
         else:
+            postId = session.get('postId')
+            for x,y in postId.items():
+                    pass
             for img in imgs:
                 original_name=img.filename
                 if original_name != "":
@@ -566,10 +648,67 @@ def image():
                         saveas = str(fn) + extension[1]
                         img.save(f'styleitapp/static/images/postpic/{saveas}')     
                         # committing to Customer table
-                        pos=Image(image_name=imgname, image_url=saveas,image_postid=postid, Image_desiid=desiloggedin)
+                        
+                        pos=Image(image_name=imgname, image_url=saveas,image_postid=x, Image_desiid=desiloggedin)
                         db.session.add(pos)
             db.session.commit()
-            flash("image uploaded successfuly", 'success')
+            session.pop('postId', None)
+            flash("Posted successfuly", 'success')
             return redirect('/designer/profile/')
 
+"""Accept/decline appointment"""
+@app.route('/appointment/status/<id>/', methods=['GET', 'POST'])
+def appointment_status(id):
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        apt=request.form
+        aptaction = apt.get('action')
+        if aptaction !="":
+            if aptaction =="accept":
+                apptm = Bookappointment.query.get(id)
+                apptm.ba_status=aptaction
+                db.session.commit()
+                return redirect('/designer/profile/')
+            elif aptaction =="decline":
+                apptm = Bookappointment.query.get(id)
+                apptm.ba_status=aptaction
+                db.session.commit()
+                return redirect('/designer/profile/')
 
+
+"""subscription plans"""
+@app.route('/designer/subplan', methods=['GET', 'POST'])
+def subplan():
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method =='GET':
+        des=Designer.query.get(desiloggedin)
+        return render_template('designer/subscribeplans.html', des=des)
+
+
+"""subscription"""
+@app.route('/designer/sub', methods=['GET', 'POST'])
+def subscribe():
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method =='GET':
+        des=Designer.query.get(desiloggedin)
+        return render_template('designer/subscribe.html', des=des)
+
+""" payment """
+@app.route('/payment', methods=['GET', 'POST'])
+def payment():
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method =='GET':
+        des=Designer.query.get(desiloggedin)
+        return f"You've made a payment {des}"
