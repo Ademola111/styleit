@@ -1,13 +1,16 @@
-import re, os, math, random, json
+import re, os, math, random, json, requests
+from datetime import datetime, date, timedelta
 from sqlalchemy import desc
 from flask import render_template, request, redirect, flash, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 # from flask_share import Share
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 
+rows_per_page = 12
+rows_page = 20
 
 """homepage"""
 @app.route('/')
@@ -58,8 +61,9 @@ def trending():
     if request.method == "GET":
         cus=Customer.query.get(loggedin)
         des=Designer.query.get(desiloggedin)        
-        pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid).order_by(desc(Posting.post_date)).all()
-        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus)
+        pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid).order_by(desc(Posting.post_date)).limit(1000).all()
+        lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
+        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk)
 
 
 """ post detail session """
@@ -94,7 +98,8 @@ def designers():
     if request.method == 'GET':   
         des=Designer.query.get(desiloggedin)
         cus=Customer.query.get(loggedin)
-        design=Designer.query.all()
+        page = request.args.get('page', 1, type=int)
+        design=Designer.query.paginate(page=page, per_page=rows_page)
         return render_template('designer/alldesigners.html', design=design, des=des, cus=cus)
 
 """Designers Details """
@@ -247,30 +252,44 @@ def customerSignup():
         pic=request.files.get('pic')
         original_name=pic.filename
 
+
         if fname=="" or lname=="" or username=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
             flash('One or more field is empty', 'danger')
+            return redirect('/user/customer/signup/')
+    
+        # checking length of password
+        elif len(pwd) < 8:
+            flash('Password should be atleast 8 character long', 'warning')
             return redirect('/user/customer/signup/')
         # compairing password match
         elif pwd !=cpwd:
             flash('Password match error', 'danger')
             return redirect('/user/customer/signup/')
         else:
-            # hashing password
-            formated = generate_password_hash(pwd)
-            # checking image field if empty
-            if original_name != "":
-                # spliting image path
-                extension = os.path.splitext(original_name)
-                if extension[1].lower() in ['.jpg', '.gif', '.png']:
-                    fn=math.ceil(random.random()*10000000000)
-                    saveas = str(fn) + extension[1]
-                    pic.save(f'styleitapp/static/images/profile/customer/{saveas}')
-                    # committing to Customer table
-                    k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=email, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_stateid=state, cust_lgaid=lga)
-                    db.session.add(k)
-                    db.session.commit()
-                    flash('Profile setup completed', 'success')
-                    return redirect('/user/customer/login/')
+            # spliting to check email extension
+            mail = email.split('@')
+            if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                flash('kindly provide a valid email', 'warning')
+                return redirect('/user/customer/signup/')
+            else:
+                eemail = mail[0] + '@' + mail[1]
+                # hashing password
+                formated = generate_password_hash(pwd)
+                
+                # checking image field if empty
+                if original_name != "":
+                    # spliting image path
+                    extension = os.path.splitext(original_name)
+                    if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                        fn=math.ceil(random.random()*10000000000)
+                        saveas = str(fn) + extension[1]
+                        pic.save(f'styleitapp/static/images/profile/customer/{saveas}')
+                        # committing to Customer table
+                        k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=eemail, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_stateid=state, cust_lgaid=lga)
+                        db.session.add(k)
+                        db.session.commit()
+                        flash('Profile setup completed', 'success')
+                        return redirect('/user/customer/login/')
 
 
 """Custormer Login"""
@@ -350,8 +369,9 @@ def customerProfile():
     if request.method == 'GET':
         state=State.query.all()
         cus=Customer.query.get(loggedin)
-        mylike = Like.query.filter(Like.like_postid==Like.like_custid, Like.like_date==Like.like_custid).all()
-        getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).limit(10).all()
+        page=request.args.get('page', 1, type=int)
+        mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
+        getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
         return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk)
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -447,28 +467,57 @@ def designerSignup():
         if fname=="" or lname=="" or busname=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
             flash('One or more field is empty', 'warning')
             return redirect('/user/designer/signup/')
+        # checking length of password
+        elif len(pwd) < 8:
+            flash('Password should be atleast 8 character long', 'warning')
+            return redirect('/user/designer/signup/')
         # compairing password match
         elif pwd !=cpwd:
             flash('Password match error', 'danger')
             return redirect('/user/designer/signup/')
         else:
-            # hashing password
-            formated = generate_password_hash(pwd)
-            # checking image field if empty
-            if original_name != "":
-                # spliting image path
-                extension = os.path.splitext(original_name)
-                if extension[1].lower() in ['.jpg', '.gif', '.png']:
-                    fn=math.ceil(random.random()*10000000000)
-                    saveas = str(fn) + extension[1]
-                    pic.save(f'styleitapp/static/images/profile/designer/{saveas}')
-                    # committing to Customer table
-                    dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=email, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_stateid=state, desi_lgaid=lga)
-                    db.session.add(dk)
-                    db.session.commit()
-                    flash('Profile setup completed', 'success')
-                    return redirect('/user/designer/login/')
+            # spliting to check email extension
+            mail = email.split('@')
+            if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                flash('kindly provide a valid email', 'warning')
+                return redirect('/user/designer/signup/')
+            else:
+                eemail = mail[0] + '@' + mail[1]
+                # print(eemail)
+                # hashing password
+                formated = generate_password_hash(pwd)
+                # checking image field if empty
+                if original_name != "":
+                    # spliting image path
+                    extension = os.path.splitext(original_name)
+                    if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                        fn=math.ceil(random.random()*10000000000)
+                        saveas = str(fn) + extension[1]
+                        pic.save(f'styleitapp/static/images/profile/designer/{saveas}')
+                        # committing to Customer table
+                        dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=eemail, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_stateid=state, desi_lgaid=lga)
+                        db.session.add(dk)
+                        db.session.commit()
+                        flash('Profile setup completed', 'success')
+                        return redirect('/user/designer/login/')
 
+""" checking sub status for automatic deactivation """
+@app.before_request
+def before_request_func():
+    refno = session.get('refno')
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin:
+        subt=Subscription.query.filter(Subscription.sub_ref==refno, Subscription.sub_desiid==des.desi_id, Subscription.sub_status=='active').first()
+        today = date.today()
+        # print(subt)
+        # today = '2022-12-01'
+        if subt != None:
+            if subt.sub_enddate < str(today):
+                subt.sub_status='deactive'
+                db.session.commit()
+        else:
+            pass
 
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
@@ -504,6 +553,7 @@ def designerLogin():
                 flash('kindly supply a valid email address and password', 'warning')
                 return render_template('designer/designerlogin.html', logins=logins, designer=designer)
 
+
 """Designer Profile"""
 @app.route('/designer/profile/', methods=['GET', 'POST'])
 def designerProfile():
@@ -513,10 +563,12 @@ def designerProfile():
 
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        pos=Posting.query.filter(Posting.post_desiid==des.desi_id).all()
         state=State.query.all()
-        getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).limit(10).all()
-        return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk)
+        page = request.args.get('page', 1, type=int)
+        pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
+        getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
+        subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
+        return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -663,6 +715,9 @@ def appointment_status(id):
     if desiloggedin==None:
         return redirect('/')
     
+    if request.method == 'GET':
+        return redirect('/designer/profile/')
+    
     if request.method == 'POST':
         apt=request.form
         aptaction = apt.get('action')
@@ -680,7 +735,7 @@ def appointment_status(id):
 
 
 """subscription plans"""
-@app.route('/designer/subplan', methods=['GET', 'POST'])
+@app.route('/designer/subplan/', methods=['GET'])
 def subplan():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
@@ -688,11 +743,13 @@ def subplan():
     
     if request.method =='GET':
         des=Designer.query.get(desiloggedin)
-        return render_template('designer/subscribeplans.html', des=des)
+        page=request.args.get('page', 1, type=int)
+        sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
+        return render_template('designer/subscribeplans.html', des=des, sublist=sublist)
 
 
 """subscription"""
-@app.route('/designer/sub', methods=['GET', 'POST'])
+@app.route('/designer/sub/', methods=['GET', 'POST'])
 def subscribe():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
@@ -701,14 +758,148 @@ def subscribe():
     if request.method =='GET':
         des=Designer.query.get(desiloggedin)
         return render_template('designer/subscribe.html', des=des)
+    
+    if request.method == 'POST':
+        getform = request.form
+        plan = getform.get('plan')
+        if plan =="":
+            return redirect('/designer/sub/')
+        else:
+            planb = plan
+            refno = int(random.random()*10000000) 
+            session['refno'] = refno
+            sub = Subscription(sub_plan=planb, sub_ref=refno, sub_desiid=desiloggedin, sub_startdate=0, sub_enddate=0)
+            db.session.add(sub)
+            db.session.commit()
+            pay = Payment(payment_transNo=refno, payment_amount=planb, payment_desiid=desiloggedin, payment_subid=sub.sub_id)
+            db.session.add(pay)
+            db.session.commit()
+            return redirect('/payment/')
+
 
 """ payment """
-@app.route('/payment', methods=['GET', 'POST'])
+@app.route('/payment/', methods=['GET', 'POST'])
 def payment():
     desiloggedin = session.get('designer')
     if desiloggedin==None:
         return redirect('/')
-    
+
+    des=Designer.query.get(desiloggedin)
+    refno = session.get('refno')
+    pymt=Payment.query.filter_by(payment_transNo=refno).first()
     if request.method =='GET':
+        return render_template('designer/confirmpayment.html', des=des, pymt=pymt)
+    else:
+        data = {"email":des.desi_email,"amount":pymt.payment_amount*100, "reference":pymt.payment_transNo}
+
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+
+        response = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, data=json.dumps(data))
+
+        rspjson = json.loads(response.text) 
+        if rspjson.get('status') == True:
+            authurl = rspjson['data']['authorization_url']
+            return redirect(authurl)
+        else:
+            return "Please try again"
+
+
+@app.route("/user/payverify")
+def paystack():
+    reference = request.args.get('reference')
+    refno = session.get('refno')
+    #update our database 
+    headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+
+    response = requests.get(f"https://api.paystack.co/transaction/verify/{reference}", headers=headers)
+    rsp =response.json()#in json format
+    if rsp['data']['status'] =='success':
+        amt = rsp['data']['amount']
+        ipaddress = rsp['data']['ip_address']
+        p = Payment.query.filter(Payment.payment_transNo==refno).first()
+        p.payment_status = 'paid'
+        db.session.add(p)
+        db.session.commit()
+        return redirect('/activate/')  #update database and redirect them to the feedback page
+    else:
+        p = Payment.query.filter(Payment.payment_transNo==refno).first()
+        p.payment_status = 'failed'
+        db.session.add(p)
+        db.session.commit()
+        flash("Payment Failed", "danger")
+        return redirect('/designer/profile/')
+
+@app.route('/activate/', methods=['GET', 'POST'])
+def activating():
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+
+    if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        return f"You've made a payment {des}"
+        refno = session.get('refno')
+        substat = Subscription.query.filter(Subscription.sub_ref==refno).first()
+        # print(substat.sub_plan)
+        if substat.sub_plan == '500':
+            Dstart = date.today()
+            Dend = Dstart + timedelta(days=29)
+            # print(Dstart)
+            # print(Dend)
+            substat.sub_startdate=Dstart
+            substat.sub_enddate=Dend
+            substat.sub_status='active'
+            substat.sub_paystatus='paid'
+            db.session.commit()
+            flash("Activation Successful", "success")
+            return redirect('/designer/profile/')  #update database and redirect them to the feedback page
+        elif substat.sub_plan == '1350':
+            Dstart = date.today()
+            Dend = Dstart + timedelta(days=89)
+            # print(Dstart)
+            # print(Dend)
+            substat.sub_startdate=Dstart
+            substat.sub_enddate=Dend
+            substat.sub_status='active'
+            substat.sub_paystatus='paid'
+            db.session.commit()
+            flash("Activation Successful", "success")
+            return redirect('/designer/profile/')  #update database and redirect them to the feedback page
+        elif substat.sub_plan == '2400':
+            Dstart = date.today()
+            Dend = Dstart + timedelta(days=179)
+            # print(Dstart)
+            # print(Dend)
+            substat.sub_startdate=Dstart
+            substat.sub_enddate=Dend
+            substat.sub_status='active'
+            substat.sub_paystatus='paid'
+            db.session.commit()
+            flash("Activation Successful", "success")
+            return redirect('/designer/profile/')  #update database and redirect them to the feedback page
+        elif substat.sub_plan == '4200':
+            Dstart = date.today()
+            Dend = Dstart + timedelta(days=364)
+            # print(Dstart)
+            # print(Dend)
+            substat.sub_startdate=Dstart
+            substat.sub_enddate=Dend
+            substat.sub_status='active'
+            substat.sub_paystatus='paid'
+            db.session.commit()
+            flash("Activation Successful", "success")
+            return redirect('/designer/profile/')  #update database and redirect them to the feedback page
+        else:
+            flash("Activation Unsuccessful", "danger")
+            return redirect('/trending')
+
+"""Error 404 page"""
+@app.errorhandler(404)
+def page_not_found(error):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin==None and loggedin== None:
+        return redirect('/')
+    else:
+        des=Designer.query.get(desiloggedin)
+        cus=Customer.query.get(loggedin)
+        return render_template('user/error.html', des=des, cus=cus, error=error),404

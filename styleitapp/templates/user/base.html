@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- <meta content="5"; url="http://127.0.0.1:8080/trending/" http-equiv="refresh"> -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %} {% endblock %}</title>
@@ -177,7 +178,7 @@
  
                  ///make ajax call
                  $.ajax({
-                     url:"/load/lga",
+                     url:"/load/lga/",
                      data:data2send,
                      type:'post',
                      success:function(msg){
@@ -213,7 +214,7 @@
                 data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
                  //Ajax call
                  $.ajax({
-                     url:"/share",
+                     url:"/share/",
                      data:data2send,
                      type:'POST',
                      success:function(msg){
@@ -233,7 +234,7 @@
                 data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
                  //Ajax call
                  $.ajax({
-                     url:"/share",
+                     url:"/share/",
                      data:data2send,
                      type:'POST',
                      success:function(msg){
@@ -253,7 +254,7 @@
                 data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
                  //Ajax call
                  $.ajax({
-                     url:"/share",
+                     url:"/share/",
                      data:data2send,
                      type:'POST',
                      success:function(msg){
@@ -273,7 +274,7 @@
                 data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
                  //Ajax call
                  $.ajax({
-                     url:"/share",
+                     url:"/share/",
                      data:data2send,
                      type:'POST',
                      success:function(msg){
@@ -293,7 +294,7 @@
                 data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
                  //Ajax call
                  $.ajax({
-                     url:"/share",
+                     url:"/share/",
                      data:data2send,
                      type:'POST',
                      success:function(msg){

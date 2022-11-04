@@ -101,3 +101,4 @@ def image():
             flash("image uploaded successfuly", 'success')
             return redirect('/designer/profile/')
 
+http://ademolacode.pythonanywhere.com/user/payverify

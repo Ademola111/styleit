@@ -1,7 +1,4 @@
 import datetime
-from email.policy import default
-
-from sqlalchemy import ForeignKey
 from styleitapp import db
 
 class Posting(db.Model):
@@ -18,6 +15,9 @@ class Posting(db.Model):
     # likes = db.relationship('Like', backref='posting', lazy='dynamic')
     likes = db.relationship('Like', back_populates='posts')
     sharepostobj = db.relationship('Share', back_populates='postshareobj')
+    # @property
+    # def rank(self):
+    #     return _get_rank_for_post_count(self.ranks.count)
 
 class Image(db.Model):
     image_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -132,10 +132,10 @@ class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     sub_plan = db.Column(db.Enum('500','1350', '2400','4200'), nullable=False)
     sub_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
-    sub_startdate = db.Column(db.String(255), nullable=False)
-    sub_enddate = db.Column(db.String(255), nullable=False)
+    sub_startdate = db.Column(db.String(255), nullable=True)
+    sub_enddate = db.Column(db.String(255), nullable=True)
     sub_ref = db.Column(db.Integer(), nullable=True)
-    sub_status = db.Column(db.Enum('active', 'deactive'), server_default='active')
+    sub_status = db.Column(db.Enum('active', 'deactive'), server_default='deactive')
     sub_paystatus = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
     #foreignkey
     sub_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
