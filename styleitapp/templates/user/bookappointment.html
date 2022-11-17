@@ -13,13 +13,15 @@ Styleit | Book Appointment
                 <span class="fw-4">{{i}}</span>
                 {% endfor %}
                 {% endwith %}</span>
-            <div><h2>Book an apppointment with your designer</h2></div>
+            <div>
+                <h2>Book an apppointment with your designer</h2>
+            </div>
             <div>
                 <form action="{{url_for('book_appointment')}}" method="post">
                 <span>Designer Name </span>
                 <select name="dsignername" class="form-control mt-3 mb-3">
                     {% for ap in apnt %}
-                    <option  id="{{ap.desi_id}}" value="{{ap.desi_id}}">{{ap.desi_fname}} {{ap.desi_lname}} - {{ap.desi_businessName}}</option>
+                    <option  id="{{ap.subdesiobj.desi_id}}" value="{{ap.subdesiobj.desi_id}}">{{ap.subdesiobj.desi_fname}} {{ap.subdesiobj.desi_lname}} - {{ap.subdesiobj.desi_businessName}}</option>
                     {% endfor %}
                 </select>
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">

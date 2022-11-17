@@ -64,6 +64,7 @@ class Comment(db.Model):
 
 class Customer(db.Model):
     cust_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    cust_regdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     cust_fname = db.Column(db.String(255), nullable=False)
     cust_lname = db.Column(db.String(255), nullable=False)
     cust_username = db.Column(db.String(255), nullable=False)
@@ -73,6 +74,8 @@ class Customer(db.Model):
     cust_pass = db.Column(db.String(255), nullable=False)
     cust_address = db.Column(db.Text(), nullable=True)
     cust_pic = db.Column(db.String(255), nullable=True)
+    cust_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    cust_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
     #foreignkey
     cust_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     cust_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
@@ -104,6 +107,7 @@ class Lga(db.Model):
 
 class Designer(db.Model):
     desi_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    desi_regdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     desi_fname = db.Column(db.String(255), nullable=False)
     desi_lname = db.Column(db.String(255), nullable=False)
     desi_businessName = db.Column(db.String(255), nullable=False)
@@ -113,6 +117,9 @@ class Designer(db.Model):
     desi_pass = db.Column(db.String(255), nullable=False)
     desi_address = db.Column(db.Text(), nullable=True)
     desi_pic = db.Column(db.String(255), nullable=True)
+    desi_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    desi_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
+    
     #foreignkey
     desi_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     desi_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))

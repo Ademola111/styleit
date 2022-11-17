@@ -34,7 +34,7 @@ Styleit|Profile
                     </div>
                     <div class="col-md-9 mt-2 mb-2">
                         <h5 class="col-md-12 m-2 p-2 text-center" id="profilename">{{des.desi_businessName}} </h5>
-                        {% if session.get('designer')!= None: %}
+                        {% if des.desi_status=='actived': %}
                         <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Online</i></span>
                         {% else %}
                         <span id="online2" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Offline</i></span>

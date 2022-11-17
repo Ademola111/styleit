@@ -99,14 +99,14 @@
               </ul>
               
               <ul class="navbar-nav">
-                {% if session.get('customer') != None: %}
+                {% if session.get('customer') != None and cus.cust_status=='actived' %}
                 <li class="nav-item">
                   <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{url_for('customerProfile')}}">Profile</a>
                 </li>
-                {% elif session.get('designer') != None: %}
+                {% elif session.get('designer') != None and des.desi_status=='actived': %}
                 <li class="nav-item">
                   <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle">{{des.desi_fname}}</a>
                 </li>
@@ -114,12 +114,22 @@
                   <a class="nav-link" href="{{url_for('designerProfile')}}">Profile</a>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{url_for('home')}}">Home</a>
-              </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('login')}}">Login</a>
-                </li>
+                  {% if session.get('customer') != None %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('unconfirmed')}}">Confirm Account</a>
+                  </li>
+                  {% elif session.get('designer') != None %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{url_for('unconfirmed')}}">Confirm Account</a>
+                    </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{url_for('home')}}">Home</a>
+                  </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{url_for('login')}}">Login</a>
+                    </li>
+                  {% endif %}
                 {% endif %}
             </ul>
           </div>

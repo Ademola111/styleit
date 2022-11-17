@@ -4,6 +4,7 @@ from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_mail import Mail, Message
 # from flask_share import Share
 
 
@@ -19,6 +20,7 @@ app.config.from_pyfile('config.py', silent=False) #this is the config in instanc
 #database connection
 db=SQLAlchemy(app)
 migrate=Migrate(app,db)
+mail=Mail(app)
 # share = Share(app)
 
 

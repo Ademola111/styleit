@@ -102,3 +102,59 @@ def image():
             return redirect('/designer/profile/')
 
 http://ademolacode.pythonanywhere.com/user/payverify
+
+
+"""activation code"""
+@app.route('/activate/', methods=['GET', 'POST'])
+def activationcode():
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    
+    if desiloggedin==None and loggedin== None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        return render_template('user/activation.html')
+    
+    if request.method=='POST':
+        cod=request.form.get('activationcode')
+        if cod != "":
+            if desiloggedin:
+                dd=Designer.query.filter(Designer.desi_id==desiloggedin).first()
+                mcod=dd.desi_activationcode
+                if cod == mcod:
+                    dd.desi_status='actived'
+                    db.session.commit()
+                    flash('Account activated')
+                    return redirect('/user/designer/login/')
+                else:
+                    if cod!=mcod:
+                        flash('Incorect activation code')
+                        return redirect('/activate/')
+            elif loggedin:
+                dd=Customer.query.filter(Customer.cust_id==loggedin).first()
+                mcod=dd.desi_activationcode
+                if cod == mcod:
+                    dd.cust_status='actived'
+                    db.session.commit()
+                    flash('Account activated')
+                    return redirect('/user/customer/login/')
+                else:
+                    if cod!=mcod:
+                        flash('Incorect activation code')
+                        return redirect('/activate/')
+        else:
+            flash('activation code is empty')
+            return redirect('/activate/')
+
+
+# sending mail
+subject="Automated Email"
+sender="admin@conf.com"
+recipient = [eemail]
+msg=Message()
+msg.subject=subject
+msg.sender=sender
+msg.body = "Your activation code is" + fn
+msg.recipients = recipient
+mail.send(msg)

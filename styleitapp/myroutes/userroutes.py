@@ -8,6 +8,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from styleitapp import app, db
 from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
+from styleitapp import Message, mail
+from styleitapp.token import generate_confirmation_token, confirm_token
+from styleitapp.email import send_email
 
 rows_per_page = 12
 rows_page = 20
@@ -100,6 +103,7 @@ def designers():
         cus=Customer.query.get(loggedin)
         page = request.args.get('page', 1, type=int)
         design=Designer.query.paginate(page=page, per_page=rows_page)
+        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)        
         return render_template('designer/alldesigners.html', design=design, des=des, cus=cus)
 
 """Designers Details """
@@ -224,6 +228,92 @@ def share():
             # return redirect(f'/post/{postid}')
             return ('', 204)
 
+"""token confirmation"""
+@app.route('/confirm/<token>/')
+def confirm_email(token):
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    
+    if loggedin:
+        try:
+            email= confirm_token(token)
+        except:
+            flash('the confirmation link is invalid or has expired', 'danger')
+        cus = Customer.query.filter_by(cust_email=email).first_or_404()
+        if cus.cust_status=='actived':
+            flash('Account already confirmed. Please login.', 'success')
+        else:
+            cus.cust_status = 'actived'
+            cus.cust_activationdate = datetime.now()
+            db.session.commit()
+            flash('You have confirmed your account', 'success')
+            return redirect('/user/customer/login/')
+    
+    elif desiloggedin:
+        try:
+            email= confirm_token(token)
+        except:
+            flash('the confirmation link is invalid or has expired', 'danger')
+        des = Designer.query.filter_by(desi_email=email).first_or_404()
+        if des.desi_status=='actived':
+            flash('Account already confirmed. Please login.', 'success')
+        else:
+            des.desi_status = 'actived'
+            des.desi_activationdate = datetime.now()
+            db.session.commit()
+            flash('You have confirmed your account', 'success')
+            return redirect('/user/designer/login/')
+    return redirect('main.home')
+
+
+""" unconfirmed token"""
+@app.route('/unconfirmed')
+def unconfirmed():
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    cus=Customer.query.get(loggedin)
+    if loggedin:
+        cusi = Customer.query.filter_by(cust_id=loggedin).first_or_404()
+        if cusi.cust_status=='actived':
+            return redirect('/customer/profile/')
+    elif desiloggedin:
+        desi = Designer.query.filter_by(desi_id=desiloggedin).first_or_404()
+        if desi.desi_status=='actived':
+            return redirect('/designer/profile/')
+    flash('Confirm your account !', 'warning')
+    return render_template('user/unconfirmed.html', desiloggedin=desiloggedin, loggedin=loggedin, des=des, cus=cus)   
+
+
+"""Resend activation"""
+@app.route('/resend/activation')
+def resent_confirmation():
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    cus=Customer.query.get(loggedin)
+    if loggedin:
+        cus = Customer.query.filter_by(cust_id=loggedin).first_or_404()
+        token = generate_confirmation_token(cus.cust_email)
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+        html = render_template('user/activate.html', confirm_url=confirm_url, cus=cus)
+        subject = "Please confirm your email"
+        send_email(cus.cust_email, subject, html)
+        flash('A new confirmation mail has been sent.', 'success')
+        return redirect(url_for('unconfirmed'))
+    elif desiloggedin:
+        des = Designer.query.filter_by(desi_id=desiloggedin).first_or_404()
+        token = generate_confirmation_token(des.desi_email)
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+        html = render_template('user/activate.html', confirm_url=confirm_url, des=des)
+        subject = "Please confirm your email"
+        send_email(des.desi_email, subject, html)
+        flash('A new confirmation mail has been sent.', 'success')
+        return redirect(url_for('unconfirmed')) 
+    return redirect('/unconfirmed')
+
+
+
 # Customers sections
 """Custormer Signup"""
 @app.route('/user/customer/signup/', methods=['GET', 'POST'])
@@ -288,8 +378,16 @@ def customerSignup():
                         k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=eemail, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_stateid=state, cust_lgaid=lga)
                         db.session.add(k)
                         db.session.commit()
-                        flash('Profile setup completed', 'success')
-                        return redirect('/user/customer/login/')
+
+                        token = generate_confirmation_token(k.cust_email)
+                        confirm_url = url_for('confirm_email', token=token, _external=True)
+                        html = render_template('user/activate.html', confirm_url=confirm_url)
+                        subject = "Please confirm your email"
+                        send_email(k.cust_email, subject, html)
+                        flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                        return redirect(url_for('customerLogin'))
+                    return redirect('/user/customer/signup/')
+
 
 
 """Custormer Login"""
@@ -303,6 +401,7 @@ def customerLogin():
     # rendering login template
     if request.method == 'GET':
         return render_template('user/customerlogin.html', login=login, cus=cus)
+        
     if request.method == 'POST':
         # getting form data
         email=request.form.get('email')
@@ -369,10 +468,15 @@ def customerProfile():
     if request.method == 'GET':
         state=State.query.all()
         cus=Customer.query.get(loggedin)
-        page=request.args.get('page', 1, type=int)
-        mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
-        getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
-        return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk)
+        if cus.cust_status == 'deactived':
+            flash('Please confirm your account', 'warning')
+            return redirect(url_for('unconfirmed'))
+        else:
+            page=request.args.get('page', 1, type=int)
+            mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
+            return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk)
+    
     if request.method == 'POST':
         fname=request.form.get('fname')
         lname=request.form.get('lname')
@@ -401,7 +505,7 @@ def customerlogout():
         return redirect('/')
         
     if request.method == 'GET':
-        session.pop('customer')
+        session.pop('customer', None)
         return redirect('/')
 
 
@@ -414,7 +518,7 @@ def book_appointment():
 
     if request.method == 'GET':
         cus=Customer.query.get(loggedin)
-        apnt = Designer.query.all()
+        apnt = Subscription.query.filter(Subscription.sub_status=='active').all()
         return render_template('user/bookappointment.html', apnt=apnt, cus=cus)
 
     if request.method == 'POST':
@@ -498,26 +602,36 @@ def designerSignup():
                         dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=eemail, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_stateid=state, desi_lgaid=lga)
                         db.session.add(dk)
                         db.session.commit()
-                        flash('Profile setup completed', 'success')
-                        return redirect('/user/designer/login/')
+
+                        token = generate_confirmation_token(dk.desi_email)
+                        confirm_url = url_for('confirm_email', token=token, _external=True)
+                        html = render_template('user/activate.html', confirm_url=confirm_url)
+                        subject = "Please confirm your email"
+                        send_email(dk.desi_email, subject, html)
+                        flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                        return redirect(url_for('unconfirmed'))
+                    return redirect('/user/designer/signup/')
+
+
 
 """ checking sub status for automatic deactivation """
 @app.before_request
 def before_request_func():
-    refno = session.get('refno')
     desiloggedin = session.get('designer')
     des=Designer.query.get(desiloggedin)
     if desiloggedin:
-        subt=Subscription.query.filter(Subscription.sub_ref==refno, Subscription.sub_desiid==des.desi_id, Subscription.sub_status=='active').first()
+        subt=db.session.query(Subscription).filter(Subscription.sub_desiid==des.desi_id).first()
         today = date.today()
         # print(subt)
-        # today = '2022-12-01'
+        # print(today)
+        today = '2022-12-01'
         if subt != None:
             if subt.sub_enddate < str(today):
                 subt.sub_status='deactive'
                 db.session.commit()
         else:
             pass
+
 
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
@@ -564,11 +678,15 @@ def designerProfile():
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
         state=State.query.all()
-        page = request.args.get('page', 1, type=int)
-        pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
-        getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
-        subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
-        return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt)
+        if des.desi_status == 'deactived':
+            flash('Please confirm your account', 'warning')
+            return redirect(url_for('unconfirmed'))
+        else:
+            page = request.args.get('page', 1, type=int)
+            pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
+            subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
+            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -632,7 +750,7 @@ def designerlogout():
         return redirect('/')
 
     if request.method == 'GET':
-        session.pop('designer')
+        session.pop('designer', None)
         return redirect('/')
 
 """Posting section"""
