@@ -32,7 +32,7 @@ Styleit|Profile
                     <div class="col-md-3 mb-2 mt-2" >
                         <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="70px" class="p-1" id="profilediv">
                     </div>
-                    <div class="col-md-9 mt-2 mb-2">
+                    <div class="col-md-9 mt-2 mb-2 generalface2">
                         <h5 class="col-md-12 m-2 p-2 text-center" id="profilename">{{des.desi_businessName}} </h5>
                         {% if des.desi_status=='actived': %}
                         <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Online</i></span>
@@ -43,17 +43,17 @@ Styleit|Profile
                     </div>
 
                     <div class="col-md-12" id="profilebottom">
-                        <span id="settings"><a href="#">Settings</a></span>
-                        <span id="edit" onclick="divchange4()"><a href="#"><i class="fas fa-user-edit"></i> Edit</a></span>
+                        <span id="settings" class="generalface2"><a href="#">Settings</a></span>
+                        <span id="edit" onclick="divchange4()" class="generalface2"><a href="#"><i class="fas fa-user-edit"></i> Edit</a></span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col mt-3 mb-3">
                         {% if subt.sub_status == 'active' %}
-                        <p class="mt-3 mb-3"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen"></i> Create a Post</span></a></p>
-                        <p class="mt-3 mb-3"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen"></i> Create a Post</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
                         {% else %}
-                        <p class="mt-3 mb-3"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
                         {% endif %}
                         
 
@@ -62,7 +62,7 @@ Styleit|Profile
             </div>
             <div  id="divbody">
                 <div class="row">
-                    <div class="col-md-12 mt-3 mb-3" id="Sameprofile" style="display:none">
+                    <div class="col-md-12 mt-3 mb-3 generalface2" id="Sameprofile" style="display:none">
                             <div class="row">
                                 <div class="col-md-12">
                                     <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="100px" class=" img img-fluid p-1">
@@ -108,7 +108,7 @@ Styleit|Profile
                             </div>
                             
                     </div>
-                    <div class="col-md-12 mt-3 mb-3" id="Samelike" style="display:none">
+                    <div class="col-md-12 mt-3 mb-3 generalface2" id="Samelike" style="display:none">
                         <div class="row">
                            {% if pos %}
                                 {% for pst in pos.items: %}
@@ -156,7 +156,7 @@ Styleit|Profile
                         </div>
                         
                     </div>
-                    <div class="col-md-12 mt-3 mb-3" id="Sameunlike" style="display:none">                       
+                    <div class="col-md-12 mt-3 mb-3 generalface2" id="Sameunlike" style="display:none">                       
                         <div class="row">
                             
                             <div class="col-md-12 text-center">
@@ -232,7 +232,7 @@ Styleit|Profile
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12 mt-3 mb-3" id="editprofile" style="display:none">
+                    <div class="col-md-12 mt-3 mb-3 generalface2" id="editprofile" style="display:none">
                         <h3>Edit Profile</h3>
                         
                             <form action="{{url_for('designerProfile')}}" method="POST">

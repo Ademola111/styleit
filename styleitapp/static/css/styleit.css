@@ -25,6 +25,18 @@ div ul li a:hover{
   src: url("../font/Poppins-Regular.woff");
 }
 
+.generalface{
+  font-family:styleit;
+}
+
+.generalface2{
+  font-family:styleitregular;
+}
+
+.generalface3{
+  font-family:styleitbold;
+}
+
 #body{
   background-color: white;
   
@@ -118,8 +130,9 @@ border-radius: 50px;
 }
 
 #logininnerbox1, #logininnerbox2{
-  background-color: rgb(255, 137, 156);
-  box-shadow:1px 2px 1px 2px rgb(88, 86, 86);
+  background-color:transparent;
+  /* background-color: rgba(161, 156, 158, 0.151); */
+  box-shadow:0px 2px 1px 2px rgb(197, 192, 194);
   
 }
 

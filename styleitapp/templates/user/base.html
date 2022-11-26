@@ -74,14 +74,14 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
-          <form class="d-flex" id="search">
-            <button class="btn btn-outline-success me-2" type="submit">Search</button>
-            <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-            
-          </form>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               {% if session.get('customer') != None: %}
+              <form class="d-flex" id="search">
+                <button class="btn btn-outline-success me-2" type="submit">Search</button>
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                
+              </form>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
               </li>
@@ -89,6 +89,11 @@
                 <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
               </li>
               {% elif session.get('designer') != None: %}
+              <form class="d-flex" id="search">
+                <button class="btn btn-outline-success me-2" type="submit">Search</button>
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                
+              </form>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
               </li>
@@ -100,18 +105,24 @@
               
               <ul class="navbar-nav">
                 {% if session.get('customer') != None and cus.cust_status=='actived' %}
-                <li class="nav-item">
+                {#<li class="nav-item">
                   <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
+                </li>#}
+                <li class="nav-item">
+                  <a class="nav-link" href="#"><i class="fa-solid fa-bell generalface2" id="notif">{{msg}}</i></a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('customerProfile')}}">Profile</a>
+                  <a class="nav-link" href="{{url_for('customerProfile')}}"><img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
                 </li>
                 {% elif session.get('designer') != None and des.desi_status=='actived': %}
-                <li class="nav-item">
+                {#<li class="nav-item">
                   <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle">{{des.desi_fname}}</a>
+                </li>#}
+                <li class="nav-item">
+                  <a class="nav-link" href="#"><i class="fa-solid fa-bell generalface2" id="notif">{{msg}}</i></a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('designerProfile')}}">Profile</a>
+                  <a class="nav-link" href="{{url_for('designerProfile')}}"><img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle">{{des.desi_fname}}</a>
                 </li>
                 {% else %}
                   {% if session.get('customer') != None %}
@@ -148,25 +159,25 @@
   <div class="container-fluid" id="footer">
     <div class="row">
         <div class="col-md-3 m-2 text-center" id="socials">
-          <p class="text-center text-dark"><b><i>Connect</i></b><hr></p>
+          <p class="text-center text-dark generalface2"><b><i>Connect</i></b><hr></p>
           <span class="card-text fs-1"><a href="#"><i class="fab fa-facebook"></i></a></span>
 					<span class="card-text fs-1"><a href="#"><i class="fab fa-twitter"></i></a></span>
 					<span class="card-text fs-1"><a href="#"><i class="fab fa-linkedin"></i></a></span>
 					<span class="card-text fs-1"><a href="#"><i class="fab fa-instagram"></i></a></span>
         </div>
         <div class="col-md-3 m-2" id="quicklinks">
-          <p class="text-center text-dark"><b><i>Quick Links</i></b><hr></p>
+          <p class="text-center text-dark generalface2"><b><i>Quick Links</i></b><hr></p>
         </div>
         <div class="col-md-3 m-2" id="subscribe">
-          <p class=" text-center text-dark"><b><i>Subscribe</i></b><hr></p>
+          <p class=" text-center text-dark generalface2"><b><i>Subscribe</i></b><hr></p>
         </div>
         <div class="col-md-3 m-2" id="locations">
-          <p class="text-center text-dark"><b><i>Locations</i></b><hr></p>
+          <p class="text-center text-dark generalface2"><b><i>Locations</i></b><hr></p>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12 text-end">
-            <p>designed by:AdemolaCode &copysr; 2022 </i></b></p>
+        <div class="col-md-12 text-end generalface2">
+            <p><b><i>Designed by: AdemolaCode &copy; 2022 </i></b></p>
         </div>
     </div>
 
@@ -178,8 +189,11 @@
         <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
         <!-- share on js bundle -->
         <script src="https://cdn.jsdelivr.net/npm/shareon@2/dist/shareon.iife.js" defer init></script>
+        <!-- socketio js bundle -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 
-        <script type="text/javascript">
+        <!-- js script -->
+        <script type="text/javascript" charset="utf-8">
           $(document).ready(function(){
              $('#state').change(function(){
                  var stateid = $(this).val()
@@ -313,7 +327,16 @@
                      }
                   })
               })
-              
+
+              // socketio script
+              var namespace = '/notify';
+              var socket = io.connect(location.protocol + "//" + location.host + namespace, {reconnection:false});
+              socket.on('response', function(msg){
+                console.log(msg.meta);
+                if(msg){
+                  $('#notif').html(msg)
+                }
+              });
              
               //ajax for comment
             // {#$('#btn2').click(function(){
@@ -378,8 +401,9 @@
             function share(){
               document.getElementById('shareon').style.display='block';
               document.getElementById('share').style.display='none';
-
             }
+
+
       </script>
     </footer>
   </div>

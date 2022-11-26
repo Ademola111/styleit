@@ -5,12 +5,14 @@ from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail, Message
+from flask_socketio import SocketIO
 # from flask_share import Share
 
 
 #instantiate an object of Flask app
 app = Flask(__name__, instance_relative_config=True)
 csrf=CSRFProtect(app)
+
 
 #Load the config file
 from styleitapp import config
@@ -21,6 +23,7 @@ app.config.from_pyfile('config.py', silent=False) #this is the config in instanc
 db=SQLAlchemy(app)
 migrate=Migrate(app,db)
 mail=Mail(app)
+socketio = SocketIO(app)
 # share = Share(app)
 
 

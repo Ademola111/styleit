@@ -8,12 +8,8 @@ Styleit|Login
 <div class="container-fluid">
     <div class="container">
         <div class="row">
-            <div class="col-md-8">
-                <div class="row">
-                    <div class="col-md-12 ms-3 mt-3 mb-3">
-                        <img src="{{url_for('static', filename='images/designer3.png')}}" class="img-fluid me-5" alt="designer pic" height="640" width="640">
-                    </div>
-                </div>
+            <div class="col-md-8 text-center mt-3 mb-3">
+                <img src="{{url_for('static', filename='images/designer3.png')}}" class="me-5 img-fluid" alt="designer pic"  width="320">
             </div>
             <div class="col-md-4 mt-3 mb-3">
                 <div class="row">
@@ -24,7 +20,7 @@ Styleit|Login
                         {% endfor %}
                         {% endwith %}
                         <p>{{user}}</p>
-                        <form action="{{url_for('designerLogin')}}" method="POST">
+                        <form action="{{url_for('designerLogin')}}" method="POST" class="generalface2">
                             {{logins.csrf_token()}}
                             <div>
                                 {{logins.email.label}}
@@ -38,7 +34,7 @@ Styleit|Login
                                 {% if logins.pwd.errors %}
                                 <span class='text-danger'>{{logins.pwd.errors}}</span>
                                 {% endif %}
-                                {{logins.pwd (class_="form-control mt-3 mb-3", placeholder="password")}}
+                                {{logins.pwd (class_="form-control mt-3 mb-3", placeholder="Password")}}
                             </div>
                             <div>
                                 {{logins.loginbtn (class_="form-control btn btn-outline-danger mt-3 mb-2", id="btn2")}}

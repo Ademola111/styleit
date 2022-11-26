@@ -4,8 +4,9 @@ from sqlalchemy import desc
 from flask import render_template, request, redirect, flash, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 # from flask_share import Share
+from flask_socketio import join_room, leave_room, emit
 
-from styleitapp import app, db
+from styleitapp import app, db, socketio
 from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
@@ -312,6 +313,22 @@ def resent_confirmation():
         return redirect(url_for('unconfirmed')) 
     return redirect('/unconfirmed')
 
+"""notificatiion"""
+@socketio.on('connect', namespace='/notify')
+def connect_handler():
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    cus=Customer.query.get(loggedin)
+    if loggedin:
+        user_room = cus.cust_id
+        join_room(user_room)
+        emit('response', {'meta':'WS connected'})
+    elif desiloggedin:
+        user_room = des.desi_id
+        join_room(user_room)
+        emit('response', {'meta':'WS connected'})
+    
 
 
 # Customers sections

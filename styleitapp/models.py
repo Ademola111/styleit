@@ -15,6 +15,8 @@ class Posting(db.Model):
     # likes = db.relationship('Like', backref='posting', lazy='dynamic')
     likes = db.relationship('Like', back_populates='posts')
     sharepostobj = db.relationship('Share', back_populates='postshareobj')
+    postnotifyobj = db.relationship('Notification', back_populates='notifypostobj')
+    
     # @property
     # def rank(self):
     #     return _get_rank_for_post_count(self.ranks.count)
@@ -46,6 +48,8 @@ class Comment(db.Model):
     compostobj = db.relationship('Posting', back_populates='postcomobj')
     comcustobj = db.relationship('Customer', back_populates='custcomobj')
     comdesiobj = db.relationship('Designer', back_populates='desicomobj')
+    comnotifyobj = db.relationship('Notification', back_populates='notifycomobj')
+    
     
     replies = db.relationship(
         'Comment', backref=db.backref('parent', remote_side=[com_id]),
@@ -86,6 +90,8 @@ class Customer(db.Model):
     likecustobj = db.relationship('Like', back_populates='custlikesobj')
     sharecustobj = db.relationship('Share', back_populates='custshareobj')
     bacustobj = db.relationship('Bookappointment', back_populates='custbaobj')
+    custnotifyobj = db.relationship('Notification', back_populates='notifycustobj')
+    
 
 class State(db.Model): 
     state_id = db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -134,6 +140,8 @@ class Designer(db.Model):
     sharedesiobj = db.relationship('Share', back_populates='desishareobj')
     badesiobj = db.relationship('Bookappointment', back_populates='desibaobj')
     paymentdesiobj=db.relationship('Payment', back_populates='desipaymentobj')
+    desinotifyobj = db.relationship('Notification', back_populates='notifydesiobj')
+    
 
 class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -149,6 +157,8 @@ class Subscription(db.Model):
     #relationship
     subdesiobj = db.relationship('Designer', back_populates='desisubobj')
     paysubobj=db.relationship('Payment', back_populates='subpaymentobj')
+    subnotifyobj = db.relationship('Notification', back_populates='notifysubobj')
+    
 
 
 class Payment(db.Model):
@@ -163,6 +173,8 @@ class Payment(db.Model):
     #relationship
     desipaymentobj=db.relationship('Designer', back_populates='paymentdesiobj')
     subpaymentobj=db.relationship('Subscription', back_populates='paysubobj')
+    paynotifyobj = db.relationship('Notification', back_populates='notifypayobj')
+    
 
 
 class Admin (db.Model):
@@ -188,6 +200,8 @@ class Like(db.Model):
     desilikesobj = db.relationship('Designer', back_populates='likedesiobj')
     custlikesobj = db.relationship('Customer', back_populates='likecustobj')
     posts = db.relationship('Posting', back_populates='likes')
+    likenotifyobj = db.relationship('Notification', back_populates='notifylikeobj')
+    
 
 class Share(db.Model):
     share_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -201,6 +215,8 @@ class Share(db.Model):
     desishareobj = db.relationship('Designer', back_populates='sharedesiobj')
     custshareobj = db.relationship('Customer', back_populates='sharecustobj')
     postshareobj = db.relationship('Posting', back_populates='sharepostobj')
+    sharenotifyobj = db.relationship('Notification', back_populates='notifyshareobj')
+    
 
 class Bookappointment(db.Model):
     ba_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -217,3 +233,39 @@ class Bookappointment(db.Model):
     #relationship
     desibaobj = db.relationship('Designer', back_populates='badesiobj')
     custbaobj = db.relationship('Customer', back_populates='bacustobj')
+    banotifyobj = db.relationship('Notification', back_populates='notifybaobj')
+    
+
+
+
+class Notification(db.Model):
+    notify_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    notify_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    notify_read = db.Column(db.Enum('read', 'unread'), nullable=False, default='unread')
+    # foreignKey
+    notify_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    notify_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    notify_postid = db.Column(db.Integer(), db.ForeignKey('posting.post_id'))
+    notify_likeid = db.Column(db.Integer(), db.ForeignKey('like.like_id'))
+    notify_comid = db.Column(db.Integer(), db.ForeignKey('comment.com_id'))
+    notify_shareid = db.Column(db.Integer(), db.ForeignKey('share.share_id'))
+    notify_baid = db.Column(db.Integer(), db.ForeignKey('bookappointment.ba_id'))
+    notify_subid = db.Column(db.Integer(), db.ForeignKey('subscription.sub_id'))
+    notify_paymentid = db.Column(db.Integer(), db.ForeignKey('payment.payment_id'))
+    
+    # relationship
+    notifydesiobj = db.relationship('Designer', back_populates='desinotifyobj')
+    notifycustobj = db.relationship('Customer', back_populates='custnotifyobj')
+    notifypostobj = db.relationship('Posting', back_populates='postnotifyobj')
+    notifylikeobj = db.relationship('Like', back_populates='likenotifyobj')
+    notifycomobj = db.relationship('Comment', back_populates='comnotifyobj')
+    notifyshareobj = db.relationship('Share', back_populates='sharenotifyobj')
+    notifybaobj = db.relationship('Bookappointment', back_populates='banotifyobj')
+    notifysubobj = db.relationship('Subscription', back_populates='subnotifyobj')
+    notifypayobj = db.relationship('Payment', back_populates='paynotifyobj')
+    
+    
+    
+    
+    
+    
