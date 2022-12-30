@@ -1,4 +1,4 @@
-import datetime
+import datetime, humanize
 from styleitapp import db
 
 class Posting(db.Model):
@@ -92,6 +92,21 @@ class Customer(db.Model):
     bacustobj = db.relationship('Bookappointment', back_populates='custbaobj')
     custnotifyobj = db.relationship('Notification', back_populates='notifycustobj')
     
+    # """ getting notification for designers"""
+    # def get_unread_notify(self, reverse='unread'):
+    #     """getting unread notification with title, time and mark-as-read"""
+    #     notifs =[]
+    #     unread_notify=Notification.query.filter_by(notify_custid=self, notify_read='unread')
+    #     for notif in unread_notify:
+    #         notifs.append({
+    #             'title':notif.notifypostobj.post_title,
+    #             'notify_date':humanize.naturaltime(datetime.now()-notif.notify_date),
+    #             'notify_read':url_for('profile.mark_notification_as_read', notify_id=notif.notify_id)
+    #         })
+    #     if reverse:
+    #         return list(reversed(notifs))
+    #     else:
+    #         return notifs
 
 class State(db.Model): 
     state_id = db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -141,6 +156,22 @@ class Designer(db.Model):
     badesiobj = db.relationship('Bookappointment', back_populates='desibaobj')
     paymentdesiobj=db.relationship('Payment', back_populates='desipaymentobj')
     desinotifyobj = db.relationship('Notification', back_populates='notifydesiobj')
+    
+    # """ getting notification for designers"""
+    # def get_unread_notify(self, reverse='unread'):
+    #     """getting unread notification with title, time and mark-as-read"""
+    #     notifs =[]
+    #     unread_notify=Notification.query.filter_by(notify_desiid=self, notify_read='unread')
+    #     for notif in unread_notify:
+    #         notifs.append({
+    #             'title':notif.notifypostobj.post_title,
+    #             'notify_date':humanize.naturaltime(datetime.now()-notif.notify_date),
+    #             'notify_read':url_for('profile.mark_notification_as_read', notify_id=notif.notify_id)
+    #         })
+    #     if reverse:
+    #         return list(reversed(notifs))
+    #     else:
+    #         return notifs
     
 
 class Subscription(db.Model):
@@ -196,11 +227,14 @@ class Like(db.Model):
     like_postid = db.Column(db.Integer(), db.ForeignKey('posting.post_id'))
     like_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     like_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    
+    
     #relationship
     desilikesobj = db.relationship('Designer', back_populates='likedesiobj')
     custlikesobj = db.relationship('Customer', back_populates='likecustobj')
     posts = db.relationship('Posting', back_populates='likes')
     likenotifyobj = db.relationship('Notification', back_populates='notifylikeobj')
+    
     
 
 class Share(db.Model):
@@ -264,8 +298,16 @@ class Notification(db.Model):
     notifysubobj = db.relationship('Subscription', back_populates='subnotifyobj')
     notifypayobj = db.relationship('Payment', back_populates='paynotifyobj')
     
+    # def create_designer_notify(design, action):
+    #     noti= Notification(notify_desiid=design,
+    #                        notify_read=action,
+    #                        notify_date=datetime.now()
+    #                        ) 
+    #     saved = save_to_db(noti, 'Designer notification saved')
     
+    # def __repr__(self):
+    #     return '<Notification {}>'.format(self.notify_read)
     
-    
-    
-    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()

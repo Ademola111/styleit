@@ -10,8 +10,9 @@ Styleit | Home
     <div class="row">
         <div class="offset-md-2 col-md-8 offset-md-2 mt-5 mb-3" id="searchdiv">
         <h4 class="text-center mt-4"></h4>
-        <form class="d-flex text-center" id="search">
-            <input class="form-control me-2" type="search" placeholder="Looking for professional designer? search here" aria-label="Search">
+        <form class="d-flex text-center" id="search" method="POST" action="{{url_for('desisearch')}}">
+			<input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <input class="form-control me-2" type="search" name="search" placeholder="Looking for professional designer? search here" aria-label="Search">
             <button class="btn btn-outline-danger" type="submit">Search</button>
         </form>
         </div>

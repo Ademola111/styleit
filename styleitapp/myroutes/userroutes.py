@@ -1,13 +1,13 @@
 import re, os, math, random, json, requests
 from datetime import datetime, date, timedelta
-from sqlalchemy import desc
+from sqlalchemy import desc, func, extract
 from flask import render_template, request, redirect, flash, session, url_for, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 # from flask_share import Share
-from flask_socketio import join_room, leave_room, emit
+from flask_socketio import emit, disconnect
 
-from styleitapp import app, db, socketio
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment
+from styleitapp import app, db
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -28,8 +28,9 @@ def home():
         return redirect('/designer/profile/')
     elif loggedin:
         return redirect('/customer/profile/')
-    else:
+    else:     
         return render_template('user/index.html', cus=cus, des=des)
+
 
 """login"""
 @app.route('/login/')
@@ -63,11 +64,27 @@ def trending():
         return redirect('/')
 
     if request.method == "GET":
+        today = date.today()
         cus=Customer.query.get(loggedin)
-        des=Designer.query.get(desiloggedin)        
-        pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid).order_by(desc(Posting.post_date)).limit(1000).all()
+        des=Designer.query.get(desiloggedin)
+        """the main query for the production"""
+        subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
+        subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
+        subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+
+        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today)).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
+        
+        # subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id)).group_by(Like.like_postid).subquery()
+        # subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id)).group_by(Comment.com_postid).subquery()
+        # subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id)).group_by(Share.share_postid).subquery()
+
+        # pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.count), desc(subq_comments.c.count), desc(subq_shares.c.count), desc(Posting.post_date)).limit(1000).all()
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk)
+        if desiloggedin:
+            noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
+        elif loggedin:
+            noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk, noti=noti)
 
 
 """ post detail session """
@@ -88,7 +105,143 @@ def post(id):
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
         for i in lk:
             print(i)
-        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn, share=share, i=i)
+        if desiloggedin:
+            noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
+        elif loggedin:
+            noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn, share=share, i=i, noti=noti)
+
+
+"""post notification"""
+@app.route('/posti/<id>/')
+def notepost(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus = Customer.query.get(loggedin)
+    if desiloggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_postid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{id}/')
+    elif loggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_postid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{id}/')
+        
+
+"""Like notification"""      
+@app.route('/postlike/<id>/')
+def notelike(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus = Customer.query.get(loggedin)
+    if desiloggedin:
+        lk=Like.query.filter(Like.like_id==id, Like.like_desiid==des.desi_id).first()
+        posid=lk.like_postid
+        notif = db.session.query(Notification).filter(Notification.notify_likeid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+    elif loggedin:
+        lk=Like.query.filter(Like.like_id==id, Like.like_custid==cus.cust_id).first()
+        posid=lk.like_postid
+        notif = db.session.query(Notification).filter(Notification.notify_likeid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+
+
+"""Reply notification"""
+@app.route('/postreply/<id>/')
+def notereply(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus = Customer.query.get(loggedin)
+    if desiloggedin:
+        lk=Comment.query.filter(Comment.com_id==id, Comment.com_desiid==des.desi_id).first()
+        posid=lk.com_postid
+        notif = db.session.query(Notification).filter(Notification.notify_comid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+    elif loggedin:
+        lk=Comment.query.filter(Comment.com_id==id, Comment.com_custid==cus.cust_id).first()
+        posid=lk.com_postid
+        notif = db.session.query(Notification).filter(Notification.notify_comid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+
+"""share notification"""
+@app.route('/postshare/<id>/')
+def noteshare(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus = Customer.query.get(loggedin)
+    if desiloggedin:
+        lk=Share.query.filter(Share.share_id==id, Share.share_desiid==des.desi_id).first()
+        posid=lk.share_postid
+        notif = db.session.query(Notification).filter(Notification.notify_shareid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+    elif loggedin:
+        lk=Share.query.filter(Share.share_id==id, Share.share_custid==cus.cust_id).first()
+        posid=lk.share_postid
+        notif = db.session.query(Notification).filter(Notification.notify_shareid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect(f'/post/{posid}/')
+
+
+"""bookappointment notification"""
+@app.route('/bookapp/<id>/')
+def notebookapp(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus = Customer.query.get(loggedin)
+    if loggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_baid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect('/customer/profile/')
+    elif desiloggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_baid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect('/designer/profile/')
+    
+
+
+
+"""subscription notification"""
+@app.route('/notesub/<id>/')
+def notesub(id):
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_subid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect('/designer/subplan/')
+
+
+"""payment notification"""
+@app.route('/notepay/<id>/')
+def notepay(id):
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_paymentid==id, Notification.notify_desiid==des.desi_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect('/designer/subplan/')
 
 
 """All Designers """
@@ -104,8 +257,12 @@ def designers():
         cus=Customer.query.get(loggedin)
         page = request.args.get('page', 1, type=int)
         design=Designer.query.paginate(page=page, per_page=rows_page)
-        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)        
-        return render_template('designer/alldesigners.html', design=design, des=des, cus=cus)
+        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)
+        if desiloggedin:
+            noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
+        elif loggedin:
+            noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()       
+        return render_template('designer/alldesigners.html', design=design, des=des, cus=cus, noti=noti)
 
 """Designers Details """
 @app.route('/designer/<id>/', methods=['GET', 'POST'])
@@ -137,13 +294,17 @@ def comment(postid):
             des=Designer.query.get(desiloggedin)
             com=request.form.get('comment')
             m=Comment(com_body=com, com_postid=postid, com_desiid=des.desi_id)
+            d=Notification(notify_desiid=des.desi_id, notify_postid=postid) 
             m.save()
+            d.save()
             return redirect(f'/post/{postid}/')
         elif loggedin:
             cus = Customer.query.get(loggedin)
             com=request.form.get('comment')
             k=Comment(com_body=com, com_postid=postid, com_custid=cus.cust_id)
+            d=Notification(notify_custid=cus.cust_id, notify_postid=postid) 
             k.save()
+            d.save()
             return redirect(f'/post/{postid}/')
 
 """Reply Session """
@@ -162,6 +323,8 @@ def reply(postid, commentid):
             des=Designer.query.get(desiloggedin)
             repl=request.form.get('comrep')
             m=Comment(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid)
+            d=Notification(notify_desiid=des.desi_id, notify_comid=commentid ) 
+            d.save()
             m.save()
             return redirect(f'/post/{postid}/')
 
@@ -169,6 +332,8 @@ def reply(postid, commentid):
             cus = Customer.query.get(loggedin)
             repl=request.form.get('comrep')
             k=Comment(com_body=repl, com_postid=postid, com_custid=cus.cust_id, parent_id=commentid)
+            d=Notification(notify_custid=cus.cust_id, notify_comid=commentid ) 
+            d.save()
             k.save()
             return redirect(f'/post/{postid}/')
 
@@ -188,6 +353,9 @@ def like(post_id):
             liking=Like(like_desiid=desiloggedin, like_postid=post_id)
             db.session.add(liking)
             db.session.commit()
+            d=Notification(notify_desiid=desiloggedin, notify_likeid=liking.like_id) 
+            db.session.add(d)
+            db.session.commit()
         return redirect(f'/post/{post_id}/')
         
     elif loggedin:
@@ -200,6 +368,9 @@ def like(post_id):
         else:
             liking=Like(like_custid=loggedin, like_postid=post_id)
             db.session.add(liking)
+            db.session.commit()
+            d=Notification(notify_custid=loggedin, notify_likeid=liking.like_id) 
+            db.session.add(d)
             db.session.commit()
         return redirect(f'/post/{post_id}/')
 
@@ -216,6 +387,9 @@ def share():
             sh=Share(share_webname=name, share_postid=postid, share_desiid=user)
             db.session.add(sh)
             db.session.commit()
+            d=Notification(notify_desiid=user, notify_shareid=sh.share_id) 
+            db.session.add(d)
+            db.session.commit()
             # return redirect(f'/post/{postid}')
             return ('', 204)
     elif loggedin:
@@ -225,6 +399,9 @@ def share():
         if name !="" and postid !="" and user !="":
             sh=Share(share_webname=name, share_postid=postid, share_custid=user)
             db.session.add(sh)
+            db.session.commit()
+            d=Notification(notify_custid=user, notify_shareid=sh.share_id) 
+            db.session.add(d)
             db.session.commit()
             # return redirect(f'/post/{postid}')
             return ('', 204)
@@ -312,23 +489,6 @@ def resent_confirmation():
         flash('A new confirmation mail has been sent.', 'success')
         return redirect(url_for('unconfirmed')) 
     return redirect('/unconfirmed')
-
-"""notificatiion"""
-@socketio.on('connect', namespace='/notify')
-def connect_handler():
-    loggedin = session.get('customer')
-    desiloggedin = session.get('designer')
-    des=Designer.query.get(desiloggedin)
-    cus=Customer.query.get(loggedin)
-    if loggedin:
-        user_room = cus.cust_id
-        join_room(user_room)
-        emit('response', {'meta':'WS connected'})
-    elif desiloggedin:
-        user_room = des.desi_id
-        join_room(user_room)
-        emit('response', {'meta':'WS connected'})
-    
 
 
 # Customers sections
@@ -492,7 +652,8 @@ def customerProfile():
             page=request.args.get('page', 1, type=int)
             mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
             getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
-            return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk)
+            noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+            return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk, noti=noti)
     
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -531,12 +692,13 @@ def customerlogout():
 def book_appointment():
     loggedin = session.get('customer')
     if loggedin==None:
-        return redirect('/')
+        return redirect('/user/customer/signup/')
 
     if request.method == 'GET':
         cus=Customer.query.get(loggedin)
         apnt = Subscription.query.filter(Subscription.sub_status=='active').all()
-        return render_template('user/bookappointment.html', apnt=apnt, cus=cus)
+        noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+        return render_template('user/bookappointment.html', apnt=apnt, cus=cus, noti=noti)
 
     if request.method == 'POST':
         getfor = request.form
@@ -551,6 +713,12 @@ def book_appointment():
         else:
             bookapp=Bookappointment(ba_desiid=dsignername, ba_custid=loggedin, ba_bookingDate=bdate, ba_bookingTime=btime, ba_collectionDate=cdate, ba_collectionTime=ctime)
             db.session.add(bookapp)
+            db.session.commit()
+            d=Notification(notify_custid=loggedin, notify_baid=bookapp.ba_id)
+            db.session.add(d)
+            db.session.commit()
+            dd=Notification(notify_desiid=dsignername, notify_baid=bookapp.ba_id)
+            db.session.add(dd)
             db.session.commit()
         return redirect('/customer/profile/')
 
@@ -703,7 +871,8 @@ def designerProfile():
             pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
             getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
             subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
-            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt)
+            noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt, noti=noti)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -780,7 +949,8 @@ def posting():
     if request.method == 'GET':
         pst=Posting.query.filter(Posting.post_id==desiloggedin).all()
         des=Designer.query.get(desiloggedin)
-        return render_template('designer/post.html', des=des, pst=pst)
+        noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+        return render_template('designer/post.html', des=des, pst=pst, noti=noti)
 
     if request.method == 'POST':
         des=Designer.query.get(desiloggedin)
@@ -812,7 +982,8 @@ def image():
 
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        return render_template('designer/addimage.html', des=des)
+        noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+        return render_template('designer/addimage.html', des=des, noti=noti)
 
     if request.method == 'POST':
         imgname=request.form.get('name')
@@ -880,7 +1051,8 @@ def subplan():
         des=Designer.query.get(desiloggedin)
         page=request.args.get('page', 1, type=int)
         sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
-        return render_template('designer/subscribeplans.html', des=des, sublist=sublist)
+        noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+        return render_template('designer/subscribeplans.html', des=des, sublist=sublist, noti=noti)
 
 
 """subscription"""
@@ -906,8 +1078,14 @@ def subscribe():
             sub = Subscription(sub_plan=planb, sub_ref=refno, sub_desiid=desiloggedin, sub_startdate=0, sub_enddate=0)
             db.session.add(sub)
             db.session.commit()
+            d=Notification(notify_desiid=desiloggedin, notify_subid=sub.sub_id) 
+            db.session.add(d)
+            db.session.commit()
             pay = Payment(payment_transNo=refno, payment_amount=planb, payment_desiid=desiloggedin, payment_subid=sub.sub_id)
             db.session.add(pay)
+            db.session.commit()
+            d=Notification(notify_desiid=desiloggedin, notify_paymentid=sub.sub_id) 
+            db.session.add(d)
             db.session.commit()
             return redirect('/payment/')
 
@@ -923,7 +1101,8 @@ def payment():
     refno = session.get('refno')
     pymt=Payment.query.filter_by(payment_transNo=refno).first()
     if request.method =='GET':
-        return render_template('designer/confirmpayment.html', des=des, pymt=pymt)
+        noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+        return render_template('designer/confirmpayment.html', des=des, pymt=pymt, noti=noti)
     else:
         data = {"email":des.desi_email,"amount":pymt.payment_amount*100, "reference":pymt.payment_transNo}
 
@@ -963,6 +1142,7 @@ def paystack():
         db.session.commit()
         flash("Payment Failed", "danger")
         return redirect('/designer/profile/')
+
 
 @app.route('/activate/', methods=['GET', 'POST'])
 def activating():
@@ -1037,4 +1217,34 @@ def page_not_found(error):
     else:
         des=Designer.query.get(desiloggedin)
         cus=Customer.query.get(loggedin)
-        return render_template('user/error.html', des=des, cus=cus, error=error),404
+        if desiloggedin:
+            noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+        elif loggedin:
+            noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+        return render_template('user/error.html', des=des, cus=cus,noti=noti, error=error),404
+
+
+"""Search section"""
+@app.route('/postsearch/', methods=['POST'])
+def search():
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus=Customer.query.get(loggedin)
+    word=request.form.get('search')
+    page = request.args.get('page', 1, type=int)
+    wordsearch=Posting.query.filter(Posting.post_title.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
+    if desiloggedin:
+        noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
+    elif loggedin:
+        noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
+    return render_template('user/search.html', wordsearch=wordsearch, word=word, cus=cus, des=des, noti=noti)
+
+
+"""Search section"""
+@app.route('/search/', methods=['POST'])
+def desisearch():
+    word=request.form.get('search')
+    page = request.args.get('page', 1, type=int)
+    wordsearch=Designer.query.filter(Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Designer.desi_id)).paginate(page=page, per_page=rows_per_page)
+    return render_template('user/search2.html', wordsearch=wordsearch, word=word)

@@ -158,3 +158,13 @@ msg.sender=sender
 msg.body = "Your activation code is" + fn
 msg.recipients = recipient
 mail.send(msg)
+
+
+
+from sqlalchemy import func
+
+subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id)).group_by(Like.like_postid).subquery()
+subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id)).group_by(Comment.com_postid).subquery()
+subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id)).group_by(Share.share_postid).subquery()
+
+pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid, Posting.post_date==today).order_by(desc(subq_likes.c.count_1), desc(subq_comments.c.count_1), desc(subq_shares.c.count_1), desc(Posting.post_date)).limit(1000).all()

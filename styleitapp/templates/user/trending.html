@@ -13,17 +13,21 @@ Styleit | Trending
                 <div class="row">
                     <div class="col-12 mt-3 mb-3">
                         {% for y in pstn %}
-                        <div class="col mt-3 mb-3" id="divdisplay">
+                        <div class="col" id="divdisplay">
                             <a href="/post/{{y.post_id}}">
                             <span class="p-3">
                                 <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
                                 
                                 <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
                                 <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
-                            </span><br>
+                            </span>
+                            <div class="text-justify">
+                                <span class="p-3 text-justify"><b>{{y.post_title}}</b></span>
+                            </div>
+                            <div class="p-3 text-justify">
+                                <span class="text-justify">{{y.post_body| truncate(250)}}</span>
+                            </div>
                             
-                            <span class="m-3 p-3 text-justify"><b>{{y.post_title}}</b></spam><br>
-                            <span class="m-3 p-3 text-justify">{{y.post_body| truncate(50)}}</span><br>
                             </a>
                             
                             <!-- numbers of likes  -->

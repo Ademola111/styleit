@@ -6,13 +6,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail, Message
 from flask_socketio import SocketIO
+from threading import Lock
 # from flask_share import Share
-
+# async_mode = None
 
 #instantiate an object of Flask app
 app = Flask(__name__, instance_relative_config=True)
 csrf=CSRFProtect(app)
-
 
 #Load the config file
 from styleitapp import config
@@ -23,7 +23,11 @@ app.config.from_pyfile('config.py', silent=False) #this is the config in instanc
 db=SQLAlchemy(app)
 migrate=Migrate(app,db)
 mail=Mail(app)
-socketio = SocketIO(app)
+sio = SocketIO(app, manage_session=True)
+# sio = SocketIO(app, async_mode=async_mode)
+# thread = None
+# thread_lock = Lock()
+
 # share = Share(app)
 
 

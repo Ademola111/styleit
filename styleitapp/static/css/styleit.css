@@ -263,3 +263,16 @@ div a{
 div a:hover{
   color:black !important;
 }
+
+.supnoti{
+  font-size:8px;
+  vertical-align: middle; 
+  background-color: rgb(255, 0, 0); 
+  position:relative; 
+  left:-5px;
+  color:white;
+  padding:2px;
+  border-radius: 50%;
+  
+}
+
