@@ -45,3 +45,8 @@ class DesignerLoginForm(FlaskForm):
     email = StringField("Your Email: ", validators=[DataRequired(), Email()])
     pwd = PasswordField("Enter Password")
     loginbtn = SubmitField('Login')
+
+class AdminLoginForm(FlaskForm):
+    email = StringField("Your Email: ", validators=[DataRequired(), Email()])
+    pwd = PasswordField("Enter Password")
+    loginbtn = SubmitField('Login')

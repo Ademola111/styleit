@@ -72,13 +72,12 @@ def trending():
         subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
         subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
 
-        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today)).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
-        
-        # subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id)).group_by(Like.like_postid).subquery()
-        # subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id)).group_by(Comment.com_postid).subquery()
-        # subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id)).group_by(Share.share_postid).subquery()
+        """query post with daily rank"""
+        # pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today), Posting.post_suspend=='unsuspended').order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
 
-        # pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.count), desc(subq_comments.c.count), desc(subq_shares.c.count), desc(Posting.post_date)).limit(1000).all()
+        """query post without daily rank"""
+        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
+        
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
         if desiloggedin:
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
@@ -1248,3 +1247,24 @@ def desisearch():
     page = request.args.get('page', 1, type=int)
     wordsearch=Designer.query.filter(Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Designer.desi_id)).paginate(page=page, per_page=rows_per_page)
     return render_template('user/search2.html', wordsearch=wordsearch, word=word)
+
+"""delete section"""
+@app.route('/trashit/', methods=['GET', 'POST'])
+def trashit():
+    desiloggedin = session.get('designer')
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method=='POST':
+        postid = request.form.get('postid')
+        print(postid)
+        if postid =="":
+            flash('file error')
+            return redirect(f'/post/{postid}/')
+        else:
+            if postid !="":
+                posi = Posting.query.filter_by(post_id=postid).first()
+                posi.post_delete='deleted'
+                db.session.commit()
+                msg='successfully deleted'
+                return jsonify(msg)

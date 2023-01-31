@@ -168,3 +168,7 @@ subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id))
 subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id)).group_by(Share.share_postid).subquery()
 
 pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid, Posting.post_date==today).order_by(desc(subq_likes.c.count_1), desc(subq_comments.c.count_1), desc(subq_shares.c.count_1), desc(Posting.post_date)).limit(1000).all()
+
+
+tade.ogunlade@gmail.com
+STYLEIT.tadeoguntade

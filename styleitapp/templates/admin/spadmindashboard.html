@@ -1,0 +1,31 @@
+{% extends 'admin/base.html' %}
+{% block title %}
+Styleit|Profile
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <span>{% with m = get_flashed_messages() %}
+            {% for i in m %}
+            <span class="fw-4">{{i}}</span>
+            {% endfor %}
+            {% endwith %}</span>
+        <div class="col-md-1" id="tog">
+            <span id="profiletoggler" data-bs-toggle="collapse" data-bs-target="#profilewhole" class="toggler-icon" aria-expanded="false" ><img src="/static/images/profile/superadmin/{{spa.spadmin_pic}}" alt="{{spa.spadmin_fname}}" width="50px" class="img rounded-circle p-1"></span>
+        </div>
+        
+    </div>
+        <div class="row">
+            <div class="col-md-3 collapse generalface2" id="profilewhole">
+        
+            </div>
+            
+            <div class="col-md-9 mt-3 mb-3 generalface2" id="adminprofile">
+                
+                
+            </div>
+                
+        </div>
+</div>
+{% endblock %}

@@ -26,22 +26,22 @@ Styleit | All designers
                     {% endfor %}
                     <!-- pagination links -->
                     <div class="text-center mt-3">
-                        <a href="{{url_for('admin_designers', page=design.prev_num)}}" class="btn btn-outline-primary {% if design.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <a href="{{url_for('designers', page=design.prev_num)}}" class="btn btn-outline-primary {% if design.page ==  1 %} disabled {% endif %}">&laquo;</a>
                         <!-- looping through the number of pages to display a link for each -->
                         {% for page_num in design.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
 
                         {% if page_num %}
                         <!-- check for active page and set the link to active -->
                             {% if design.page == page_num %}
-                            <a href="{{url_for('admin_designers', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            <a href="{{url_for('designers', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
                             {% else %}
-                            <a href="{{url_for('admin_designers', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            <a href="{{url_for('designers', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
                             {% endif %}
                         {% else %}
                         ...
                         {% endif %}
                         {% endfor %}
-                        <a href="{{url_for('admin_designers', page=design.next_num)}}" class="btn btn-outline-primary {% if design.page ==  design.pages %} disabled {% endif %}">&raquo;</a>
+                        <a href="{{url_for('designers', page=design.next_num)}}" class="btn btn-outline-primary {% if design.page ==  design.pages %} disabled {% endif %}">&raquo;</a>
                         <p class="text-right mt-3">Showing Page {{design.page}} of {{design.pages}}</p>
                     </div>
                     <!-- end pagination -->

@@ -441,69 +441,22 @@
                      }
                   })
               })
-
-              //{#$("#com1").click(function(){
-              //   var com1=$(this).data('value');
-              //   var csrf="{{ csrf_token() }}";
-              //   var data1={"com1":com1, "csrf":csrf};
-              //   $.ajax({
-              //     url:'/notification/postupdate/',
-              //     data:data1,
-              //     type:'POST',
-              //     success:function(data){
-              //       console.log(data);
-              //     }
-              //   })
-              // })#}
-              
               
 
-              // socketio script
-              // {#const sio = io('http://127.0.0.1:5000');
-              // sio.on('connect', () => {
-              //   console.log(sid, 'connected');
-              // });
-
-              // sio.on("disconnect", () => {
-              //   console.log(sid, 'disconnected');
-              // });
-
-              // socket.on('notification', function(data) {
-              //   console.log(data.msg);
-              //   if(data.msg){
-              //     $('#notif').html(data.msg);
-              //   };
-              // }); #}
-
-              
-             
-              //ajax for comment
-            // {#$('#btn2').click(function(){
-            //   var postid=$('#postid').val()
-            //   var comtid=$('#comment').val()
-            //   var csrf="{{csrf_token()}}"
-
-            //   if(postid !="" && comment !=""){
-            //     data3=$('#form2').serialize()
-            //     alert(data3)
-
-            //     $.ajax({
-            //       url:"{{url_for('comment')}}",
-            //       data:data3,
-            //       type:"POST",
-            //       success:function(msg){
-            //         console.log(msg);
-            //         $('#comment').val("");
-            //         location.reload(true)
-            //       },
-            //       error:function(err){
-            //         console.log(err)
-            //       },
-            //     })
-            //   }else{
-            //     alert("one or more field is empty")
-            //   }
-            // })#}
+              $('#trashit').click(function(){
+                var potid = $('#potid').val();
+                var csrf = "{{ csrf_token() }}";
+                data3send = {"postid":potid, "csrf_token":csrf}
+                $.ajax({
+                  url:'/trashit/',
+                  data:data3send,
+                  type:'POST',
+                  success:function(msg){
+                    console.log(msg);
+                    location.reload(true);
+                  }
+                });
+               }); 
 
           })
 
@@ -537,6 +490,22 @@
             function reply(id){
               document.getElementById(id).style.display='block';
             }
+
+            // designer delete display
+            var dots=document.getElementById('3dot');
+            var trashi=document.getElementById('trashi');
+            var trashit=document.getElementById('trashit')
+            trashi.addEventListener('click', function(){
+              if(dots.style.display==='none'){
+                dots.style.display='block';
+              }else{
+                if(dots.style.display==='block'){
+                  dots.style.display='none';
+                }
+              }
+            })
+            
+
             
             function share(){
               document.getElementById('shareon').style.display='block';

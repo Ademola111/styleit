@@ -1,0 +1,201 @@
+{% extends 'admin/base.html' %}
+{% block title %}
+Styleit|Profile
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <span>{% with m = get_flashed_messages() %}
+            {% for i in m %}
+            <span class="fw-4">{{i}}</span>
+            {% endfor %}
+            {% endwith %}
+        </span>        
+    </div>
+
+    <div class="row">
+        <div class="col-md-2 mt-3 mb-3 me-0.3 generalface2 divdisplay">
+            <h4 class="mt-3">{{prof.admin_fname}}'s Profile</h4>
+            <p class="text-center"><img src="/images/profile/admin/{{prof.admin_id}}" class="img img-fluid"></p>
+            <p><span class="me-1" style="font-size:15px">{{prof.admin_fname}}</span><span style="font-size:15px">{{prof.admin_lname}}</span></p>
+            <p><span style="font-size:15px">{{prof.admin_gender}}</span></p>
+            <p><span style="font-size:15px">{{prof.admin_phone}}</span></p>
+            <p><span style="font-size:15px">{{prof.admin_email}}</span></p>
+            {% if prof.admin_id == adm.admin_id %}
+            <p><span style="font-size:15px">Post: </span><span style="font-size:15px">Admin {{prof.admin_id}}</span></p>
+            {% endif %}
+            <div class="row">
+                <div class="col-md-12">
+                    <p id="alltrend" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">All Trend</span></p>
+                    <p id="allappoint" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Appointment</span></p>
+                    <p id="allpayment" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Payment</span></p>
+                    <p id="allsub" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Subscription</span></p>
+
+                </div>
+            </div>
+        </div>
+        
+        <!--All trend tab-->
+        <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="tred">
+            <div class="row">                
+                <div class="col-md-12">
+                    {% for y in pstn.items %}
+                    <div class="col-md-12 mt-3 mb-3" id="divdisplay">
+                        <a href="/adminpost/{{y.post_id}}">
+                        <span class="p-3">
+                            <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
+                            
+                            <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
+                            <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+                        </span>
+                        <div class="text-justify">
+                            <span class="p-3 text-justify"><b>{{y.post_title}}</b></span>
+                        </div>
+                        <div class="p-3 text-justify">
+                            <span class="text-justify">{{y.post_body| truncate(250)}}</span>
+                        </div>
+                        
+                        </a>
+                        
+                        <!-- numbers of likes  -->
+                        {% if y.likes| length == 1 %}
+                        <span class="p-3 m-3">{{ y.likes| length }} <i class="fas fa-thumbs-up"></i> Like</span>
+                        {% elif y.likes| length > 1 %}
+                        <span class="p-3 m-3">{{ y.likes| length }} <i class="fas fa-thumbs-up"></i> Likes</span>
+                        {% else %}
+                        <span class="p-3 m-3"><i class="far fa-thumbs-up"></i> Like</span>
+                        {% endif %}
+                        
+                        <!-- numbers of shares -->
+                        {% if y.sharepostobj|length == 1 %}
+                        <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
+                        {% elif y.sharepostobj|length > 1 %}
+                        <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Shares</span>
+                        {% else %}
+                        <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <!-- pagination links -->
+                    <div class="text-center mt-3">
+                        <a href="{{url_for('dashboard', page=pstn.prev_num)}}" class="btn btn-outline-primary {% if pstn.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <!-- looping through the number of pages to display a link for each -->
+                        {% for page_num in pstn.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                        {% if page_num %}
+                        <!-- check for active page and set the link to active -->
+                            {% if pstn.page == page_num %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% else %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% endif %}
+                        {% else %}
+                        ...
+                        {% endif %}
+                        {% endfor %}
+                        <a href="{{url_for('dashboard', page=pstn.next_num)}}" class="btn btn-outline-primary {% if pstn.page ==  pstn.pages %} disabled {% endif %}">&raquo;</a>
+                        <p class="text-right mt-3">Showing Page {{pstn.page}} of {{pstn.pages}}</p>
+                    </div>
+                    <!-- end pagination -->
+                </div>
+            </div> 
+        </div>
+
+        <!-- all appointment tab-->
+        <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="appoint">
+            <div class="row">                
+                <div class="col-md-12">
+                    {% for y in appt.items %}
+                    <div class="col-md-12 mt-3 mb-3" id="divdisplay">
+                        <span class="p-3">
+                            <img src="/static/images/profile/customer/{{y.custbaobj.cust_pic}}" width="50" alt="{{y.custbaobj.cust_fname}}" class="img-rounded-circle"> 
+                            
+                            <span style="font-size:12px;"> {{y.custbaobj.cust_fname}} Booked {{y.desibaobj.desi_businessName}}</span>
+                            <span style="font-size:12px;">Book Date: {{y.ba_bookingDate}}</span>
+                            <span style="font-size:12px;">Book Time: {{y.ba_bookingTime}}</span>
+                            <span style="font-size:12px;">Collection Date: {{y.ba_collectionDate}}</span>
+                            <span style="font-size:12px;">Collection Time: {{y.ba_collectionTime}}</span>
+                            <span style="font-size:12px;">Appointment Status: {{y.ba_status}}</span>                                 
+                        </span> 
+                    </div>
+                    {% endfor %}
+
+                    <!-- pagination links -->
+                    <div class="text-center mt-3">
+                        <a href="{{url_for('dashboard', page=appt.prev_num)}}" class="btn btn-outline-primary {% if appt.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <!-- looping through the number of pages to display a link for each -->
+                        {% for page_num in appt.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                        {% if page_num %}
+                        <!-- check for active page and set the link to active -->
+                            {% if appt.page == page_num %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% else %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% endif %}
+                        {% else %}
+                        ...
+                        {% endif %}
+                        {% endfor %}
+                        <a href="{{url_for('dashboard', page=appt.next_num)}}" class="btn btn-outline-primary {% if appt.page ==  appt.pages %} disabled {% endif %}">&raquo;</a>
+                        <p class="text-right mt-3">Showing Page {{appt.page}} of {{appt.pages}}</p>
+                    </div>
+                    <!-- end pagination -->
+                </div>
+            </div>
+            
+        </div>
+        <!--all payment tab-->
+        <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="payment">
+            <div class="row">                
+                <div class="col-md-12">
+                    {% for y in pymt.items %}
+                    <div class="col-md-12 mt-3 mb-3" id="divdisplay">
+                        <div class="row">
+                            <div class="col-md-2 mt-3">
+                                <img src="/static/images/profile/designer/{{y.desipaymentobj.desi_pic}}" alt="{{y.desipaymentobj.desi_fname}}" class="img-rounded-circle img-fluid"> 
+                            </div>
+                            <div class="col-md-10">
+                                <span class="p-3">
+                                    <p style="font-size:12px;"> Business Name: {{y.desipaymentobj.desi_businessName}}</p>
+                                    <p style="font-size:12px;">Amount Paid: {{y.payment_amount}}</p>
+                                    <p style="font-size:12px;">Payment Date: {{y.payment_transdate}}</p>
+                                    <p style="font-size:12px;">Payment Status: {{y.payment_status}}</p>
+                                    <p style="font-size:12px;">Ref No: {{y.payment_transNo}}</p>                                                            
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- pagination links -->
+                    <div class="text-center mt-3">
+                        <a href="{{url_for('dashboard', page=pymt.prev_num)}}" class="btn btn-outline-primary {% if pymt.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <!-- looping through the number of pages to display a link for each -->
+                        {% for page_num in pymt.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                        {% if page_num %}
+                        <!-- check for active page and set the link to active -->
+                            {% if pymt.page == page_num %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% else %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% endif %}
+                        {% else %}
+                        ...
+                        {% endif %}
+                        {% endfor %}
+                        <a href="{{url_for('dashboard', page=pymt.next_num)}}" class="btn btn-outline-primary {% if pymt.page ==  pymt.pages %} disabled {% endif %}">&raquo;</a>
+                        <p class="text-right mt-3">Showing Page {{pymt.page}} of {{pymt.pages}}</p>
+                    </div>
+                    <!-- end pagination -->
+                </div>
+            </div>
+            
+        </div>
+        <!--All Subscription tab-->            
+    </div>
+</div>
+{% endblock %}

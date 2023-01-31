@@ -1,4 +1,4 @@
-{% extends 'user/base.html' %}
+{% extends 'admin/base.html' %}
 
 {% block title %}
 Styleit | Trending
@@ -11,30 +11,9 @@ Styleit | Trending
             <div class="col-md-3"></div>
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col-12 mt-3 mb-3">
-                        {% for y in pstn %}
-                        <div class="col-md-12 mb-3" id="divdisplay">
-                            {% if y.post_suspend=="suspended" %}
-                            <a href="/post/{{y.post_id}}">
-                                <span class="p-3">
-                                    <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
-                                    
-                                    <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
-                                    <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
-                                </span>
-                                <p class="p-3">This post has been suspended</p>
-                            </a>
-                            {% elif y.post_delete=='deleted' %}
-                            <a href="/post/{{y.post_id}}">
-                                <span class="p-3">
-                                    <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
-                                    
-                                    <span style="font-size:10px;">Posted by: {{y.designerobj.desi_businessName}}</span>
-                                    <span style="font-size:10px;">{{y.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
-                                </span>
-                                <p class="p-3">This post has been deleted by the user or unavailable</p>
-                            </a>
-                            {% else %}
+                    <div class="col-md-12 mt-3 mb-3">
+                        {% for y in pstn2 %}
+                        <div class="col-md-12 mt-3 mb-3" id="divdisplay">
                             <a href="/post/{{y.post_id}}">
                             <span class="p-3">
                                 <img src="/static/images/profile/designer/{{y.designerobj.desi_pic}}" width="50" alt="{{y.designerobj.desi_fname}}" class="img-rounded-circle"> 
@@ -48,6 +27,7 @@ Styleit | Trending
                             <div class="p-3 text-justify">
                                 <span class="text-justify">{{y.post_body| truncate(250)}}</span>
                             </div>
+                            
                             </a>
                             
                             <!-- numbers of likes  -->
@@ -66,8 +46,6 @@ Styleit | Trending
                             <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Shares</span>
                             {% else %}
                             <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
-                            {% endif %}
-                            
                             {% endif %}
                         </div> 
                         {% endfor %}          

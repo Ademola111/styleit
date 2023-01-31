@@ -114,7 +114,7 @@ Styleit|Profile
                                 {% for pst in pos.items: %}
                                 <div class="col-md-2">
                                     <span class="card" style="background-color:transparent;">
-                                       <a href="/addimage/{{pst.post_id}}">
+                                       <a href="/post/{{pst.post_id}}">
                                             {% if pst.imagepostobj[0] %}
                                             <span class="col-md-2">
                                                 <img src="/static/images/postpic/{{pst.imagepostobj[0].image_url}}" alt="{{pst.imagepostobj.image_name}}" class="img img-fluid" style="height: 150px !important; width:fit-content">
@@ -123,11 +123,12 @@ Styleit|Profile
                                             <span class="col-md-2">
                                                 Add atleast one image to make your post go live on trending
                                             </span>
-                                            {% endif %}
-                                            <h5 class="text-center">{{pst.post_title}}</h5>
+                                            {% endif %}                                            
                                         </a>
+                                        <span class="text-left">{{pst.post_title}}</span>
                                     </span>
-                                </div>
+                                    
+                                </div>                                
                                 {% endfor %}
                                 <!-- pagination links -->
                             <div class="text-center mt-3">

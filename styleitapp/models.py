@@ -6,6 +6,8 @@ class Posting(db.Model):
     post_title = db.Column(db.String(255), nullable=False)
     post_body = db.Column(db.Text(), nullable=True)
     post_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    post_suspend = db.Column(db.Enum('suspended', 'unsuspended'), server_default='unsuspended')
+    post_delete = db.Column(db.Enum('deleted', 'not deleted'), server_default='not deleted')
     #foreignkey
     post_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     #relationship
@@ -217,6 +219,7 @@ class Admin (db.Model):
     admin_email = db.Column(db.String(255), nullable=False)
     admin_pass = db.Column(db.String(255), nullable=False)
     admin_address = db.Column(db.Text(), nullable=True)
+    admin_secretword = db.Column(db.String(255), nullable=False)
     admin_pic = db.Column(db.String(255), nullable=True)
 
 class Like(db.Model):
@@ -234,8 +237,18 @@ class Like(db.Model):
     custlikesobj = db.relationship('Customer', back_populates='likecustobj')
     posts = db.relationship('Posting', back_populates='likes')
     likenotifyobj = db.relationship('Notification', back_populates='notifylikeobj')
-    
-    
+
+class Superadmin (db.Model):
+    spadmin_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    spadmin_fname = db.Column(db.String(255), nullable=False)
+    spadmin_lname = db.Column(db.String(255), nullable=False)
+    spadmin_gender = db.Column(db.Enum('male','female'), nullable=False)
+    spadmin_phone = db.Column(db.String(225), nullable=False)
+    spadmin_email = db.Column(db.String(255), nullable=False)
+    spadmin_pass = db.Column(db.String(255), nullable=False)
+    spadmin_address = db.Column(db.Text(), nullable=True)
+    spadmin_secretword = db.Column(db.String(255), nullable=False)
+    spadmin_pic = db.Column(db.String(255), nullable=True)    
 
 class Share(db.Model):
     share_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)

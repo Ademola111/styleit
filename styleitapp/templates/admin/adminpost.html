@@ -1,4 +1,4 @@
-{% extends 'user/base.html' %}
+{% extends 'admin/base.html' %}
 {% block title %}
 Styleit | Post details
 {% endblock %}
@@ -11,7 +11,7 @@ Styleit | Post details
             <div class="col-md-6">
                 <div class="row">
                     <div class="col mt-3 mb-3">
-                        {% if pstn.post_suspend=="suspended" %}
+                        {% if pstn.post_suspend %}
                         <div class="col mt-3 mb-3" id="divdisplay">
                             <span class="p-3" style="margin-right: 100px;">
                                 <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
@@ -21,26 +21,22 @@ Styleit | Post details
                             </span>
                             <p class="p-3">This post has been suspended</p>
                         </div>
-                        {% elif pstn.post_delete=="deleted" %}
+                        {% elif pstn.post_delete %}
                         <div class="col mt-3 mb-3" id="divdisplay">
                             <p class="p-3">This post has been deleted by the user or unavailable</p>
                         </div>
                         {% else %}
                         <div class="col mt-3 mb-3" id="divdisplay">
-                            {% if desiloggedin == des.desi_id %}
-                            <span id="trashi" class="me-2 ms-1"><i class="fa fa-ellipsis-v"></i></span>
-                            <span style="display:none; position:absolute" id="3dot">
-                                <input type="hidden" name="potid" id="potid" value="{{pstn.post_id}}">
-                                <span id="trashit"><i class="fa fa-trash p-2"></i>Delete</span>
-                            </span>
-                            {% endif %}
-                            <span class="p-3">
+                            
+                            <span class="p-3" style="margin-right: 100px;">
                                 <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
                                 <b>{{pstn.post_title}}</b>
                                 <span style="font-size:10px;">Posted by: {{pstn.designerobj.desi_businessName}}</span>
                                 <span style="font-size:10px;">{{pstn.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
                             </span>
-                            
+                            <span class="p-1 me-1" id="ban"><i class="fa fa-ban"></i></span>
+                            <span class="p-1 me-1" id="trash"><i class="fa fa-trash"></i></span>
+                            <input type="hidden" name="postid" id="postid" value="{{pstn.post_id}}">
                             <p class="m-3 p-3 text-justify">{{pstn.post_body}}</p>
                             <div class="row">
                                 {% for x in pstn.imagepostobj %}
@@ -60,9 +56,9 @@ Styleit | Post details
                                 
                                 <div class="col-3 mt-3 mb-3 text-center">
                                 <!-- checking if designer has liked the post -->
-                                    {% if desiloggedin in pstn.likes|map(attribute='like_desiid')| list %}
+                                    {% if spadmin in pstn.likes|map(attribute='like_desiid')| list %}
                                         <!-- checking the numbers of likes to know the singular/plural display -->
-                                        {% if i.like_postid == desiloggedin %}
+                                        {% if i.like_postid == spadmin %}
                                         <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
                                         <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Liked</a>
                                         {% else %}
@@ -76,9 +72,9 @@ Styleit | Post details
                                         {% endif %}
                                         <!-- end of singular /plural count check for designer -->
                                 <!-- checking if customer has liked the post -->
-                                    {% elif loggedin in pstn.likes|map(attribute='like_custid')| list %}
+                                    {% elif admin in pstn.likes|map(attribute='like_custid')| list %}
                                         <!-- checking the numbers of likes to know the singular/plural display -->
-                                        {% if i.like_postid == loggedin %}
+                                        {% if i.like_postid == admin %}
                                         <span style="color:rgb(235, 81, 107);">{{ pstn.likes| length }}</span> 
                                         <a href="/like/{{pstn.post_id}}" style="color:rgb(235, 81, 107);"> <i class="fas fa-thumbs-up"></i> Liked</a>
                                         {% else %}
@@ -112,7 +108,7 @@ Styleit | Post details
                                     <span style="color:rgb(235, 81, 107);"> <i class="fas fa-save"></i> Save</span>
                                 </div>#}
                                 <div class="col-4 mt-3 mb-3 text-center">
-                                    {% if desiloggedin %}
+                                    {% if spadmin %}
                                         {% if share|length == 1 %}                                   
                                         <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
                                         {% elif share|length > 1 %}
@@ -121,7 +117,7 @@ Styleit | Post details
                                         <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
                                         {% endif %}
                                     
-                                    <div id="shareon" style="display:none;">
+                                    {#<div id="shareon" style="display:none;">
                                         <div class="shareon d-flex overflow col-md-12">
                                             <input type="hidden" id="user" value="{{desiloggedin}}">
                                             <input type="hidden" id="sharepost" value="{{pstn.post_id}}">
@@ -131,8 +127,8 @@ Styleit | Post details
                                             <a class="twitter" id="twitter" value="twitter"></a>
                                             <a class="whatsapp" id="whatsapp" value="whatsapp"></a>
                                         </div>
-                                    </div>
-                                    {% elif loggedin %}
+                                    </div>#}
+                                    {% elif admin %}
                                         {% if share|length == 1 %}                                   
                                         <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
                                         {% elif share|length > 1 %}
@@ -141,7 +137,7 @@ Styleit | Post details
                                         <span style="color:rgb(235, 81, 107); display:block;" id="share" onclick="share()"> {{share|length}} <i class="fas fa-share-alt"></i> Share</span>
                                         {% endif %}
                                 
-                                    <div id="shareon" style="display:none;">
+                                    {#<div id="shareon" style="display:none;">
                                         <div class="shareon d-flex overflow col-md-12">
                                             <input type="hidden" id="user" value="{{loggedin}}">
                                             <input type="hidden" id="sharepost" value="{{pstn.post_id}}">
@@ -151,18 +147,18 @@ Styleit | Post details
                                             <a class="twitter" id="twitter" value="twitter"></a>
                                             <a class="whatsapp" id="whatsapp" value="whatsapp"></a>
                                         </div>
-                                    </div>
+                                    </div>#}
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-12 mb-2 p-3 send" id="commentform">
-                                <form action="{{url_for('comment', postid=pstn.post_id)}}" method="POST" id="form2">
+                                {#<form action="{{url_for('comment', postid=pstn.post_id)}}" method="POST" id="form2">
                                     <div style="display:flex; direction:row; justify-content:space-between;">
                                         <textarea id="comment" name="comment" class="comment form-control" required="required"></textarea>
                                         <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                                         <button id="btn2" type="submit" class="btn fa fa-paper-plane"></button>
                                     </div>
-                                </form>
+                                </form>#}
                             </div>                            
                             <div class="col-md-12">
                                 <div class ='row'>
@@ -196,13 +192,13 @@ Styleit | Post details
                                                                     
                                                                 </div>
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >
-                                                                        <form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">
+                                                                        {#<form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">
                                                                             <div style="display:flex; direction:row; justify-content:space-between;">
                                                                                 <textarea id="comrep" name="comrep" class="comment form-control" required="required"></textarea>
                                                                                 <input type="hidden" id="csrf" name="csrf_token" value="{{csrf_token()}}">
                                                                                 <button type="submit" id="replybtn" class="btn fa fa-paper-plane"></button>
                                                                             </div>
-                                                                        </form>
+                                                                        </form>#}
                                                                     </div> 
                                                                 <!-- end of form, comment and reply display -->
                                                             </div>
@@ -219,8 +215,8 @@ Styleit | Post details
                             </div>
                                 
                             </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>

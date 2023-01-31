@@ -225,7 +225,7 @@ border-radius: 50px;
   font-family: styleitregular;
 }
 
-#divdisplay, #alldesigner{
+#divdisplay, #alldesigner, .divdisplay{
   border: 1px solid rgb(250, 241, 250);
 }
 
