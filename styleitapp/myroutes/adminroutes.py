@@ -7,8 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin
-from styleitapp.forms import AdminLoginForm
+from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report
+from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
 
 rows_per_page = 12
@@ -37,10 +37,12 @@ def admin_login():
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
-    logini = AdminLoginForm()
+    logini=AdminLoginForm()
+    adsignup=AdminSignupForm()
     # rendering login template
     if request.method == 'GET':
-        return render_template('admin/adminlogin.html', logini=logini, admin=admin, spadmin=spadmin, spa=spa, adm=adm)
+        admi=Admin.query.all()
+        return render_template('admin/adminlogin.html', logini=logini, admin=admin, spadmin=spadmin, spa=spa, adm=adm, adsignup=adsignup, admi=admi)
     
     if request.method == "POST":
         email=request.form.get('email')
@@ -49,6 +51,7 @@ def admin_login():
         if email=="" or pwd=="":
             flash('Invalid Credentials', 'danger')
             return redirect('/admin/login/')
+        
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             adm=db.session.query(Admin).filter(Admin.admin_email==email).first()
@@ -58,7 +61,7 @@ def admin_login():
                 # checking password hash
                 if formated_pwd==pwd:
                     session['admin']=adm.admin_id
-                    return redirect('/admin/dashboard/')                    
+                    return redirect('/admin/dashboard/')
             elif spa:
                 formated_pwd=spa.spadmin_pass
                 if formated_pwd==pwd:
@@ -67,7 +70,7 @@ def admin_login():
             else:
                 flash('kindly supply a valid email address and password', 'warning')
                 return render_template('admin/adminlogin.html', logini=logini, adm=adm, spa=spa)
-            
+       
 
 
 """Admin Forgotten Password"""
@@ -113,7 +116,7 @@ def dashboard():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
-    spa=Admin.query.get(spadmin)
+    spa=Superadmin.query.get(spadmin)
     if admin==None and spadmin==None:
         return redirect('/')
 
@@ -132,8 +135,13 @@ def dashboard():
             lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
             appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
             pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, prof=prof, pstn=pstn, lk=lk, appt=appt, pymt=pymt)
+            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
+            srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, pstn=pstn, lk=lk, appt=appt, pymt=pymt, sublist=sublist)
+        
         elif spadmin:
+            prof=Superadmin.query.filter(Superadmin.spadmin_id==spa.spadmin_id).first()
+
             """the main query for the production"""
             subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
             subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
@@ -145,7 +153,9 @@ def dashboard():
             appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
             pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
             lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-            return render_template('admin/spadmindashboard.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, pstn=pstn, lk=lk, appt=appt, pymt=pymt)
+            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
+            srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, pstn=pstn, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof)
     
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -192,7 +202,7 @@ def admin_trending():
     if request.method == "GET":
         today = date.today()
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
+        spa=Superadmin.query.get(spadmin)
         
         if admin:
             """the main query for the production"""
@@ -224,7 +234,7 @@ def admin_post(id):
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
-    spa=Admin.query.get(spadmin)
+    spa=Superadmin.query.get(spadmin)
     if admin==None and spadmin== None:
         return redirect('/')
 
@@ -245,22 +255,34 @@ def ban():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
-    spa=Admin.query.get(spadmin)
+    spa=Superadmin.query.get(spadmin)
     if admin==None and spadmin== None:
         return redirect('/')
     
     if request.method=='POST':
         postid = request.form.get('postid')
+        comid = request.form.get('comid')
         if postid =="":
             flash('file error')
             return redirect(f'/adminpost/{postid}/')
+        elif comid =="":
+            flash('file error')
+            return redirect(f'/adminpost/{postid}/')
         else:
-            if postid !="":
-                posi = Posting.query.filter_by(post_id=postid).first()
-                posi.post_suspend='suspended'
-                db.session.commit()
-                msg='success'
-                return jsonify(msg)
+            if postid:
+                if postid !="":
+                    posi = Posting.query.filter_by(post_id=postid).first()
+                    posi.post_suspend='suspended'
+                    db.session.commit()
+                    msg='success'
+                    return jsonify(msg)
+            if comid:
+                if comid !="":
+                    posi = Comment.query.filter_by(com_id=comid).first()
+                    posi.com_suspend='suspended'
+                    db.session.commit()
+                    msg='success'
+                    return jsonify(msg)
             
         
 
@@ -270,22 +292,35 @@ def trash():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
-    spa=Admin.query.get(spadmin)
+    spa=Superadmin.query.get(spadmin)
     if admin==None and spadmin== None:
         return redirect('/')
     
     if request.method=='POST':
         postid = request.form.get('postid')
+        comid = request.form.get('comid')
         if postid =="":
             flash('file error')
             return redirect(f'/adminpost/{postid}/')
+        elif comid =="":
+            flash('file error')
+            return redirect(f'/adminpost/{postid}/')
         else:
-            if postid !="":
-                posi = Posting.query.filter(Posting.post_id==postid).first()
-                posi.post_delete='deleted'
-                db.session.commit()
-                msg='successfully deleted'
-                return jsonify(msg)
+            if postid:
+                if postid !="":
+                    posi = Posting.query.filter(Posting.post_id==postid).first()
+                    posi.post_delete='deleted'
+                    db.session.commit()
+                    msg='successfully deleted'
+                    return jsonify(msg)
+                
+            if comid:
+                if comid !="":
+                    posi = Comment.query.filter(Comment.com_id==comid).first()
+                    posi.com_delete='deleted'
+                    db.session.commit()
+                    msg='successfully deleted'
+                    return jsonify(msg)
     
 
 """All Designers """
@@ -299,7 +334,7 @@ def admin_designers():
         
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
+        spa=Superadmin.query.get(spadmin)
         if admin:
             page = request.args.get('page', 1, type=int)
             design=Designer.query.paginate(page=page, per_page=rows_page)
@@ -323,7 +358,7 @@ def admin_customers():
         
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
+        spa=Superadmin.query.get(spadmin)
         if admin:
             page = request.args.get('page', 1, type=int)
             # design=Designer.query.paginate(page=page, per_page=rows_page)
@@ -337,7 +372,7 @@ def admin_customers():
     
 
 """Designers Details """
-@app.route('/designer/<id>/', methods=['GET', 'POST'])
+@app.route('/designers/<id>/', methods=['GET', 'POST'])
 def admin_desi_detail(id):
     admin = session.get('admin')
     spadmin= session.get('superadmin')
@@ -347,7 +382,7 @@ def admin_desi_detail(id):
         
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
+        spa=Superadmin.query.get(spadmin)
         if admin:
             design=Designer.query.filter(Designer.desi_id==id).first()
             return render_template('admin/admindesignerdetail.html', design=design, spa=spa, adm=adm,)
@@ -367,7 +402,7 @@ def admin_cust_detail(id):
         
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
+        spa=Superadmin.query.get(spadmin)
         if admin:
             design=Customer.query.filter(Customer.cust_id==id).first()
             return render_template('admin/admin_customerdetail.html', design=design, spa=spa, adm=adm,)
@@ -392,44 +427,7 @@ def admin_logout():
             session.pop('superadmin', None)
             return redirect('/adminhome')
 
-    
-
-"""subscription plans"""
-@app.route('/admin/subplan/', methods=['GET'])
-def admin_subplan():
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
-    if admin==None and spadmin==None:
-        return redirect('/admin/login/')
-
-    
-    if request.method =='GET':
-        if admin:        
-            page=request.args.get('page', 1, type=int)
-            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
-        elif spadmin:
-            page=request.args.get('page', 1, type=int)
-            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
-        return render_template('admin/subscribeplans.html', sublist=sublist)
-
-
-
-""" payment """
-@app.route('/admin_payment/', methods=['GET', 'POST'])
-def admin_payment():
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
-    if admin==None and spadmin==None:
-        return redirect('/admin/login/')
-    
-    if request.method =='GET':
-        if admin:
-            pymt=Payment.query.all()
-        elif spadmin:
-            pymt=Payment.query.all()
-        return render_template('designer/confirmpayment.html', pymt=pymt, admin=admin, spadmin=spadmin)
-   
-
+ 
 """Error 404 page"""
 @app.errorhandler(404)
 def page_not_found(error):
@@ -439,8 +437,8 @@ def page_not_found(error):
         return redirect('/admin/login/')
     else:
         adm=Admin.query.get(admin)
-        spa=Admin.query.get(spadmin)
-        return render_template('user/error.html', adm=adm, spa=spa, error=error),404
+        spa=Superadmin.query.get(spadmin)
+        return render_template('admin/error.html', adm=adm, spa=spa, error=error),404
 
 
 """Search section"""
@@ -449,7 +447,7 @@ def admin_search():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
-    spa=Admin.query.get(spadmin)
+    spa=Superadmin.query.get(spadmin)
     if admin:
         word=request.form.get('search')
         page = request.args.get('page', 1, type=int)
@@ -468,14 +466,14 @@ def deactivat():
         if desi:
             if desi !="":
                 dess=Designer.query.filter_by(desi_id=desi).first()
-                dess.desi_status='deactived'
+                dess.desi_access='deactived'
                 db.session.commit()
                 message='Deactivated'
                 return jsonify(message)
         elif cust:
             if cust !="":
                 cust=Customer.query.filter_by(cust_id=cust).first()
-                cust.cust_status='deactived'
+                cust.cust_access='deactived'
                 db.session.commit()
                 message='Deactivated'
                 return jsonify(message)
@@ -488,74 +486,72 @@ def activat():
         if desi:
             if desi !="":
                 dess=Designer.query.filter_by(desi_id=desi).first()
-                dess.desi_status='actived'
+                dess.desi_access='actived'
                 db.session.commit()
                 message='Activated'
                 return jsonify(message)
         elif cust:
             if cust !="":
                 cust=Customer.query.filter_by(cust_id=cust).first()
-                cust.cust_status='actived'
+                cust.cust_access='actived'
                 db.session.commit()
                 message='Activated'
                 return jsonify(message)
-
-
-    """
-    i have not do alll this below
-    """
-    """Comment session"""
-@app.route('/comment/<int:postid>/', methods=['GET', 'POST'])
-def admin_comment(postid):
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
-    
-    if admin==None and spadmin== None:
-        return redirect('/')
-    
+            
+"""admin signup"""
+@app.route('/admin/signup/', methods=['GET', 'POST'])
+def adminsignup():
     if request.method == 'GET':
-        pass
-
+        return redirect('/admin/login/')
+       
     if request.method == 'POST':
-        pass
-
-"""Reply Session """
-@app.route('/reply/<int:postid>/<int:commentid>/', methods=['POST', 'GET'])
-def admin_reply(postid, commentid):
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
-    
-    if admin==None and spadmin== None:
-        return redirect('/')
-    
-    if request.method == 'GET':
-        pass
-
-    if request.method == 'POST':
-        pass
-    
-    
-
-@app.route('/like/<int:post_id>/', methods=['GET'])
-def admin_like(post_id):
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
-    
-    if admin==None and spadmin== None:
-        return redirect('/')
-    
-    if request.method == 'GET':
-        pass
+        fname=request.form.get('fname')
+        lname=request.form.get('lname')
+        secretword=request.form.get('secretword')
+        email=request.form.get('email')
+        phone=request.form.get('phone')
+        pwd=request.form.get('pwd')
+        cpwd=request.form.get('cpwd')
+        address= request.form.get('address')
+        gender=request.form.get('gender')
+        pic=request.files.get('pic')
+        original_name=pic.filename
 
 
-"""Share buttons"""
-@app.route('/share/', methods=['GET','POST'])
-def admin_share():
-    admin = session.get('admin')
-    spadmin= session.get('superadmin')
+        if fname=="" or lname=="" or secretword=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or gender=="":
+            flash('One or more field is empty', 'danger')
+            return redirect('/admin/signup/')
     
-    if admin==None and spadmin== None:
-        return redirect('/')
-    
-    if request.method == 'GET':
-        pass
+        # checking length of password
+        elif len(pwd) < 8:
+            flash('Password should be atleast 8 character long', 'warning')
+            return redirect('/admin/signup/')
+        # compairing password match
+        elif pwd !=cpwd:
+            flash('Password match error', 'danger')
+            return redirect('/admin/signup/')
+        else:
+            # spliting to check email extension
+            mail = email.split('@')
+            if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                flash('kindly provide a valid email', 'warning')
+                return redirect('/admin/signup/')
+            else:
+                eemail = mail[0] + '@' + mail[1]
+                # hashing password
+                formated = generate_password_hash(pwd)
+                
+                # checking image field if empty
+                if original_name != "":
+                    # spliting image path
+                    extension = os.path.splitext(original_name)
+                    if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                        fn=math.ceil(random.random()*10000000000)
+                        saveas = str(fn) + extension[1]
+                        pic.save(f'styleitapp/static/images/profile/admin/{saveas}')
+                        # committing to Customer table
+                        k=Admin(admin_fname=fname, admin_secretword=secretword, admin_lname=lname, admin_gender=gender, admin_phone=phone, admin_email=eemail, admin_pass=formated, admin_address=address, admin_pic=saveas)
+                        db.session.add(k)
+                        db.session.commit()
+                        return redirect('/admin/signup/')
+                    # return redirect('/admin/signup/')

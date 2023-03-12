@@ -15,6 +15,7 @@ Styleit|Profile
     </div>
 
     <div class="row">
+        {% if admin %}
         <div class="col-md-2 mt-3 mb-3 me-0.3 generalface2 divdisplay">
             <h4 class="mt-3">{{prof.admin_fname}}'s Profile</h4>
             <p class="text-center"><img src="/images/profile/admin/{{prof.admin_id}}" class="img img-fluid"></p>
@@ -31,10 +32,35 @@ Styleit|Profile
                     <p id="allappoint" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Appointment</span></p>
                     <p id="allpayment" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Payment</span></p>
                     <p id="allsub" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Subscription</span></p>
+                    <p id="allreport" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Report </span></p>
+                </div>
+            </div>
+        </div>
+        {% elif spadmin %}
+        <div class="col-md-2 mt-3 mb-3 me-0.3 generalface2 divdisplay">
+            <h4 class="mt-3">{{prof.spadmin_fname}}'s Profile</h4>
+            <p class="text-center"><img src="/images/profile/admin/{{prof.spadmin_id}}" class="img img-fluid"></p>
+            <p><span class="me-1" style="font-size:15px">{{prof.spadmin_fname}}</span><span style="font-size:15px">{{prof.spadmin_lname}}</span></p>
+            <p><span style="font-size:15px">{{prof.spadmin_gender}}</span></p>
+            <p><span style="font-size:15px">{{prof.spadmin_phone}}</span></p>
+            <p><span style="font-size:15px">{{prof.spadmin_email}}</span></p>
+            {% if prof.spadmin_id == spa.spadmin_id %}
+            <p><span style="font-size:15px">Post: </span><span style="font-size:15px">Super Admin {{prof.spadmin_id}}</span></p>
+            {% endif %}
+            <div class="row">
+                <div class="col-md-12">
+                    <p id="alltrend" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">All Trend</span></p>
+                    <p id="allappoint" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Appointment</span></p>
+                    <p id="allpayment" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Payment</span></p>
+                    <p id="allsub" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Subscription</span></p>
+                    <p id="allreport" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3">Report </span></p>
+                    <p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('admin_login')}}"><span class="ms-3">Add New Admin </span></a></p>
+                    {#<p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('admin_login')}}"><span class="ms-3">Bonus Sub for all </span></a></p>#}
 
                 </div>
             </div>
         </div>
+        {% endif %}
         
         <!--All trend tab-->
         <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="tred">
@@ -195,7 +221,115 @@ Styleit|Profile
             </div>
             
         </div>
-        <!--All Subscription tab-->            
+        <!--All Subscription tab-->
+        <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="sublist">
+            <div class="row">                
+                <div class="col-md-12">
+                    {% for y in sublist.items %}
+                    <div class="col-md-12 mt-3 mb-3" id="divdisplay">
+                        <div class="row">
+                            <div class="col-md-2 mt-3">
+                                <img src="/static/images/profile/designer/{{y.subdesiobj.desi_pic}}" alt="{{y.subdesiobj.desi_fname}}" class="img-rounded-circle img-fluid"> 
+                            </div>
+                            <div class="col-md-10">
+                                <span class="p-3">
+                                    <p style="font-size:12px;"> Business Name: {{y.subdesiobj.desi_businessName}}</p>
+                                    <p style="font-size:12px;">Subscription Plan: {{y.sub_plan}}</p>
+                                    <p style="font-size:12px;">Subscription Date: {{y.sub_date}}</p>
+                                    <p style="font-size:12px;">Subscription Status: {{y.sub_paystatus}}</p>
+                                    <p style="font-size:12px;">Subscription Ref No: {{y.sub_ref}}</p>
+                                    <p style="font-size:12px;">Start Date: {{y.sub_startdate}}</p>
+                                    <p style="font-size:12px;">Start Date: {{y.sub_enddate}}</p>
+                                    <p style="font-size:12px;">Subscription Status: {{y.sub_status}}</p>                                                            
+
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- pagination links -->
+                    <div class="text-center mt-3">
+                        <a href="{{url_for('dashboard', page=sublist.prev_num)}}" class="btn btn-outline-primary {% if sublist.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <!-- looping through the number of pages to display a link for each -->
+                        {% for page_num in sublist.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                        {% if page_num %}
+                        <!-- check for active page and set the link to active -->
+                            {% if sublist.page == page_num %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% else %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% endif %}
+                        {% else %}
+                        ...
+                        {% endif %}
+                        {% endfor %}
+                        <a href="{{url_for('dashboard', page=sublist.next_num)}}" class="btn btn-outline-primary {% if sublist.page ==  sublist.pages %} disabled {% endif %}">&raquo;</a>
+                        <p class="text-right mt-3">Showing Page {{sublist.page}} of {{sublist.pages}}</p>
+                    </div>
+                    <!-- end pagination -->
+                </div>
+            </div>
+            
+        </div>
+        <!--all report-->
+        <div class="col-md-10 mt-3 mb-3 generalface2" style="display:none" id="report">
+            <div class="row">                
+                <div class="col-md-12">
+                    {% for yo in srepo.items %}
+                    <div class="col-md-12 mt-3 mb-3" id="divdisplay">
+                        <div class="row">
+                            <div class="col-md-2 mt-3">
+                                {% if yo.custreportobj %}                                
+                                <img src="/static/images/profile/customer/{{yo.custreportobj.cust_pic}}" alt="{{yo.custreportobj.cust_fname}}" class="img-rounded-circle img-fluid">
+
+                                {% elif yo.desireportobj %}
+                                <img src="/static/images/profile/designer/{{yo.desireportobj.desi_pic}}" alt="{{yo.desireportobj.desi_fname}}" class="img-rounded-circle img-fluid">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-10">
+                                <span class="p-3">
+                                    {% if yo.desireportobj %} 
+                                    <p style="font-size:12px;"> Business Name: {{yo.desireportobj.desi_businessName}}</p>
+                                    {% elif yo.custreportobj %}
+                                    <p style="font-size:12px;"> Business Name: {{yo.custreportobj.cust_lname}} {{yo.custreportobj.cust_fname}}
+                                    </p>
+                                    {% endif %}
+                                    <p style="font-size:12px;">Reporter: {{yo.reporter}}</p>
+                                    <p style="font-size:12px;">Report Date: {{yo.report_date}}</p>
+                                    <p style="font-size:12px;">Report Issue: {{yo.report_reason}}</p>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- pagination links -->
+                    <div class="text-center mt-3">
+                        <a href="{{url_for('dashboard', page=srepo.prev_num)}}" class="btn btn-outline-primary {% if srepo.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                        <!-- looping through the number of pages to display a link for each -->
+                        {% for page_num in srepo.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                        {% if page_num %}
+                        <!-- check for active page and set the link to active -->
+                            {% if srepo.page == page_num %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% else %}
+                            <a href="{{url_for('dashboard', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                            {% endif %}
+                        {% else %}
+                        ...
+                        {% endif %}
+                        {% endfor %}
+                        <a href="{{url_for('dashboard', page=srepo.next_num)}}" class="btn btn-outline-primary {% if srepo.page ==  srepo.pages %} disabled {% endif %}">&raquo;</a>
+                        <p class="text-right mt-3">Showing Page {{srepo.page}} of {{srepo.pages}}</p>
+                    </div>
+                    <!-- end pagination -->
+                </div>
+            </div>
+            
+        </div>           
     </div>
 </div>
 {% endblock %}

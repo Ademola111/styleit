@@ -6,11 +6,93 @@ Styleit|Login
 
 {% block content %}
 <div class="container-fluid">
-    <div class="container">
+    <div class="container-fluid">
+        {% if spadmin %}
+        <div class='row'>
+            <div class="col-md-4 text-center mt-3 mb-3"></div>
+
+            <div class="col-md-4 text-center mt-3 mb-3">
+                {% with m = get_flashed_messages() %}
+				{% for i in m %}
+				<p class="fw-4">{{i}}</p>
+				{% endfor %}
+				{% endwith %}
+            <form action="{{url_for('adminsignup')}}" method="POST" enctype="multipart/form-data">
+                <div class='row'>
+                    <div class="col-md-12 bg-primary text-light m-2 p-2">
+                        <h5>Admin Signup</h5>
+                    </div>
+                </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="fname" placeholder="First Name" id="fname" class="form-control mt-3 mb-3" required>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="lname" placeholder="Last Name" id="lname" class="form-control mt-3 mb-3" required>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="secretword" placeholder="Secretword" id="secretword" class="form-control mt-3 mb-3" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="email" name="email" placeholder="jude65@gmail.com" id="email" class="form-control mt-3 mb-3" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" name="phone" placeholder="Phone Number" id="phone" class="form-control mt-3 mb-3" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="password" name="pwd" placeholder="Password should be 8 character long" id="lname" class="form-control mt-3 mb-3" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="password" name="cpwd" placeholder="Confirm Password" id="cpwd" class="form-control mt-3 mb-3" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" name="address" placeholder="Contact Address" id="address" class="form-control mt-3 mb-3" required>
+                </div>
+            
+                <div class="col-md-6">
+                    <input type="file" name="pic" id="pic" class="form-control mt-3 mb-3" required>
+                </div>
+            </div>
+            <div>
+                <input type="radio" name="gender" value="male" id="male" class="form-check-input mt-3 mb-3" required>
+                <label for="male" class="form-check-label me-2 mt-2 mb-3" required>Male</label>
+                <input type="radio" name="gender" value="female" id="female" class="form-check-input mt-3 mb-3" required>
+                <label for="female" class="form-check-label mt-2 mb-3" required>Female</label>
+            </div>
+            
+            <div>
+                <input type="checkbox" name="agree" id="agree1" class="form-check-input mt-3 mb-3" required>
+                <label for="agree" class="mt-2 mb-3" required>I agreed to the terms and conditions of website </label>
+            </div>
+           <div>
+               <button type="submit" id="btn1" class="btn btn-outline-danger mt-3 mb-3 form-control" disabled>Sign Up</button>
+               <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            </div>
+            </form>
+            </div>
+
+            <div class="col-md-4 text-center mt-3 mb-3">
+                {% for m in admi %}
+                <div class='row'>
+                    <div class="col-md-12">
+                        <span class="m-2 p-2">{{m.admin_fname}}</span> <span class="m-2 p-2">{{m.admin_lname}}</span> <span class="m-2 p-2">{{m.admin_email}}</span><br><span class="m-2 p-2">{{m.admin_pass}}</span> <span class="m-2 p-2">{{m.admin_secretword}}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
         <div class="row">
             <div class="col-md-8 text-center mt-3 mb-3">
                 <img src="{{url_for('static', filename='images/customer.png')}}" class="img-fluid me-5" alt="customer pic" width="406"> 
             </div>
+            
             <div class="col-md-4 mt-3 mb-3">
                 <div class="row">
                     <div class="col">
@@ -44,6 +126,7 @@ Styleit|Login
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

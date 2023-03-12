@@ -293,19 +293,27 @@
     <div class="row">
         <div class="col-md-3 m-2 text-center" id="socials">
           <p class="text-center text-dark generalface2"><b><i>Connect</i></b><hr></p>
-          <span class="card-text fs-1"><a href="#"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-text fs-1"><a href="#"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-text fs-1"><a href="#"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-text fs-1"><a href="#"><i class="fab fa-instagram"></i></a></span>
+          <span class="card-text fs-1 me-3"><a href="https://www.facebook.com/styleithq"><i class="fab fa-facebook"></i></a></span>
+					<span class="card-text fs-1 me-3"><a href="https://www.twitter.com/styleithq"><i class="fab fa-twitter"></i></a></span>
+					<span class="card-text fs-1 me-3"><a href="https://www.linkedin.com/in/styleithq"><i class="fab fa-linkedin"></i></a></span>
+					<span class="card-text fs-1 me-3"><a href="https://www.instagram.com/styleithq"><i class="fab fa-instagram"></i></a></span>
         </div>
         <div class="col-md-3 m-2" id="quicklinks">
           <p class="text-center text-dark generalface2"><b><i>Quick Links</i></b><hr></p>
+					<span class="card-text me-3"><a href="#">Support</a></span>
+					<span class="card-text me-3"><a href="#">Contact</a></span>
+					<span class="card-text me-3"><a href="#">Help</a></span>
         </div>
         <div class="col-md-3 m-2" id="subscribe">
           <p class=" text-center text-dark generalface2"><b><i>Subscribe</i></b><hr></p>
+
         </div>
         <div class="col-md-3 m-2" id="locations">
           <p class="text-center text-dark generalface2"><b><i>Locations</i></b><hr></p>
+					<span class="card-text"><b>Address:</b></span><br>
+					<span class="card-text">10, Adegbola Street, Alakuko, Lagos State</span><br>
+					<span class="card-text"><b>Email:</b> support@styleit.com</span><br>
+					<span class="card-text"><b>Tel:</b>+2348087658590</span>
         </div>
     </div>
     <div class="row">
@@ -530,6 +538,13 @@
                 document.querySelector('#notif').style.display='block';
               }
             })
+
+            const textarea1 = document.getElementById('textarea');
+            textarea1.addEventListener('input', function() {
+              if (this.value.length > this.maxLength) {
+                this.value = this.value.slice(0, this.maxLength);
+              }
+            });
             
             // {#function sendPostRequest() {
             //   var com1=document.getElementById('com1');

@@ -172,3 +172,9 @@ pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_lik
 
 tade.ogunlade@gmail.com
 STYLEIT.tadeoguntade
+
+Igbaye - town
+osun state
+owolabi surname
+mariam - name
+AS - blood group

@@ -29,9 +29,9 @@ Styleit | Designer Profile
                                 <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
                             </div>
                             <input type="hidden" name="desi_id" id="desi_id" value="{{design.desi_id}}">
-                            {% if design.desi_status=='actived' %}
+                            {% if design.desi_access=='actived' %}
                             <span class="btn btn-success" id="deactivate">Deactivate</span>
-                            {% elif design.desi_status=='deactived' %}
+                            {% elif design.desi_access=='deactived' %}
                             <span class="btn btn-success" id="activate">Activate</span>
                             {% endif %}
                         </div>

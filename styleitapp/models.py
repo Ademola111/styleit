@@ -41,6 +41,8 @@ class Comment(db.Model):
     com_body = db.Column(db.Text(), nullable=True)
     com_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     path = db.Column(db.Text, index=True)
+    com_suspend = db.Column(db.Enum('suspended', 'unsuspended'), server_default='unsuspended')
+    com_delete = db.Column(db.Enum('deleted', 'not deleted'), server_default='not deleted')
     #foreignkey
     com_postid = db.Column(db.Integer(), db.ForeignKey('posting.post_id'))
     com_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
@@ -82,6 +84,8 @@ class Customer(db.Model):
     cust_pic = db.Column(db.String(255), nullable=True)
     cust_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     cust_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
+    cust_access = db.Column(db.Enum('actived', 'deactived'), server_default='actived')
+
     #foreignkey
     cust_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     cust_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
@@ -93,22 +97,9 @@ class Customer(db.Model):
     sharecustobj = db.relationship('Share', back_populates='custshareobj')
     bacustobj = db.relationship('Bookappointment', back_populates='custbaobj')
     custnotifyobj = db.relationship('Notification', back_populates='notifycustobj')
+    reportcustobj = db.relationship('Report', back_populates='custreportobj')
+    ratcustobj = db.relationship('Rating', back_populates='custratobj')
     
-    # """ getting notification for designers"""
-    # def get_unread_notify(self, reverse='unread'):
-    #     """getting unread notification with title, time and mark-as-read"""
-    #     notifs =[]
-    #     unread_notify=Notification.query.filter_by(notify_custid=self, notify_read='unread')
-    #     for notif in unread_notify:
-    #         notifs.append({
-    #             'title':notif.notifypostobj.post_title,
-    #             'notify_date':humanize.naturaltime(datetime.now()-notif.notify_date),
-    #             'notify_read':url_for('profile.mark_notification_as_read', notify_id=notif.notify_id)
-    #         })
-    #     if reverse:
-    #         return list(reversed(notifs))
-    #     else:
-    #         return notifs
 
 class State(db.Model): 
     state_id = db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -142,6 +133,7 @@ class Designer(db.Model):
     desi_pic = db.Column(db.String(255), nullable=True)
     desi_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     desi_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
+    desi_access = db.Column(db.Enum('actived', 'deactived'), server_default='actived')
     
     #foreignkey
     desi_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
@@ -158,23 +150,10 @@ class Designer(db.Model):
     badesiobj = db.relationship('Bookappointment', back_populates='desibaobj')
     paymentdesiobj=db.relationship('Payment', back_populates='desipaymentobj')
     desinotifyobj = db.relationship('Notification', back_populates='notifydesiobj')
+    reportdesiobj = db.relationship('Report', back_populates='desireportobj')
+    ratdesiobj = db.relationship('Rating', back_populates='desiratobj')
     
-    # """ getting notification for designers"""
-    # def get_unread_notify(self, reverse='unread'):
-    #     """getting unread notification with title, time and mark-as-read"""
-    #     notifs =[]
-    #     unread_notify=Notification.query.filter_by(notify_desiid=self, notify_read='unread')
-    #     for notif in unread_notify:
-    #         notifs.append({
-    #             'title':notif.notifypostobj.post_title,
-    #             'notify_date':humanize.naturaltime(datetime.now()-notif.notify_date),
-    #             'notify_read':url_for('profile.mark_notification_as_read', notify_id=notif.notify_id)
-    #         })
-    #     if reverse:
-    #         return list(reversed(notifs))
-    #     else:
-    #         return notifs
-    
+        
 
 class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -311,16 +290,31 @@ class Notification(db.Model):
     notifysubobj = db.relationship('Subscription', back_populates='subnotifyobj')
     notifypayobj = db.relationship('Payment', back_populates='paynotifyobj')
     
-    # def create_designer_notify(design, action):
-    #     noti= Notification(notify_desiid=design,
-    #                        notify_read=action,
-    #                        notify_date=datetime.now()
-    #                        ) 
-    #     saved = save_to_db(noti, 'Designer notification saved')
-    
-    # def __repr__(self):
-    #     return '<Notification {}>'.format(self.notify_read)
-    
+   
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+class Report(db.Model):
+    report_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    report_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    report_reason = db.Column(db.String(255), nullable=False)
+    reporter=db.Column(db.String(255), nullable=False)
+    #foreignKey
+    report_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    report_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desireportobj = db.relationship('Designer', back_populates='reportdesiobj')
+    custreportobj = db.relationship('Customer', back_populates='reportcustobj')
+
+class Rating(db.Model):
+    rat_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    rat_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    rat_rating= db.Column(db.Integer(), nullable=False)
+    #foreignKey
+    rat_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    rat_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desiratobj = db.relationship('Designer', back_populates='ratdesiobj')
+    custratobj = db.relationship('Customer', back_populates='ratcustobj')
+    

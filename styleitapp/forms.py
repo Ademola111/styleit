@@ -50,3 +50,16 @@ class AdminLoginForm(FlaskForm):
     email = StringField("Your Email: ", validators=[DataRequired(), Email()])
     pwd = PasswordField("Enter Password")
     loginbtn = SubmitField('Login')
+
+class AdminSignupForm(FlaskForm):
+    fname = StringField('First Name', validators=[DataRequired()])
+    lname = StringField('Last Name', validators=[DataRequired()])
+    secretword = StringField('Secretword', validators=[DataRequired()])
+    gender = RadioField('Gender', choices=[('male','Male'),('female','Female')])
+    phone = StringField('Phone Number', validators=[DataRequired()])
+    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=32)]) 
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), Length(min=8, max=32)])
+    address = StringField('Contact Address', validators=[DataRequired()])
+    pic = FileField('Upload profile picture', validators=[DataRequired()])
+    Signup = SubmitField('Sign Up')

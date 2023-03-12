@@ -22,11 +22,34 @@ Styleit | Designer Profile
                                 <p class="fs-1"><b>{{design.desi_businessName}}</b></p>
                                 </div>
                             </div>
-                            <div class="col-md-12 mt-2">                                
-                                <p>First Name: <b>{{design.desi_fname}}</b></p>
-                                <p>Last Name: <b>{{design.desi_lname}}</b></p>
-                                <p>State: <b>{{design.stateobj2.state_name}}</b></p>
-                                <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6 mt-2">
+                                        {% if desiloggedin %}                                
+                                        <p>First Name: <b>{{design.desi_fname}}</b></p>
+                                        <p>Last Name: <b>{{design.desi_lname}}</b></p>
+                                        <p>State: <b>{{design.stateobj2.state_name}}</b></p>
+                                        <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                                        <span class="me-2"><a href="{{url_for('report', id=design.desi_id)}}">Report</a></span>
+                                        {% elif loggedin %}
+                                        <p>First Name: <b>{{design.desi_fname}}</b></p>
+                                        <p>Last Name: <b>{{design.desi_lname}}</b></p>
+                                        <p>State: <b>{{design.stateobj2.state_name}}</b></p>
+                                        <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                                        <span class="me-2"><a href="{{url_for('report', id=design.desi_id)}}">Report</a></span>
+                                        <span class="me-2"><a href="{{url_for('rating', id=design.desi_id)}}">Rate Now</a></span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mt-2">                                
+                                        <p><b>Rating by Customers</b></p>
+                                        <p class="me-2">1 Star Rating: {{rating1 |length}}</p>
+                                        <p class="me-2">2 Star Rating: {{rating2 |length}}</p>
+                                        <p class="me-2">3 Star Rating: {{rating3 |length}}</p>
+                                        <p class="me-2">4 Star Rating: {{rating4 |length}}</p>
+                                        <p class="me-2">5 Star Rating: {{rating5 |length}}</p>
+                                        <p class="me-2">Total Rating: {{rating1 |length + rating2 |length + rating3 |length + rating4 |length + rating5 |length}} </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

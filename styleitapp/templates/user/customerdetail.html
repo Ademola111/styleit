@@ -1,4 +1,4 @@
-{% extends 'admin/base.html' %}
+{% extends 'user/base.html' %}
 {% block title %}
 Styleit | Customer's Profile
 {% endblock %}
@@ -27,13 +27,8 @@ Styleit | Customer's Profile
                                 <p>Last Name: <b>{{design.cust_lname}}</b></p>
                                 <p>State: <b>{{design.stateobj.state_name}}</b></p>
                                 <p>L.G.A: <b>{{design.lgaobj.lga_name}}</b></p>
+                                <span><a href="{{url_for('report', id=design.cust_id)}}">Report</span>
                             </div>
-                            <input type="hidden" name="cust_id" id="cust_id" value="{{design.cust_id}}">
-                            {% if design.cust_access=='actived' %}
-                            <span class="btn btn-success" id="deactivate2">Deactivate</span>
-                            {% elif design.cust_acess=='deactived' %}
-                            <span class="btn btn-success" id="activate2">Activate</span>
-                            {% endif %}
                         </div>
                     </div>
                 </div>

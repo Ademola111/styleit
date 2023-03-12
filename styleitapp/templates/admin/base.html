@@ -126,7 +126,7 @@
                 </li>#}
                 
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/superadmin/{{spa.spadmin_pic}}" width="25px" class="img rounded-circle">{{spa.spadmin_fname}}</a>
+                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/superadmin/{{spa.spadmin_pic}}" width="25px" class="img rounded-circle">{{spa.spadmin_fname}} </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{url_for('admin_logout')}}">Logout</a>
@@ -217,7 +217,9 @@
                   location.reload(true);
                 }
               });
-             }); 
+             });
+             
+             
                     
              //deactivating dessigner profile
              $('#deactivate').click(function(){
@@ -283,92 +285,15 @@
              });
            });
              
-             //switching profile picture 
-             $('#profiletoggler').click(function(){
-               $('#divbody').toggleClass('col-md-9')
-              })
-
-            
-              // share buttons
-              $('#facebook').click(function(){
-                $('#shareon').css("display", "none");
-                $('#share').css("display", "block");
-                var name="facebook";
-                var sharepost=$("#sharepost").val();
-                var user=$("#user").val();
-                var csrf = "{{ csrf_token() }}";
-                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
-                 //Ajax call
-                 $.ajax({
-                     url:"/share/",
-                     data:data2send,
-                     type:'POST',
-                     success:function(msg){
-                     console.log(msg);
-                     $('#share').load(location.href + " #share")
-                     }
-                  })
-              })
-
-              $('#linkedin').click(function(){
-                $('#shareon').css("display", "none")
-                $('#share').css("display", "block")
-                var name="linkedin"
-                var sharepost=$("#sharepost").val();
-                var user=$("#user").val();
-                var csrf = "{{ csrf_token() }}";
-                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
-                 //Ajax call
-                 $.ajax({
-                     url:"/share/",
-                     data:data2send,
-                     type:'POST',
-                     success:function(msg){
-                     console.log(msg);
-                     $('#share').load(location.href + " #share")
-                     }
-                  })
-              })
-
-              $('#telegram').click(function(){
-                $('#shareon').css("display", "none")
-                $('#share').css("display", "block")
-                var name="telegram"
-                var sharepost=$("#sharepost").val();
-                var user=$("#user").val();
-                var csrf = "{{ csrf_token() }}";
-                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
-                 //Ajax call
-                 $.ajax({
-                     url:"/share/",
-                     data:data2send,
-                     type:'POST',
-                     success:function(msg){
-                     console.log(msg);
-                     $('#share').load(location.href + " #share")
-                     }
-                  })
-              })
-
-              $('#twitter').click(function(){
-                $('#shareon').css("display", "none")
-                $('#share').css("display", "block")
-                var name="twitter"
-                var sharepost=$("#sharepost").val();
-                var user=$("#user").val();
-                var csrf = "{{ csrf_token() }}";
-                data2send = {"name":name, "csrf_token":csrf, "sharepost":sharepost, "user":user}
-                 //Ajax call
-                 $.ajax({
-                     url:"/share/",
-                     data:data2send,
-                     type:'POST',
-                     success:function(msg){
-                     console.log(msg);
-                     $('#share').load(location.href + " #share")
-                     }
-                  })
-              })
+             //activating signup
+             $('#agree1').click(function(){
+              var dis = $(this).prop('checked')
+              if(dis == false){
+                $('#btn1').attr('disabled', 'disabled')
+              }else{
+               $('#btn1').removeAttr('disabled')
+              }
+            })
 
           })
 
@@ -379,12 +304,18 @@ var allappoint=document.getElementById('allappoint');
 var appoint=document.getElementById('appoint');
 var allpayment=document.getElementById('allpayment');
 var payment=document.getElementById('payment');
+var allsub=document.getElementById('allsub');
+var sublist=document.getElementById('sublist');
+var allreport=document.getElementById('allreport')
+var report=document.getElementById('report')
 
 alltred.addEventListener("click", function(){
   if(tred.style.display==='none'){
     tred.style.display='block';
     appoint.style.display='none';
     payment.style.display='none';
+    sublist.style.display='none';
+    report.style.diplay='none';
   }else{
     if(tred.style.display==='block'){
       tred.style.display='none';
@@ -396,7 +327,9 @@ allappoint.addEventListener("click", function(){
   if(appoint.style.display==='none'){
     appoint.style.display='block';
     tred.style.display='none';
-    payment.style.display='none';    
+    payment.style.display='none';
+    sublist.style.display='none';
+    report.style.diplay='none';
   }else{
     if(appoint.style.display==='block'){
       appoint.style.display='none';
@@ -409,15 +342,77 @@ allpayment.addEventListener("click", function(){
     payment.style.display='block';
     tred.style.display='none';
     appoint.style.display='none'; 
+    sublist.style.display='none';
+    report.style.diplay='none';
   }else{
     if(payment.style.display==='block'){
       payment.style.display='none';
     }
+  };
+});
+
+allsub.addEventListener("click", function(){
+  if(sublist.style.display==='none'){
+    sublist.style.display='block';
+    payment.style.display='none';
+    tred.style.display='none';
+    appoint.style.display='none';
+    report.style.diplay='none';
+  }else{
+    if(sublist.style.display==='block'){
+      sublist.style.display='none';
+    }
+  };
+});
+
+allreport.addEventListener("click", function(){
+  if(report.style.display==='none'){
+    report.style.display='block';
+    sublist.style.display='none';
+    payment.style.display='none';
+    tred.style.display='none';
+    appoint.style.display='none';
+  }else{
+    if(report.style.display==='block'){
+      report.style.display='none';
+    }
   }
 })
 
-        
 
+
+
+function comban(id){
+  var comid=id;
+  var csrf = '{{ csrf_token() }}';
+  data3send = {"comid":comid, "csrf_token":csrf}
+  console.log(data3send)
+  $.ajax({
+    url:'/ban/',
+    data:data3send,
+    type:'POST',
+    success:function(msg){
+      console.log(msg);
+      location.reload(true);
+    }
+  });
+}
+
+function comtrash(id){
+  var comid=id;
+  var csrf = '{{ csrf_token() }}';
+  data3send = {"comid":comid, "csrf_token":csrf}
+  console.log(data3send)
+  $.ajax({
+    url:'/trash/',
+    data:data3send,
+    type:'POST',
+    success:function(msg){
+      console.log(msg);
+      location.reload(true);
+    }
+  });
+}
 
 function reply(id){
   document.getElementById(id).style.display='block';

@@ -11,9 +11,9 @@ Styleit | Post details
             <div class="col-md-6">
                 <div class="row">
                     <div class="col mt-3 mb-3">
-                        {% if pstn.post_suspend %}
+                        {% if pstn.post_suspend=='suspended' %}
                         <div class="col mt-3 mb-3" id="divdisplay">
-                            <span class="p-3" style="margin-right: 100px;">
+                            <span class="p-3">
                                 <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
                                 <b>{{pstn.post_title}}</b>
                                 <span style="font-size:10px;">Posted by: {{pstn.designerobj.desi_businessName}}</span>
@@ -21,23 +21,26 @@ Styleit | Post details
                             </span>
                             <p class="p-3">This post has been suspended</p>
                         </div>
-                        {% elif pstn.post_delete %}
+                        {% elif pstn.post_delete =='deleted' %}
                         <div class="col mt-3 mb-3" id="divdisplay">
                             <p class="p-3">This post has been deleted by the user or unavailable</p>
                         </div>
                         {% else %}
                         <div class="col mt-3 mb-3" id="divdisplay">
-                            
-                            <span class="p-3" style="margin-right: 100px;">
-                                <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
-                                <b>{{pstn.post_title}}</b>
-                                <span style="font-size:10px;">Posted by: {{pstn.designerobj.desi_businessName}}</span>
-                                <span style="font-size:10px;">{{pstn.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+                            <span style="display:flex;"> 
+                                <span class="ps-3">
+                                    <img src="/static/images/profile/designer/{{pstn.designerobj.desi_pic}}" width="50" alt="{{pstn.designerobj.desi_fname}}" class="img-rounded-circle"> 
+                                    <b>{{pstn.post_title}}</b>
+                                    <span style="font-size:10px;">Posted by: {{pstn.designerobj.desi_businessName}}</span>
+                                    <span style="font-size:10px;">{{pstn.post_date.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+                                </span>
+                                <span style="margin-left:auto;">
+                                    <span class="p-1 me-1" id="ban"><i class="fa fa-ban"></i></span>
+                                    <span class="p-1 me-1" id="trash"><i class="fa fa-trash"></i></span>
+                                    <input type="hidden" name="postid" id="postid" value="{{pstn.post_id}}">
+                                </span>
                             </span>
-                            <span class="p-1 me-1" id="ban"><i class="fa fa-ban"></i></span>
-                            <span class="p-1 me-1" id="trash"><i class="fa fa-trash"></i></span>
-                            <input type="hidden" name="postid" id="postid" value="{{pstn.post_id}}">
-                            <p class="m-3 p-3 text-justify">{{pstn.post_body}}</p>
+                            <p class="ps-3 text-justify">{{pstn.post_body}}</p>
                             <div class="row">
                                 {% for x in pstn.imagepostobj %}
                                 {% if x.image_url %}
@@ -180,16 +183,27 @@ Styleit | Post details
                                                                 {% endif %}
                                                                 <!-- end of comment indentation -->
                                                                 <div>
-                                                                    
-                                                                    {% if y.comdesiobj %}
-                                                                    <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle">{{y.comdesiobj.desi_fname}}</span>
-                                                                    {% elif y.comcustobj %}
-                                                                    <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle">{{y.comcustobj.cust_fname}} </span>
-                                                                    {% endif %}
-                                                                    <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br> 
-                                                                                                        
+                                                                    <span style="display:flex;">
+                                                                        <span>
+                                                                        {% if y.comdesiobj %}
+                                                                            <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle">{{y.comdesiobj.desi_fname}}</span>
+                                                                        {% elif y.comcustobj %}
+                                                                            <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle">{{y.comcustobj.cust_fname}} </span>
+                                                                        {% endif %}
+                                                                            <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span> 
+                                                                        </span> 
+                                                                        <span style="margin-left:auto;">
+                                                                            <span class="p-1 me-1" id="comban" style="font-size:10px;" onclick="comban('{{y.com_id}}')"><i class="fa fa-ban"></i></span>
+                                                                            <span class="p-1 me-1" id="comtrash" style="font-size:10px;" onclick="comtrash('{{y.com_id}}')"><i class="fa fa-trash"></i></span>
+                                                                        </span>
+                                                                    </span>
+                                                                    {% if y.com_suspend=='suspended' %}
+                                                                    <span class="text-justify" style="padding:20px;"><i> This comment has been flagged </i></span>
+                                                                    {% elif y.com_delete=='deleted' %}
+                                                                    <span class="text-justify" style="padding:20px;"><i> This comment has been deleted </i></span>
+                                                                    {% else %}                                  
                                                                     <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')">{{y.com_body}}</span>
-                                                                    
+                                                                    {% endif %}
                                                                 </div>
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >
                                                                         {#<form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">

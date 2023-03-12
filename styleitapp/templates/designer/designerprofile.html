@@ -170,7 +170,7 @@ Styleit|Profile
                             
                                 <span class="card  p-3">
                                     <span ><strong>Customer's Name:</strong></span>
-                                    <span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span><br>
+                                    <a href="{{url_for('custdetail', id=bk.custbaobj.cust_id)}}"><span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span></a><br>
                                     {% if bk.ba_status == 'accept' %}
                                     <span><strong>Customer's Contact</strong></span> <span>{{bk.custbaobj.cust_phone}}</span>
                                     {% endif %}

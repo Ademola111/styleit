@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -275,7 +275,13 @@ def desi_detail(id):
         des=Designer.query.get(desiloggedin)
         cus=Customer.query.get(loggedin)
         design=Designer.query.filter(Designer.desi_id==id).first()
-        return render_template('designer/designerdetail.html', design=design, des=des, cus=cus)
+        rating1=Rating.query.filter(Rating.rat_rating==1, Rating.rat_desiid==id).all()
+        rating2=Rating.query.filter(Rating.rat_rating==2, Rating.rat_desiid==id).all()
+        rating3=Rating.query.filter(Rating.rat_rating==3, Rating.rat_desiid==id).all()
+        rating4=Rating.query.filter(Rating.rat_rating==4, Rating.rat_desiid==id).all()
+        rating5=Rating.query.filter(Rating.rat_rating==5, Rating.rat_desiid==id).all()
+
+        return render_template('designer/designerdetail.html', design=design, des=des, cus=cus, desiloggedin=desiloggedin, loggedin=loggedin, rating1=rating1, rating2=rating2, rating3=rating3, rating4=rating4, rating5=rating5)
 
 """Comment session"""
 @app.route('/comment/<int:postid>/', methods=['GET', 'POST'])
@@ -647,6 +653,10 @@ def customerProfile():
         if cus.cust_status == 'deactived':
             flash('Please confirm your account', 'warning')
             return redirect(url_for('unconfirmed'))
+        elif cus.cust_access=='deactived':
+            flash('Your account has been deactivated contact Styleit for help')
+            session.pop('customer', None)
+            return redirect('/user/customer/login/')
         else:
             page=request.args.get('page', 1, type=int)
             mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
@@ -685,6 +695,20 @@ def customerlogout():
         session.pop('customer', None)
         return redirect('/')
 
+
+"""Customers Details """
+@app.route('/customer/<id>/', methods=['GET', 'POST'])
+def custdetail(id):
+    loggedin = session.get('customer')
+    desiloggedin = session.get('designer')
+    cus=Customer.query.get(loggedin)
+    des=Designer.query.get(desiloggedin)
+    if loggedin==None and desiloggedin==None:
+        return redirect('/')
+        
+    if request.method == 'GET':         
+        design=Customer.query.filter(Customer.cust_id==id).first()
+        return render_template('user/customerdetail.html', design=design, cus=cus, des=des)
 
 """book appointment"""
 @app.route('/bookappointment/', methods=['GET', 'POST'])
@@ -861,10 +885,14 @@ def designerProfile():
 
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        state=State.query.all()
+        state=State.query.all()       
         if des.desi_status == 'deactived':
             flash('Please confirm your account', 'warning')
             return redirect(url_for('unconfirmed'))
+        elif des.desi_access=='deactived':
+            flash('Your account has been deactivated contact Styleit for help')
+            session.pop('designer', None)
+            return redirect('/user/designer/login/')
         else:
             page = request.args.get('page', 1, type=int)
             pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
@@ -1268,3 +1296,112 @@ def trashit():
                 db.session.commit()
                 msg='successfully deleted'
                 return jsonify(msg)
+
+
+"""Reports """
+@app.route('/report/<id>/', methods=['GET', 'POST'])
+def report(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin==None and loggedin== None:
+        return redirect('/')
+        
+    if request.method == 'GET':   
+        des=Designer.query.get(desiloggedin)
+        cus=Customer.query.get(loggedin)
+        if cus:
+            design=Designer.query.filter(Designer.desi_id==id).first()
+            return render_template('user/report.html', design=design, des=des, cus=cus, desiloggedin=desiloggedin, loggedin=loggedin)
+        elif des:
+            design=Customer.query.filter(Customer.cust_id==id).first()
+            design2=Designer.query.get(id)
+            return render_template('user/report.html', design=design, des=des, cus=cus, desiloggedin=desiloggedin, loggedin=loggedin, design2=design2)
+
+
+
+"""Report post """
+@app.route('/report/', methods=['POST'])
+def reports():
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin==None and loggedin== None:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        custid = request.form.get('custid')
+        desid = request.form.get('desid')
+        custname = request.form.get('custname')
+        desname = request.form.get('desname')
+        reson = request.form.get('report')
+
+        if reson !="" and desid !="" or custid !="" or custname !="" or desname !="":
+            if loggedin:
+                rep = Report(report_reason=reson, report_desiid=desid, reporter=custname)
+                db.session.add(rep)
+                db.session.commit()
+                return redirect('/customer/profile/')
+
+            elif desiloggedin:
+                if custid:
+                    rep = Report(report_reason=reson, report_custid=custid, reporter=desname)
+                    db.session.add(rep)
+                    db.session.commit()
+                    return redirect('/designer/profile/')
+                elif desid:
+                    rep = Report(report_reason=reson, report_desiid=desid, reporter=desname)
+                    db.session.add(rep)
+                    db.session.commit()
+                    return redirect('/designer/profile/')
+                
+        else:
+            if loggedin:
+                flash('one ore more file is empty')
+                return redirect(f'/report/{desid}/')
+            elif desiloggedin:
+                flash('one ore more file is empty')
+                return redirect(f'/report/{custid}/')
+
+
+@app.route('/rating/<id>/', methods=['GET', 'POST'])
+def rating(id):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin==None and loggedin== None:
+        return redirect('/')
+        
+    if request.method == 'GET':
+        cus=Customer.query.get(loggedin)
+        des=Designer.query.get(desiloggedin)
+        if cus:
+            design=Designer.query.filter(Designer.desi_id==id).first()
+            return render_template('user/rating.html', design=design, des=des, cus=cus, desiloggedin=desiloggedin, loggedin=loggedin)
+        elif des:
+            design=Customer.query.filter(Customer.cust_id==id).first()
+            design2=Designer.query.get(id)
+            return render_template('user/rating.html', design=design, des=des, cus=cus, desiloggedin=desiloggedin, loggedin=loggedin, design2=design2)
+
+@app.route('/rating/', methods=['GET', 'POST'])
+def rate():
+    # desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if loggedin== None:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        reson = request.form.get('rate')
+        custid = request.form.get('custid')
+        desid = request.form.get('desid')
+        if reson !="" or custid !="" or desid !="":
+            if loggedin:
+                rate=Rating(rat_rating=reson, rat_custid=loggedin, rat_desiid=desid)
+                db.session.add(rate)
+                db.session.commit()
+                flash('Thank you for the review')
+                return redirect(f'/designer/{desid}/')
+        else:
+            if loggedin:
+                flash('one ore more file is empty')
+                return redirect(f'/rating/{desid}/')
+            # elif desiloggedin:
+            #     flash('one ore more file is empty')
+            #     return redirect(f'/rating/{custid}/')   
