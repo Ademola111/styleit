@@ -86,7 +86,7 @@
                 <a class="nav-link active" href="{{url_for('admin_trending')}}">Today's Trend</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('admin_designers')}}">Designers</a>
+                <a class="nav-link active" href="{{url_for('admin_designers')}}">Creatorss</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('admin_customers')}}">Customers</a>
@@ -101,7 +101,7 @@
                 <a class="nav-link active" href="{{url_for('admin_trending')}}">Today's Trend</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('admin_designers')}}">Designers</a>
+                <a class="nav-link active" href="{{url_for('admin_designers')}}">Creators</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('admin_customers')}}">Customers</a>
@@ -414,33 +414,7 @@ function comtrash(id){
   });
 }
 
-function reply(id){
-  document.getElementById(id).style.display='block';
-}
 
-function share(){
-  document.getElementById('shareon').style.display='block';
-  document.getElementById('share').style.display='none';
-}
-
-// notification toggle
-// {# document.querySelector('#notif').addEventListener('click', (event)=>{
-//   var displayelement = document.querySelector('#note');
-//   if (displayelement.style.display==='none'){
-//     displayelement.style.display='block';
-
-//     var hideelement = document.getElementById('note');
-//     if (hideelement){
-//       hideelement.addEventListener('mouseleave', function(event){
-//         document.querySelector('#notif').style.display='block';
-//         displayelement.style.display='none';
-//       });                  
-//     }
-//   }else{
-//     displayelement.style.display='none';
-//     document.querySelector('#notif').style.display='block';
-//   }
-// })#}
             
       </script>
     </footer>

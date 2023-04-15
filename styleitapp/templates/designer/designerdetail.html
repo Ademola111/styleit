@@ -20,7 +20,30 @@ Styleit | Designer Profile
                                 
                                 <div class="p-2 text-center" style="line-height:2; color:white"> 
                                 <p class="fs-1"><b>{{design.desi_businessName}}</b></p>
+                                {% if loggedin %}
+                                    {% if is_following %}
+                                    {% if follow|length > 1 %}
+                                    <span class="mt-2 mb-2">{{ follow|length }} followers</span>
+                                    {% else %}
+                                    <span class="mt-2 mb-2">{{ follow|length }} follower</span>
+                                    {% endif %}
+                                    <form action="{{url_for('unfollow', id=design.desi_id)}}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-primary">Unfollow</button>
+                                    </form>
+                                    {% elif not is_following %}
+                                    {% if follow|length > 1 %}
+                                    <span class="mt-2 mb-2">{{ follow|length }} followers</span>
+                                    {% else %}
+                                    <span class="mt-2 mb-2">{{ follow|length }} follower</span>
+                                    {% endif %}
+                                    <form action="{{url_for('follow', id=design.desi_id)}}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-primary">Follow</button>
+                                    </form>
+                                    {% endif %}
                                 </div>
+                                {% endif %}
                             </div>
                             <div class="col-md-12">
                                 <div class="row">
@@ -42,11 +65,11 @@ Styleit | Designer Profile
                                     </div>
                                     <div class="col-md-6 mt-2">                                
                                         <p><b>Rating by Customers</b></p>
-                                        <p class="me-2">1 Star Rating: {{rating1 |length}}</p>
-                                        <p class="me-2">2 Star Rating: {{rating2 |length}}</p>
-                                        <p class="me-2">3 Star Rating: {{rating3 |length}}</p>
-                                        <p class="me-2">4 Star Rating: {{rating4 |length}}</p>
-                                        <p class="me-2">5 Star Rating: {{rating5 |length}}</p>
+                                        <p class="me-2">1 Star (Fair): {{rating1 |length}}</p>
+                                        <p class="me-2">2 Star (V.Fair): {{rating2 |length}}</p>
+                                        <p class="me-2">3 Star (Good): {{rating3 |length}}</p>
+                                        <p class="me-2">4 Star (V.Good): {{rating4 |length}}</p>
+                                        <p class="me-2">5 Star (Excellent): {{rating5 |length}}</p>
                                         <p class="me-2">Total Rating: {{rating1 |length + rating2 |length + rating3 |length + rating4 |length + rating5 |length}} </p>
                                     </div>
                                 </div>

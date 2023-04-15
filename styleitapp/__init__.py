@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail, Message
 from flask_socketio import SocketIO
-from threading import Lock
+# from threading import Lock
 # from flask_share import Share
 # async_mode = None
 

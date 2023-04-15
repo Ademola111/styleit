@@ -99,6 +99,10 @@ class Customer(db.Model):
     custnotifyobj = db.relationship('Notification', back_populates='notifycustobj')
     reportcustobj = db.relationship('Report', back_populates='custreportobj')
     ratcustobj = db.relationship('Rating', back_populates='custratobj')
+    custjbobj=db.relationship('Job', back_populates='jbcustobj')
+    tpaycustobj=db.relationship('Transaction_payment', back_populates='custtpayobj')
+    followcustobj = db.relationship('Follow', back_populates='custfollowobj')
+    
     
 
 class State(db.Model): 
@@ -152,6 +156,10 @@ class Designer(db.Model):
     desinotifyobj = db.relationship('Notification', back_populates='notifydesiobj')
     reportdesiobj = db.relationship('Report', back_populates='desireportobj')
     ratdesiobj = db.relationship('Rating', back_populates='desiratobj')
+    desijbobj=db.relationship('Job', back_populates='jbdesiobj')
+    tpaydesiobj=db.relationship('Transaction_payment', back_populates='desitpayobj')
+    bnkdesiobj = db.relationship('Bank', back_populates='desibnkobj')
+    followdesiobj = db.relationship('Follow', back_populates='desifollowobj')
     
         
 
@@ -186,8 +194,25 @@ class Payment(db.Model):
     desipaymentobj=db.relationship('Designer', back_populates='paymentdesiobj')
     subpaymentobj=db.relationship('Subscription', back_populates='paysubobj')
     paynotifyobj = db.relationship('Notification', back_populates='notifypayobj')
-    
 
+
+class Transaction_payment(db.Model):
+    tpay_id=db.Column(db.Integer(), primary_key=True,autoincrement=True)
+    tpay_transNo=db.Column(db.Integer(), nullable=True)
+    tpay_transdate=db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    tpay_amount=db.Column(db.Float(), nullable=False)
+    tpay_status = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
+    #foreignkey
+    tpay_desiid = db.Column(db.Integer(), db.ForeignKey("designer.desi_id"))
+    tpay_custid = db.Column(db.Integer(), db.ForeignKey("customer.cust_id"))
+    tpay_baid = db.Column(db.Integer(), db.ForeignKey('bookappointment.ba_id'))
+    
+    #relationship
+    desitpayobj=db.relationship('Designer', back_populates='tpaydesiobj')
+    custtpayobj=db.relationship('Customer', back_populates='tpaycustobj')
+    tpaynotifyobj = db.relationship('Notification', back_populates='notifytpayobj')
+    tpaybaobj = db.relationship('Bookappointment', back_populates='batpayobj')
+    
 
 class Admin (db.Model):
     admin_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -251,8 +276,10 @@ class Bookappointment(db.Model):
     ba_bookingTime = db.Column(db.String(255), nullable=False)
     ba_collectionDate = db.Column(db.String(255), nullable=False)
     ba_collectionTime = db.Column(db.String(255), nullable=False)
-    ba_status = db.Column(db.Enum('accept', 'decline', 'not decided'), nullable=False, default='not decided')
-
+    ba_status = db.Column(db.Enum('accept', 'decline', 'not decided', 'completed', 'not done'), nullable=False, server_default='not decided')
+    ba_custstatus = db.Column(db.Enum('collected', 'not collected'), nullable=False, server_default='not collected')
+    ba_paystatus = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
+    
     #foreignKey
     ba_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     ba_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
@@ -260,14 +287,32 @@ class Bookappointment(db.Model):
     desibaobj = db.relationship('Designer', back_populates='badesiobj')
     custbaobj = db.relationship('Customer', back_populates='bacustobj')
     banotifyobj = db.relationship('Notification', back_populates='notifybaobj')
+    bajbobj=db.relationship('Job', back_populates='jbbaobj')
+    batpayobj = db.relationship('Transaction_payment', back_populates='tpaybaobj')
     
 
+class Job(db.Model):
+    jb_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    jb_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    jb_status=db.Column(db.Enum("not done", "completed", "collected"), nullable=False, server_default="not done")
+    jb_pic=db.Column(db.String(225), nullable=False)
+    
+    #foreignKey
+    jb_custid=db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    jb_desiid=db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    jb_baid = db.Column(db.Integer(), db.ForeignKey('bookappointment.ba_id'))
+
+    #relationship
+    jbbaobj=db.relationship('Bookappointment', back_populates='bajbobj')
+    jbcustobj=db.relationship('Customer', back_populates='custjbobj')
+    jbdesiobj=db.relationship('Designer', back_populates='desijbobj')
+    
 
 
 class Notification(db.Model):
     notify_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     notify_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
-    notify_read = db.Column(db.Enum('read', 'unread'), nullable=False, default='unread')
+    notify_read = db.Column(db.Enum('read', 'unread'), nullable=False, server_default='unread')
     # foreignKey
     notify_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     notify_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
@@ -278,6 +323,7 @@ class Notification(db.Model):
     notify_baid = db.Column(db.Integer(), db.ForeignKey('bookappointment.ba_id'))
     notify_subid = db.Column(db.Integer(), db.ForeignKey('subscription.sub_id'))
     notify_paymentid = db.Column(db.Integer(), db.ForeignKey('payment.payment_id'))
+    notify_tpayid = db.Column(db.Integer(), db.ForeignKey('transaction_payment.tpay_id'))
     
     # relationship
     notifydesiobj = db.relationship('Designer', back_populates='desinotifyobj')
@@ -289,6 +335,7 @@ class Notification(db.Model):
     notifybaobj = db.relationship('Bookappointment', back_populates='banotifyobj')
     notifysubobj = db.relationship('Subscription', back_populates='subnotifyobj')
     notifypayobj = db.relationship('Payment', back_populates='paynotifyobj')
+    notifytpayobj = db.relationship('Transaction_payment', back_populates='tpaynotifyobj')
     
    
     def save(self):
@@ -317,4 +364,34 @@ class Rating(db.Model):
     #relationship
     desiratobj = db.relationship('Designer', back_populates='ratdesiobj')
     custratobj = db.relationship('Customer', back_populates='ratcustobj')
+
+class Newsletter(db.Model):
+    news_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    news_name=db.Column(db.String(225), nullable=False)
+    news_email=db.Column(db.String(225), nullable=False)
+    news_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    
+
+class Bank(db.Model):
+    bnk_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    bnk_acname=db.Column(db.String(225), nullable=False)
+    bnk_bankname=db.Column(db.String(225), nullable=False)
+    bnk_acno=db.Column(db.String(15), nullable=False)
+    bnk_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    
+    #forignKey
+    bnk_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    
+    #relationship
+    desibnkobj = db.relationship('Designer', back_populates='bnkdesiobj')
+
+class Follow(db.Model):
+    follow_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    #foreignKey
+    follow_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    follow_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desifollowobj = db.relationship('Designer', back_populates='followdesiobj')
+    custfollowobj = db.relationship('Customer', back_populates='followcustobj')
+    
     

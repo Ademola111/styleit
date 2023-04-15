@@ -34,30 +34,57 @@ Styleit|Profile
                     </div>
                     <div class="col-md-9 mt-2 mb-2 generalface2">
                         <h5 class="col-md-12 m-2 p-2 text-center" id="profilename">{{des.desi_businessName}} </h5>
+                        {% if follow|length > 1 %}
+                        <p class="text-center"><span class="mt-2 mb-2 text-light">{{ follow|length }} Followers</span></p>
+                        {% else %}
+                        <p class="text-center"><span class="mt-2 mb-2 text-light">{{ follow|length }} Follower</span></p>
+                        {% endif %}
+
                         {% if des.desi_status=='actived': %}
                         <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Online</i></span>
                         {% else %}
                         <span id="online2" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Offline</i></span>
                         {% endif %}
-                        <span id="logout"><a href="{{url_for('designerlogout')}}">Logout</a></span>
+                        <span id="logout"><a href="{{url_for('designerlogout')}}"><i class="fa fa-sign-out"></i> Logout</a></span>
                     </div>
 
                     <div class="col-md-12" id="profilebottom">
-                        <span id="settings" class="generalface2"><a href="#">Settings</a></span>
+                        <span id="settings" class="generalface2"><a href="#"><i class="fa fa-cog"></i> Settings</a></span>
                         <span id="edit" onclick="divchange4()" class="generalface2"><a href="#"><i class="fas fa-user-edit"></i> Edit</a></span>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col mt-3 mb-3">
+                    <div class="col-md-12 mt-3 mb-3">
                         {% if subt.sub_status == 'active' %}
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen"></i> Create a Post</span></a></p>
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
                         {% else %}
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
                         {% endif %}
-                        
+                        <p class="mt-3 mb-3 generalface2" onclick="divchange5()"><span id="tasks" class="m-1 p-1"><i class="fa fa-tasks"></i> Task History</span></p>
+                    </div>
+                </div>
+                <div class="row">
+                    {% if bnk.bnk_desiid==desiloggedin %}
+                    <div class="col-md-12 generalface2">
+                    <span class="text-light mt-3 mb-3">Bank Detail</span>
+                    <p class="text-light mt-3 mb-3"><span>Account Name:</span><span> {{bnk.bnk_acname}}</span></p>
+                    <p class="text-light mt-3 mb-3"><span>Account Number:</span><span> {{bnk.bnk_acno}}</span></p>
+                    <p class="text-light mt-3 mb-3"><span>Bank Name:</span><span> {{bnk.bnk_bankname}}</span></p>
 
                     </div>
+                    {% else %}
+                    <div class="col-md-12 generalface2">
+                    <span class="text-light mt-3 mb-3">Add Bank Detail</span>
+                        <form action="{{url_for('bank_detail')}}" method="POST">
+                            <input type="hidden" class="form-control mt-3 mb-3" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="text" class="form-control mt-3 mb-3" name="name" placeholder="Account Name">
+                            <input type="text" class="form-control mt-3 mb-3" name="bank" placeholder="Bank Name">
+                            <input type="text" id="acno" maxlength="10" class="form-control mt-3 mb-3" name="acno" placeholder="Account Number" onkeydown="return event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode === 8 || event.keyCode === 46">
+                            <button type="submit" class="form-control btn btn-danger mt-3 mb-3">Add Detail</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             <div  id="divbody">
@@ -154,9 +181,9 @@ Styleit|Profile
                             {% else %}
                             <span>You have no post. Click Create Post to begin </span>
                             {% endif %}
-                        </div>
-                        
+                        </div>                        
                     </div>
+
                     <div class="col-md-12 mt-3 mb-3 generalface2" id="Sameunlike" style="display:none">                       
                         <div class="row">
                             
@@ -168,16 +195,16 @@ Styleit|Profile
                             <div class="col-md-3">
                                 <!-- Button trigger modal -->
                             
-                                <span class="card  p-3">
-                                    <span ><strong>Customer's Name:</strong></span>
-                                    <a href="{{url_for('custdetail', id=bk.custbaobj.cust_id)}}"><span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span></a><br>
+                                <span class="card mt-2 mb-2 p-3">
+                                    <p><span ><strong>Name:</strong></span>
+                                    <a href="{{url_for('custdetail', id=bk.custbaobj.cust_id)}}"><span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span></a></p>
                                     {% if bk.ba_status == 'accept' %}
-                                    <span><strong>Customer's Contact</strong></span> <span>{{bk.custbaobj.cust_phone}}</span>
+                                    <p><span><strong>Contact</strong></span> <span>{{bk.custbaobj.cust_phone}}</span></p>
                                     {% endif %}
-                                    <span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span><br>
-                                    <span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span><br>
-                                    <span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span><br>
-                                    <span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span><br>
+                                    <p><span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span></p>
+                                    <p><span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span></p>
+                                    <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
+                                    <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
                                     
                                     <div class="row">
                                         <div class="d-flex">
@@ -185,7 +212,7 @@ Styleit|Profile
                                             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                                             <input type="hidden" name="action" value="accept" readonly>
                                         <div class="col-6 text-start">
-                                            {% if bk.ba_status == 'accept' %}
+                                            {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
                                             <span class="m-2 p-2 btn btn-success">Accepted</span>
                                             {% else %}
                                             <button type="submit" class="m-2 p-2 btn btn-success" id="accept">Accept</button>
@@ -196,14 +223,23 @@ Styleit|Profile
                                             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                                             <input type="hidden" name="action" value="decline" readonly>
                                         <div class="col-6 text-end">
-                                            {% if bk.ba_status == 'decline' %}
+                                            {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
                                             <span class="m-2 p-2 btn btn-danger">Declined</span>
                                             {% else %}
                                             <button type="submit" class="m-2 p-2 btn btn-danger" id="decline">Decline</button>
                                             {% endif %}
                                         </div>
-                                        </form>
+                                        </form>                                        
                                         </div>
+                                        {% if bk.ba_status == 'accept' %}
+                                        <div class="col-md-12">
+                                            <span class="m-2 p-2 text-primary btn"><a href="{{url_for('complete_task', id=bk.ba_id)}}"> Confirm Work Completion</a></span>
+                                        </div>
+                                        {% elif bk.ba_status =='completed' or bk.ba_status =='collected'%}
+                                        <div class="col-md-12">
+                                            <span class="m-2 p-2 text-primary btn">This job have been delivered </span>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                      
                                 </span>                               
@@ -268,6 +304,66 @@ Styleit|Profile
                                     <button type='submit' class="form-control mt-3 mb-3 btn btn-secondary">Update</button>
                                 </div>
                             </form>
+                        
+                    </div>
+                    <div class="col-md-12 mt-3 mb-3 generalface2" id="task" style="display:none">
+                        <div class="row">
+                           {% if bk %}
+                                {% for pt in bk.items: %}
+                                <div class="col-md-2">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <span class="card p-3" style="background-color:transparent;">
+                                                {% if pt.jb_pic %}
+                                                    <div class="col-md-12">
+                                                        <span class="col-md-2">
+                                                            <img src="/static/images/completed_task/{{pt.jb_pic}}" alt="{{pt.jb_id}}" class="img img-fluid" style="height: 150px !important; width:fit-content">
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <p class="text-left" style="font-size:10px;">{{pt.jbcustobj.cust_fname}} {{pt.jbcustobj.cust_lname}}</p>
+                                                        <p class="text-left" style="font-size:10px;">{{pt.jb_date}}</p>
+                                                        <p class="text-left">{{pt.jb_status | title}}</p>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="col-md-2">
+                                                        Add atleast one image to make your post go live on trending
+                                                    </span>
+                                                {% endif %}                                            
+                                                
+                                                
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                </div>                                
+                                {% endfor %}
+                                <!-- pagination links -->
+                            <div class="text-center mt-3">
+                                <a href="{{url_for('designerProfile', page=bk.prev_num)}}" class="btn btn-outline-primary {% if bk.page ==  1 %} disabled {% endif %}">&laquo;</a>
+                                <!-- looping through the number of pages to display a link for each -->
+                                {% for page_num in bk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+
+                                {% if page_num %}
+                                <!-- check for active page and set the link to active -->
+                                    {% if bk.page == page_num %}
+                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                                    {% else %}
+                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
+                                    {% endif %}
+                                {% else %}
+                                ...
+                                {% endif %}
+                                {% endfor %}
+                                <a href="{{url_for('designerProfile', page=bk.next_num)}}" class="btn btn-outline-primary {% if bk.page ==  bk.pages %} disabled {% endif %}">&raquo;</a>
+                                <p class="text-right mt-3">Showing Page {{bk.page}} of {{bk.pages}}</p>
+                            </div>
+                            <!-- end pagination -->
+                            {% else %}
+                            <span> You have no job completed. </span>
+                            {% endif %}
+                        </div>
                         
                     </div>
                 </div>

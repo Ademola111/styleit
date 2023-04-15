@@ -80,25 +80,25 @@
               <form class="d-flex" id="search" method="POST" action="{{url_for('search')}}">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <button class="btn btn-outline-success me-2" type="submit">Search</button>
-                <input class="form-control" type="search" name="search" placeholder="Search" aria-label="Search">
+                <input class="form-control" type="search" name="search" placeholder="Post search" aria-label="Search">
               </form>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
+                <a class="nav-link active" href="{{url_for('designers')}}">Creators</a>
               </li>
               {% elif session.get('designer') != None: %}
               <form class="d-flex" id="search" method="POST" action="{{url_for('search')}}">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <button class="btn btn-outline-success me-2" type="submit">Search</button>
-                <input class="form-control" type="search" name="search" placeholder="Search" aria-label="Search">
+                <input class="form-control" type="search" name="search" placeholder="Post search" aria-label="Search">
               </form>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('designers')}}">Designers</a>
+                <a class="nav-link active" href="{{url_for('designers')}}">Creators</a>
               </li>
               {% endif %}
               </ul>
@@ -154,11 +154,11 @@
                 </li>
                 
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('customerProfile')}}"><img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
+                  <a class="nav-link" href="{{url_for('customerProfile')}}"><img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="25px" class="img rounded-circle"> {{cus.cust_fname}}</a>
                 </li>
                 {% elif session.get('designer') != None and des.desi_status=='actived': %}
                 {#<li class="nav-item">
-                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle">{{des.desi_fname}}</a>
+                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/designer/{{des.desi_pic}}" alt="{{des.desi_fname}}" width="25px" class="img rounded-circle"> {{des.desi_fname}}</a>
                 </li>#}
                 <li class="nav-item">
                   {% if noti|length > 0 %}
@@ -251,7 +251,7 @@
                     {% endfor %}
                   </div>
                   {% else %}
-                  <i class="fa-solid fa-bell generalface2" id="notif"></i>
+                  <i class="fa-solid fa-bell generalface2" id="notif" style="display:block; position:relative"></i>
                   {% endif %}
                 </li>
                 <li class="nav-item">
@@ -288,40 +288,53 @@
 {% endblock %}
 
     <!-- footer section -->
-<div class="container-fluid">
-  <div class="container-fluid" id="footer">
-    <div class="row">
-        <div class="col-md-3 m-2 text-center" id="socials">
-          <p class="text-center text-dark generalface2"><b><i>Connect</i></b><hr></p>
-          <span class="card-text fs-1 me-3"><a href="https://www.facebook.com/styleithq"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-text fs-1 me-3"><a href="https://www.twitter.com/styleithq"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-text fs-1 me-3"><a href="https://www.linkedin.com/in/styleithq"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-text fs-1 me-3"><a href="https://www.instagram.com/styleithq"><i class="fab fa-instagram"></i></a></span>
-        </div>
-        <div class="col-md-3 m-2" id="quicklinks">
-          <p class="text-center text-dark generalface2"><b><i>Quick Links</i></b><hr></p>
-					<span class="card-text me-3"><a href="#">Support</a></span>
-					<span class="card-text me-3"><a href="#">Contact</a></span>
-					<span class="card-text me-3"><a href="#">Help</a></span>
-        </div>
-        <div class="col-md-3 m-2" id="subscribe">
-          <p class=" text-center text-dark generalface2"><b><i>Subscribe</i></b><hr></p>
+<div class="container-fluid" id="footer">
 
+    <div class="row">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-3 text-center" id="socials">
+            <p class="text-center text-dark generalface2 mt-2"><b><i>Connect</i></b><hr></p>
+            <span class="card-text fs-1 me-3"><a href="https://www.facebook.com/styleithq/"><i class="fab fa-facebook"></i></a></span>
+            <span class="card-text fs-1 me-3"><a href="https://www.twitter.com/styleithq/"><i class="fab fa-twitter"></i></a></span>
+            <span class="card-text fs-1 me-3"><a href="https://www.linkedin.com/in/styleithq/"><i class="fab fa-linkedin"></i></a></span>
+            <span class="card-text fs-1 me-3"><a href="https://www.instagram.com/styleithq/"><i class="fab fa-instagram"></i></a></span>
+          </div>
+  
+          <div class="col-md-3" id="quicklinks">
+            <p class="text-center text-dark generalface2 mt-2"><b><i>Quick Links</i></b><hr></p>
+            <span class="card-text me-3"><a href="mailto:support@styleit.com?">Support</a></span>
+            <span class="card-text me-3"><a href="mailto:contact@styleit.com?">Contact</a></span>
+            <span class="card-text me-3"><a href="mailto:help@styleit.com?">Help</a></span>
+          </div>
+  
+          <div class="col-md-3" id="subscribe">
+            <p class=" text-center text-dark generalface2 mt-2"><b><i>Subscribe to our newsletter</i></b><hr></p>
+            <span id="output"></span>
+            <form method="POST" action="{{url_for('newsletter')}}">
+              <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+              <input type="text" class="form-control mt-3 mb-3" id="newsname" name="name" placeholder="Fullname">
+              <input type="email" class="form-control mt-3 mb-3" id="newsmail" name="email" placeholder="E-mail">
+              <span class="btn btn-success form-control mt-3 mb-3" id="newsbtn" >Subscribe Now</span>
+            </form>
+          </div>
+  
+          <div class="col-md-3" id="locations">
+            <p class="text-center text-dark generalface2 mt-2"><b><i>Locations</i></b><hr></p>
+            <span class="card-text"><b>Address:</b></span><br>
+            <span class="card-text">10, Adegbola Street, Alakuko, Lagos State</span><br>
+            <span class="card-text"><b>Email:</b> support@styleit.com</span><br>
+            <span class="card-text"><b>Tel:</b>+2348087658590</span>
+          </div>
         </div>
-        <div class="col-md-3 m-2" id="locations">
-          <p class="text-center text-dark generalface2"><b><i>Locations</i></b><hr></p>
-					<span class="card-text"><b>Address:</b></span><br>
-					<span class="card-text">10, Adegbola Street, Alakuko, Lagos State</span><br>
-					<span class="card-text"><b>Email:</b> support@styleit.com</span><br>
-					<span class="card-text"><b>Tel:</b>+2348087658590</span>
+      </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 text-end generalface2 bg-danger p-2" style="font-size: 9px;">
+            <span><i>Designed by: AdemolaCode (Mr. Indelible) &copy; 2022 </i></span>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12 text-end generalface2">
-            <p><b><i>Designed by: AdemolaCode &copy; 2022 </i></b></p>
-        </div>
-    </div>
-
 
     <footer>
       <!-- jquery -->
@@ -349,8 +362,8 @@
                      success:function(msg){
                      $('#lga').html(msg)
                      }
-                 })
-             })
+                 });
+             });
              
              //activating signup
              $('#agree').click(function(){
@@ -360,13 +373,13 @@
                }else{
                 $('#btn').removeAttr('disabled')
                }
-             })
+             });
 
              
              //switching profile picture 
              $('#profiletoggler').click(function(){
                $('#divbody').toggleClass('col-md-9')
-              })
+              });
 
             
               // share buttons
@@ -387,8 +400,8 @@
                      console.log(msg);
                      $('#share').load(location.href + " #share")
                      }
-                  })
-              })
+                  });
+              });
 
               $('#linkedin').click(function(){
                 $('#shareon').css("display", "none")
@@ -407,8 +420,8 @@
                      console.log(msg);
                      $('#share').load(location.href + " #share")
                      }
-                  })
-              })
+                  });
+              });
 
               $('#telegram').click(function(){
                 $('#shareon').css("display", "none")
@@ -427,8 +440,8 @@
                      console.log(msg);
                      $('#share').load(location.href + " #share")
                      }
-                  })
-              })
+                  });
+              });
 
               $('#twitter').click(function(){
                 $('#shareon').css("display", "none")
@@ -447,10 +460,10 @@
                      console.log(msg);
                      $('#share').load(location.href + " #share")
                      }
-                  })
-              })
+                  });
+              });
               
-
+              //post trash by creator section
               $('#trashit').click(function(){
                 var potid = $('#potid').val();
                 var csrf = "{{ csrf_token() }}";
@@ -465,8 +478,25 @@
                   }
                 });
                }); 
+              
+               //newsletter section
+              $('#newsbtn').click(function(){
+                var newsname=$('#newsname').val();
+                var newsmail=$('#newsmail').val();
+                var csrf="{{ csrf_token() }}";
+                data={"name":newsname, "email":newsmail, "csrf_token":csrf}
+                $.ajax({
+                  url:'/newsletter/',
+                  data:data,
+                  type:"POST",
+                  success:function(msg){
+                    console.log(msg)
+                    $('#output').html(msg)
+                  }
+                });
+              });
 
-          })
+          });
 
 //Javascript to change multiple divs
           function divchange(){
@@ -474,132 +504,108 @@
                 document.getElementById("Samelike").style.display='none';
                 document.getElementById("Sameunlike").style.display='none';
                 document.getElementById("editprofile").style.display='none';
-            }
+                document.getElementById('task').style.display='none';
+            };
             function divchange2(){
                 document.getElementById("Sameprofile").style.display='none';
                 document.getElementById("Samelike").style.display='block';
                 document.getElementById("Sameunlike").style.display='none';
                 document.getElementById("editprofile").style.display='none';
-            }
+                document.getElementById('task').style.display='none';
+            };
             function divchange3(){
                 document.getElementById("Sameprofile").style.display='none';
                 document.getElementById("Samelike").style.display='none';
                 document.getElementById("Sameunlike").style.display='block';
                 document.getElementById("editprofile").style.display='none';
-            }
-
+                document.getElementById('task').style.display='none';
+            };
             function divchange4(){
+              document.getElementById("editprofile").style.display='block';
                 document.getElementById("Sameprofile").style.display='none';
                 document.getElementById("Samelike").style.display='none';
                 document.getElementById("Sameunlike").style.display='none';
-                document.getElementById("editprofile").style.display='block';
-            }
-            
+                document.getElementById('task').style.display='none';
+            };            
+            function divchange5(){
+                document.getElementById("Sameprofile").style.display='none';
+                document.getElementById("Samelike").style.display='none';
+                document.getElementById("Sameunlike").style.display='none';
+                document.getElementById("editprofile").style.display='none';
+                document.getElementById('task').style.display='block';
+            };
+
+            //reply function            
             function reply(id){
               document.getElementById(id).style.display='block';
-            }
+            };
 
             // designer delete display
-            var dots=document.getElementById('3dot');
-            var trashi=document.getElementById('trashi');
-            var trashit=document.getElementById('trashit')
-            trashi.addEventListener('click', function(){
-              if(dots.style.display==='none'){
-                dots.style.display='block';
-              }else{
-                if(dots.style.display==='block'){
-                  dots.style.display='none';
-                }
-              }
-            })
+            var dots = document.getElementById('3dot');
+            var trashi = document.getElementById('trashi');
+            var trashit = document.getElementById('trashit');
+            if (trashit !==null){
+              trashi.addEventListener("click", function() {
+              dots.style.display = dots.style.display === 'none' ? 'block' : 'none';
+            });
+            }
             
 
-            
+            // share function
             function share(){
               document.getElementById('shareon').style.display='block';
               document.getElementById('share').style.display='none';
-            }
+            };
 
             // notification toggle
-            document.querySelector('#notif').addEventListener('click', (event)=>{
-              var displayelement = document.querySelector('#note');
+            const noti=document.getElementById('notif');
+            if (noti !==null){
+              noti.addEventListener('click', (event)=>{
+              var displayelement = document.getElementById('note');
               if (displayelement.style.display==='none'){
                 displayelement.style.display='block';
-
                 var hideelement = document.getElementById('note');
                 if (hideelement){
                   hideelement.addEventListener('mouseleave', function(event){
-                    document.querySelector('#notif').style.display='block';
+                    noti.style.display='block';
                     displayelement.style.display='none';
-                  });                  
-                }
-              }else{
-                displayelement.style.display='none';
-                document.querySelector('#notif').style.display='block';
-              }
-            })
+                    });                  
+                  };
+                }else{
+                  displayelement.style.display='none';
+                  document.getElementById('notif').style.display='block';
+                };
+              });
+            };
+            
 
+            //text complaint area
             const textarea1 = document.getElementById('textarea');
-            textarea1.addEventListener('input', function() {
+            if (textarea1 !== null){
+              textarea1.addEventListener('input', function(){
+              if (this.value.length > this.maxLength){
+                this.value = this.value.slice(0, this.maxLength);
+              }
+            });
+            };
+            
+
+            //currency digit validation
+            const acno = document.getElementById('acno');
+            if (acno !==null){
+              acno.addEventListener('input', function() {
               if (this.value.length > this.maxLength) {
                 this.value = this.value.slice(0, this.maxLength);
               }
             });
+            };
             
-            // {#function sendPostRequest() {
-            //   var com1=document.getElementById('com1');
-            //   var value=com1.getAttribute("data-value");
-            //   var csrf="{{ csrf_token() }}";
-            //   var data1={"com1":value, "csrf":csrf};
-            //   datastringify = JSON.stringify(data1)
-            //   $.ajax({
-            //     type: "POST",
-            //     url:"/notification/postupdate/",
-            //     data:datastringify,
-            //     contentType:"application/json",
-            //     success: function(response) {
-            //       console.log(datastringify);
-            //       console.log(response);
-            //     }
-            //   })
-            // }#}
-            // {#document.querySelector('#repcomi').addEventListener('click', function(event){
-            //   event.preventDefault();
-
-              // Making a get request
-              // var xhr = new XMLHttpRequest();
-              // xhr.open('GET', this.href);
-              // xhr.send();
-              // fetch('#recomi'.href).then(response =>{
-              //   console.log(response, "i have been redirected");
-              // })
-
-              // var com1=document.getElementById('reep');
-              // var value=com1.getAttribute("data-value");
-              // var csrf="{{ csrf_token() }}";
-              // var data1={"com1":value, "csrf":csrf};
-              // datastringify = JSON.stringify(data1)#}
-
-              // Making a post request
-              // {#xhr.open('POST', '/notification/postupdate/');
-              // xhr.setRequestHeader('content-Type', 'application/x-www-form-urlencoded');
-              // xhr.send(datastringify);
-            //   fetch('/notification/postupdate/', {
-            //     method:"POST",
-            //     headers:{
-            //       'Content-Type': 'application/x-www-form-urlencoded'
-            //     },
-            //     body:data1,
-            //   }).then(response =>{
-            //     console.log("data committed successfully");
-            //   }),
-            //   event.preventDefault();
-            // });#}
           
+            
             
       </script>
     </footer>
-  </div>
+  
 </div>
   <!-- footer ends -->
 </body>

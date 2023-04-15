@@ -1,0 +1,38 @@
+{% extends 'user/base.html' %}
+
+{% block title %}
+Styleit | Customer Payment
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 mt-3 mb-3">
+            <h4>Payment for completed task</h4>
+            <form method="POST" action="{{url_for('custpayment', id=jb.jb_baid)}}">
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+            <label><b>Full Name:</b></label>
+            <input type="hidden" name="custid" value="{{jb.jb_custid}}">
+            <span class="mt-3 mb-3">{{jb.jbcustobj.cust_fname}} {{jb.jbcustobj.cust_lname}}</span><br>
+
+            <label><b>Business Name: </b></label>
+            <input type="hidden" name="desiid" value="{{jb.jb_desiid}}">
+            <span class="mt-3 mb-3">{{jb.jbdesiobj.desi_businessName}}</span><br>
+
+            <label><b>Amount:</b></label>
+            <input class="mt-3 mb-3 form-control" type="text" id="currency-input" name="amount" onkeydown="return event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode === 8 || event.keyCode === 46" placeholder="N0.00">
+
+            <label><b>Charges:</b></label>
+            <span class="mt-3 mb-3">N100.00</span>
+            <input type="hidden" name="charges" value="100">
+
+            <button type="submit" class="form-control mt-3 mb-3 btn btn-danger"> Pay Now </button>
+            </form>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+</div>
+
+{% endblock %}

@@ -177,4 +177,40 @@ Igbaye - town
 osun state
 owolabi surname
 mariam - name
+omowunmi - mothers name
 AS - blood group
+
+opeyemimoses@gmail.com
+
+
+
+ var dots=document.getElementById('3dot');
+            var trashi=document.getElementById('trashi');
+            var trashit=document.getElementById('trashit');
+            trashi.addEventListener('click', function(){
+              if(dots.style.display==='none'){
+                dots.style.display='block';
+              }else{
+                if(dots.style.display==='block'){
+                  dots.style.display='none';
+                }
+              };
+            });
+
+const noti = document.getElementById('notif');
+            const displayelement = document.getElementById('note');
+
+            displayelement.classList.add('hidden');
+
+            noti.addEventListener("click", (event) => {
+              if (displayelement.classList.contains('hidden')) {
+                displayelement.classList.remove('hidden');
+                displayelement.addEventListener('mouseleave', function(event) {
+                  noti.style.display='block';
+                  displayelement.classList.add('hidden');
+                });
+              } else {
+                displayelement.classList.add('hidden');
+                noti.style.display='block';
+              }
+            });

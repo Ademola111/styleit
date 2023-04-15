@@ -2,7 +2,6 @@ alembic==1.8.1
 bidict==0.22.0
 blinker==1.5
 certifi==2021.10.8
-cffi==1.15.1
 charset-normalizer==2.0.12
 click==8.0.4
 colorama==0.4.4
@@ -34,7 +33,7 @@ pycparser==2.21
 pyOpenSSL==22.1.0
 python-engineio==4.3.4
 python-socketio==5.7.2
-regex==2022.3.15
+
 requests==2.27.1
 six==1.16.0
 SQLAlchemy==1.4.32
@@ -42,3 +41,6 @@ urllib3==1.26.9
 Werkzeug==2.0.3
 WTForms==3.0.1
 WTForms-Ext==0.5
+cffi==1.15.1
+regex
+greenlet.platform

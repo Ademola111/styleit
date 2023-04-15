@@ -8,14 +8,14 @@ Styleit | search
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4"></div>
-        <div class="col-md-4 mt-3 mb-3">
+        <div class="col-md-4 mt-2 mb-2">
         {% if wordsearch.items %}
             {% for wo in wordsearch.items %}
             <div class="row">
-                <div class="col-md-6">                    
+                <div class="col-md-6 mt-2 mb-2">                    
                     <a href="/designer/{{wo.desi_id}}/"><span><img src="/static/images/profile/designer/{{wo.desi_pic}}/" alt="{{wo.desi_businessName}}" class="img-fluid"></span></a>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 mt-2 mb-2">
                     <p><a href="/designer/{{wo.desi_id}}/">   
                     <span>{{wo.desi_businessName}} </span><br>
                     <span>{% if wo.desi_status %} Actively Online {% endif %} </span><br>
@@ -26,6 +26,7 @@ Styleit | search
                     </a></p>
                 </div>
             </div>
+            {% endfor %}
             
             <!-- pagination links -->
             <div class="text-center mt-3">
@@ -48,7 +49,6 @@ Styleit | search
                 <p class="text-right mt-3">Showing Page {{wordsearch.page}} of {{wordsearch.pages}}</p>
             </div>
             <!-- end pagination -->
-            {% endfor %}
         {% else %}
             <p class="text-center fs-3">...Opps! No search found.</p><p class="text-center">Click <a href="{{url_for('home')}}">Home</a> to return to homepage</p>
         {% endif %}
