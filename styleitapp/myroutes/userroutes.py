@@ -7,12 +7,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
 from styleitapp.email import send_email, send_email_alert
-from styleitapp.signal import comment_signal, reply_signal, like_signal, unlike_signal
+from styleitapp.signal import comment_signal, reply_signal, like_signal, unlike_signal, subactivate_signal, subdeactivate_signal, payment_signal, transpay_signal, share_signal, bookappointment_signal, declineappointment_signal, acceptappointment_signal, completetask_signal, confirmdelivery_signal, follow_signal, unfollow_signal
 
 rows_per_page = 12
 rows_page = 20
@@ -304,22 +304,35 @@ def comment(postid):
         if desiloggedin:
             des=Designer.query.get(desiloggedin)
             com=request.form.get('comment')
-            m=Comment(com_body=com, com_postid=postid, com_desiid=des.desi_id)
-            d=Notification(notify_desiid=des.desi_id, notify_postid=postid) 
-            m.save()
-            d.save()
-            return redirect(f'/post/{postid}/')
+            comt=Comment.query.filter_by(com_body=com, com_postid=postid, com_desiid=des.desi_id).first()
+            if comt==None:
+                m=Comment(com_body=com, com_postid=postid, com_desiid=des.desi_id)
+                d=Notification(notify_desiid=des.desi_id, notify_postid=postid) 
+                m.save()
+                d.save()
+                return redirect(f'/post/{postid}/')
+            else:
+                flash("You've commemted this before. Write another")
+                return redirect(f'/post/{postid}/')
+
         elif loggedin:
             cus = Customer.query.get(loggedin)
             com=request.form.get('comment')
-            k=Comment(com_body=com, com_postid=postid, com_custid=cus.cust_id)
-            d=Notification(notify_custid=cus.cust_id, notify_postid=postid) 
-            k.save()
-            d.save()
-            commenter=k.query.filter_by(com_postid=postid).first()
-            commenter_email=commenter.compostobj.designerobj.desi_email
-            comment_signal.send(app, comment=k, post_author_email=commenter_email)
-            return redirect(f'/post/{postid}/')
+            comt=Comment.query.filter_by(com_body=com, com_postid=postid, com_custid=cus.cust_id).first()
+            if comt==None:
+                k=Comment(com_body=com, com_postid=postid, com_custid=cus.cust_id)
+                d=Notification(notify_custid=cus.cust_id, notify_postid=postid) 
+                k.save()
+                d.save()
+                commenter=k.query.filter_by(com_postid=postid).first()
+                commenter_email=commenter.compostobj.designerobj.desi_email
+                comment_signal.send(app, comment=k, post_author_email=commenter_email)
+                return redirect(f'/post/{postid}/')
+            else:
+                flash("You've commemted this before. Write another")
+                return redirect(f'/post/{postid}/')
+
+
 
 """Reply Session """
 @app.route('/reply/<int:postid>/<int:commentid>/', methods=['POST', 'GET'])
@@ -336,32 +349,42 @@ def reply(postid, commentid):
         if desiloggedin:
             des=Designer.query.get(desiloggedin)
             repl=request.form.get('comrep')
-            m=Comment(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid)
-            m.save()
-            d=Notification(notify_desiid=des.desi_id, notify_comid=commentid ) 
-            d.save()
-            commenter=m.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
-            dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
-            custom=dso.comcustobj.cust_fname
-            recipients={'custom':custom}
-            commenter_email=dso.comcustobj.cust_email
-            reply_signal.send(app, comment=m, post_author_email=commenter_email, recipients=recipients)
-            return redirect(f'/post/{postid}/')
-
+            comt=Comment.query.filter_by(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid).first()
+            if comt==None:
+                m=Comment(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid)
+                m.save()
+                d=Notification(notify_desiid=des.desi_id, notify_comid=commentid ) 
+                d.save()
+                commenter=m.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
+                dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
+                custom=dso.comcustobj.cust_fname
+                recipients={'custom':custom}
+                commenter_email=dso.comcustobj.cust_email
+                reply_signal.send(app, comment=m, post_author_email=commenter_email, recipients=recipients)
+                return redirect(f'/post/{postid}/')
+            else:
+                flash("You've commemted this before. Write another")
+                return redirect(f'/post/{postid}/')
+            
         elif loggedin:
             cus = Customer.query.get(loggedin)
             repl=request.form.get('comrep')
-            k=Comment(com_body=repl, com_postid=postid, com_custid=cus.cust_id, parent_id=commentid)
-            k.save()
-            d=Notification(notify_custid=cus.cust_id, notify_comid=commentid ) 
-            d.save()
-            commenter=k.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
-            dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
-            custom=dso.condesiobj.desi_businessName
-            recipients={'custom':custom}
-            commenter_email=dso.comdesiobj.desi_email
-            reply_signal.send(app, comment=k, post_author_email=commenter_email, recipients=recipients)
-            return redirect(f'/post/{postid}/')
+            comt=Comment.query.filter_by(com_body=repl, com_custid=cus.cust_id, com_postid=postid, parent_id=commentid).first()
+            if comt==None:
+                k=Comment(com_body=repl, com_postid=postid, com_custid=cus.cust_id, parent_id=commentid)
+                k.save()
+                d=Notification(notify_custid=cus.cust_id, notify_comid=commentid ) 
+                d.save()
+                commenter=k.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
+                dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
+                custom=dso.condesiobj.desi_businessName
+                recipients={'custom':custom}
+                commenter_email=dso.comdesiobj.desi_email
+                reply_signal.send(app, comment=k, post_author_email=commenter_email, recipients=recipients)
+                return redirect(f'/post/{postid}/')
+            else:
+                flash("You've commemted this before. Write another")
+                return redirect(f'/post/{postid}/')
 
 
 """like session"""
@@ -442,6 +465,11 @@ def share():
             d=Notification(notify_desiid=user, notify_shareid=sh.share_id) 
             db.session.add(d)
             db.session.commit()
+            commenter=Share.query.filter_by(share_postid=postid, share_desiid=desiloggedin).first()
+            commenter_email=Share.postshareobj.designerobj.desi_email
+            custom=Share.postshareobj.designerobj.desi_businessName
+            recipients={"custom":custom}
+            share_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             # return redirect(f'/post/{postid}')
             return ('', 204)
     elif loggedin:
@@ -455,6 +483,12 @@ def share():
             d=Notification(notify_custid=user, notify_shareid=sh.share_id) 
             db.session.add(d)
             db.session.commit()
+            
+            commenter=Share.query.filter_by(share_postid=postid, share_custid=loggedin).first()
+            commenter_email=commenter.postshareobj.designerobj.desi_email
+            custom=commenter.postshareobj.designerobj.desi_businessName
+            recipients={"custom":custom}
+            share_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             # return redirect(f'/post/{postid}')
             return ('', 204)
 
@@ -647,6 +681,9 @@ def customerLogin():
             checking = check_password_hash(formated_pwd, pwd)
             if checking:
                 session['customer']=user.cust_id
+                lo=Login(login_email=user.cust_email, login_custid=user.cust_id)
+                db.session.add(lo)
+                db.session.commit()
                 return redirect('/customer/profile/')
             else:
                 flash('kindly supply a valid email address and password', 'warning')
@@ -691,6 +728,7 @@ def customerforgottenpass():
 @app.route('/customer/profile/', methods=['GET', 'POST'])
 def customerProfile():
     loggedin = session.get('customer')
+    
     if loggedin==None:
         return redirect('/')
 
@@ -740,6 +778,9 @@ def customerlogout():
         return redirect('/')
         
     if request.method == 'GET':
+        lo=Login.query.filter_by(login_custid=loggedin, logout_date=None).first()
+        lo.logout_date=datetime.utcnow()
+        db.session.commit()
         session.pop('customer', None)
         return redirect('/')
 
@@ -791,6 +832,12 @@ def book_appointment():
             dd=Notification(notify_desiid=dsignername, notify_baid=bookapp.ba_id)
             db.session.add(dd)
             db.session.commit()
+            
+            commenter=Bookappointment.query.filter_by(ba_desiid=dsignername, ba_custid=loggedin, ba_status='not decided').first()
+            commenter_email=commenter.desibaobj.desi_email
+            custom=commenter.desibaobj.desi_businessName
+            recipients={"custom":custom}
+            bookappointment_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
         return redirect('/customer/profile/')
 
 # customer section ends
@@ -885,6 +932,11 @@ def before_request_func():
             if subt.sub_enddate < str(today):
                 subt.sub_status='deactive'
                 db.session.commit()
+                
+                commenter_email=subt.subdesiobj.desi_email
+                custom=subt.subdesiobj.desi_businessName
+                recipients={"custom":custom}
+                subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
         else:
             pass
 
@@ -918,6 +970,9 @@ def designerLogin():
             checking = check_password_hash(formated_pwd, pwd)
             if checking:
                 session['designer']=designer.desi_id
+                le=Login(login_email=designer.desi_email, login_desiid=designer.desi_id)
+                db.session.add(le)
+                db.session.commit()
                 return redirect('/designer/profile/')
             else:
                 flash('kindly supply a valid email address and password', 'warning')
@@ -1014,6 +1069,9 @@ def designerlogout():
         return redirect('/')
 
     if request.method == 'GET':
+        lo=Login.query.filter_by(login_desiid=desiloggedin, logout_date=None).first()
+        lo.logout_date=datetime.utcnow()
+        db.session.commit()
         session.pop('designer', None)
         return redirect('/')
 
@@ -1110,11 +1168,22 @@ def appointment_status(id):
                 apptm = Bookappointment.query.get(id)
                 apptm.ba_status=aptaction
                 db.session.commit()
+                commenter=apptm.query.filter_by(ba_id=id, ba_status=aptaction).first()
+                commenter_email=commenter.custbaobj.cust_email
+                recipients=commenter_email
+                custom=commenter.custbaobj.cust_email
+                recipients={'custom':custom}
+                acceptappointment_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
                 return redirect('/designer/profile/')
             elif aptaction =="decline":
                 apptm = Bookappointment.query.get(id)
                 apptm.ba_status=aptaction
                 db.session.commit()
+                commenter=apptm.query.filter_by(ba_id=id, ba_status=aptaction).first()
+                commenter_email=commenter.custbaobj.cust_email
+                recipients=commenter_email
+                custom=commenter.custbaobj.cust_email
+                declineappointment_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
                 return redirect('/designer/profile/')
 
 
@@ -1156,13 +1225,15 @@ def subscribe():
             sub = Subscription(sub_plan=planb, sub_ref=refno, sub_desiid=desiloggedin, sub_startdate=0, sub_enddate=0)
             db.session.add(sub)
             db.session.commit()
-            d=Notification(notify_desiid=desiloggedin, notify_subid=sub.sub_id) 
+            subb=Subscription.query.filter_by(sub_ref=refno, sub_desiid=desiloggedin).first()
+            d=Notification(notify_desiid=desiloggedin, notify_subid=subb.sub_id) 
             db.session.add(d)
             db.session.commit()
-            pay = Payment(payment_transNo=refno, payment_amount=planb, payment_desiid=desiloggedin, payment_subid=sub.sub_id)
+            pay = Payment(payment_transNo=refno, payment_amount=planb, payment_desiid=desiloggedin, payment_subid=subb.sub_id)
             db.session.add(pay)
             db.session.commit()
-            d=Notification(notify_desiid=desiloggedin, notify_paymentid=sub.sub_id) 
+            paey=Payment.query.filter_by(payment_transNo=refno, payment_desiid=desiloggedin).first()
+            d=Notification(notify_desiid=desiloggedin, notify_paymentid=paey.payment_id) 
             db.session.add(d)
             db.session.commit()
             return redirect('/payment/')
@@ -1215,6 +1286,9 @@ def paystack():
             p.payment_status = 'paid'
             db.session.add(p)
             db.session.commit()
+            commenter=p.query.filter_by(payment_transNo=refno).first()
+            commenter_email=commenter.desipaymentobj.desi_email
+            payment_signal.send(app, comment=commenter, post_author_email=commenter_email)
             return redirect('/activate/')  #update database and redirect them to the feedback page
         elif tpay:
             tpay.tpay_status = 'paid'
@@ -1223,6 +1297,9 @@ def paystack():
             bk.bk_paystatus = 'paid'
             db.session.add(bk)
             db.session.commit()
+            commenter=tpay.query.filter_by(tpay_transNo=refno).first()
+            commenter_email=commenter.desitpayobj.desi_email
+            transpay_signal.send(app, comment=commenter, post_author_email=commenter_email)
             return redirect('/customer/profile/')
     else:
         p = Payment.query.filter(Payment.payment_transNo==refno).first()
@@ -1266,6 +1343,12 @@ def activating():
             substat.sub_status='active'
             substat.sub_paystatus='paid'
             db.session.commit()
+            
+            commenter=Payment.query.filter_by(payment_desiid=desiloggedin, payment_transNo=refno).first()
+            commenter_email=commenter.desipaymentobj.desi_email
+            custom=commenter.desipaymentobj.desi_businessName
+            recipients={"custom":custom}
+            subactivate_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             flash("Activation Successful", "success")
             return redirect('/designer/profile/')  #update database and redirect them to the feedback page
         elif substat.sub_plan == '1350':
@@ -1278,6 +1361,12 @@ def activating():
             substat.sub_status='active'
             substat.sub_paystatus='paid'
             db.session.commit()
+            
+            commenter=Payment.query.filter_by(payment_desiid=desiloggedin, payment_transNo=refno).first()
+            commenter_email=commenter.desipaymentobj.desi_email
+            custom=commenter.desipaymentobj.desi_businessName
+            recipients={"custom":custom}
+            subactivate_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             flash("Activation Successful", "success")
             return redirect('/designer/profile/')  #update database and redirect them to the feedback page
         elif substat.sub_plan == '2400':
@@ -1290,6 +1379,12 @@ def activating():
             substat.sub_status='active'
             substat.sub_paystatus='paid'
             db.session.commit()
+            
+            commenter=Payment.query.filter_by(payment_desiid=desiloggedin, payment_transNo=refno).first()
+            commenter_email=commenter.desipaymentobj.desi_email
+            custom=commenter.desipaymentobj.desi_businessName
+            recipients={"custom":custom}
+            subactivate_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             flash("Activation Successful", "success")
             return redirect('/designer/profile/')  #update database and redirect them to the feedback page
         elif substat.sub_plan == '4200':
@@ -1302,6 +1397,12 @@ def activating():
             substat.sub_status='active'
             substat.sub_paystatus='paid'
             db.session.commit()
+            
+            commenter=Payment.query.filter_by(payment_desiid=desiloggedin, payment_transNo=refno).first()
+            commenter_email=commenter.desipaymentobj.desi_email
+            custom=commenter.desipaymentobj.desi_businessName
+            recipients={"custom":custom}
+            subactivate_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
             flash("Activation Successful", "success")
             return redirect('/designer/profile/')  #update database and redirect them to the feedback page
         else:
@@ -1338,6 +1439,9 @@ def complete_task(id):
                 ds=Bookappointment.query.get(id)
                 ds.ba_status=lev
                 db.session.commit()
+                commenter=dk.query.filter_by(jb_baid=id, jb_status=lev).first()
+                commenter_email=commenter.jbcustobj.cust_email
+                completetask_signal.send(app, comment=commenter, post_author_email=commenter_email)
                 return redirect('/designer/profile/')
             else:
                 flash('a field is empty')
@@ -1369,6 +1473,9 @@ def confirm_delivery(id):
             jb=Job.query.filter(Job.jb_baid==id).first()
             jb.jb_status=status
             db.session.commit()
+            commenter=jb.query.filter_by(jb_baid=id, jb_status=status).first()
+            commenter_email=commenter.jbdesiobj.desi_email
+            confirmdelivery_signal.send(app, comment=commenter, post_author_email=commenter_email)
             flash('You have confoirmed your task delivery')
             return redirect(f'/custpayment/{id}/')
             # return 'You have confoirmed your task delivery'
@@ -1665,6 +1772,9 @@ def follow(id):
         new_follower=Follow(follow_desiid=id, follow_custid=loggedin)
         db.session.add(new_follower)
         db.session.commit()
+        commenter=new_follower.query.filter_by(follow_desiid=id, follow_custid=loggedin).first()
+        commenter_email=commenter.desifollowobj.desi_email
+        follow_signal.send(app, comment=commenter, post_author_email=commenter_email)
         return redirect(f'/designer/{id}/')
 
 
@@ -1679,8 +1789,11 @@ def unfollow(id):
     if request.method == 'POST':
         follower=Follow.query.filter_by(follow_desiid=id, follow_custid=loggedin).first()
         if follower:
+            commenter=follower.query.filter_by(follow_desiid=id, follow_custid=loggedin).first()
+            commenter_email=commenter.desifollowobj.desi_email
+            unfollow_signal.send(app, comment=commenter, post_author_email=commenter_email)
             db.session.delete(follower)
-            db.session.commit()
+            db.session.commit()            
             return redirect(f'/designer/{id}/')
 
 
@@ -1688,7 +1801,7 @@ def unfollow(id):
 @comment_signal.connect
 def send_comment_email_alert(sender, comment, post_author_email): 
     subject = f"StyleitHQ: {comment.comcustobj.cust_fname} commented on your post"
-    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: 'http:127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
     send_email_alert(subject, body, [post_author_email])
 
 
@@ -1698,11 +1811,11 @@ def send_reply_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.comdesiobj.desi_businessName} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: 'http:127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.comcustobj.cust_fname} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: 'http:127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1712,11 +1825,11 @@ def send_like_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} like your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: 'http:127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} like your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: 'http:127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1726,9 +1839,119 @@ def send_unlike_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: 'http:127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: 'http:127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
+
+@subactivate_signal.connect
+def send_subactivate_email_alart(sender, comment, post_author_email, recipients):
+    subject = f"Subcription Alert by StyleitHQ"
+    body = f"Hi {recipients['custom']},\n\n You have successfully subscribe to a new plan \n\n Your subscription details is as shown below \n plan: {comment.subpaymentobj.sub_plan} \n Sub Start Date: {comment.subpaymentobj.sub_startdate} \n Sub End Date: {comment.subpaymentobj.sub_enddate} \n Thank you for doing business with us.\n\n Visit: 'http://127.0.0.1:8080/designer/subplan/' \n\n StyleitHQ Team" 
+    send_email_alert(subject, body, [post_author_email])
+
+@subdeactivate_signal.connect
+def send_subdeactivate_email_alart(sender, comment, post_author_email, recipients):
+    subject = f"Subcription Alert by StyleitHQ"
+    body = f"Hi {recipients['custom']},\n\n Your subscription have been deactivated.\n Kindly click the link below to subscribe. \n Thank you for doing business with us.\n\n Visit: 'http://127.0.0.1:8080/designer/subplan/' \n\n StyleitHQ Team" 
+    send_email_alert(subject, body, [post_author_email])
+
+@share_signal.connect
+def send_share_email_alart(sender, comment, post_author_email, recipients):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    if desiloggedin:
+        subject = f"StyleitHQ: {comment.desishareobj.desi_businessName} shared your post"
+        body = f"Hi {recipients['custom']},\n\n{comment.desishareobj.desi_businessName} shared your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.share_postid}/' \n\n StyleitHQ" 
+        send_email_alert(subject, body, [post_author_email])
+    elif loggedin:
+        subject = f"StyleitHQ: {comment.custshareobj.cust_fname} shared your post"
+        body = f"Hi {recipients['custom']},\n\n {comment.custshareobj.cust_fname} shared your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.share_postid}/' \n\n StyleitHQ" 
+        send_email_alert(subject, body, [post_author_email])
+
+
+@bookappointment_signal.connect
+def send_bookappointment_email_alart(sender, comment, post_author_email, recipients):
+    loggedin = session.get('customer')
+    if loggedin:
+        subject = f"StyleitHQ: {comment.custbaobj.cust_fname} booking appointment"
+        body = f"Hi {recipients['custom']},\n\n {comment.custbaobj.cust_fname} needs for your service. \n Kindly visit the link below to respond to the appointment \n\n Visit: 'http://127.0.0.1:8080/designer/profile/' \n\n StyleitHQ" 
+        send_email_alert(subject, body, [post_author_email])
+
+@acceptappointment_signal.connect
+def send_acceptappointment_email_alart(sender, comment, post_author_email, recipients):
+    desiloggedin = session.get('designer')
+    if desiloggedin:
+        subject = f"StyleitHQ: Booking Appointment Update!"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has accepted your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+
+
+@declineappointment_signal.connect
+def send_declineappointment_email_alart(sender, comment, post_author_email, recipients):
+    desiloggedin = session.get('designer')
+    if desiloggedin:
+        subject = f"StyleitHQ: Booking Appointment Update!"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has decline your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+
+
+@completetask_signal.connect
+def send_completetask_email_alart(sender, comment, post_author_email):
+    desiloggedin = session.get('designer')
+    if desiloggedin:
+        subject = f"StyleitHQ: Job Update!"
+        body = f"Hi {comment.jbcustobj.cust_fname},\n\n {comment.jbdesiobj.desi_businessName} has completed your task. \n Kindly use the link below to approve delivery and collection \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+
+
+@confirmdelivery_signal.connect
+def send_confirmdelivery_email_alart(sender, comment, post_author_email):
+    loggedin = session.get('customer')
+    if loggedin:
+        subject = f"StyleitHQ: Job Update!"
+        body = f"Hi {comment.jbdesiobj.desi_businessName},\n\n {comment.jbcustobj.cust_fname} has confirm your task delivery. Kindly await your payment from Styleit HQ once payment is confirmed.\n Kindly use the link below to view details. \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+        
+@follow_signal.connect
+def send_follow_email_alart(sender, comment, post_author_email):
+    loggedin = session.get('customer')
+    if loggedin:
+        subject = f"StyleitHQ: {comment.custfollowobj.cust_fname} follow you"
+        body = f"Hi {comment.desifollowobj.desi_businessName},\n\n {comment.custfollowobj.cust_fname} started following you for updates.\n\n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+
+@unfollow_signal.connect
+def send_unfollow_email_alart(sender, comment, post_author_email):
+    loggedin = session.get('customer')
+    if loggedin:
+        subject = f"StyleitHQ: {comment.custfollowobj.cust_fname} unfollow you"
+        body = f"Hi {comment.desifollowobj.desi_businessName},\n\n {comment.custfollowobj.cust_fname} just unfollowing you. Don't feel down everyone have there reasons, just keep up the good work to gain more followers. \n Thanks. \n\n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+
+
+@payment_signal.connect
+def send_payment_email_alart(sender, comment, post_author_email):
+    desiloggedin = session.get('designer')
+    if desiloggedin:
+        subject = f"StyleitHQ: {comment.desipaymentobj.desi_bussinessName} payment update"
+        body = f"Hi {comment.desipaymentobj.desi_businessName},\n\n Your payment for the subscription is successful. \n\n Kindly check the subscription plan for update.. \n Thanks. \n\n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+        
+@transpay_signal.connect
+def send_transpay_signal_email_alart(sender, comment, post_author_email):
+    loggedin = session.get('customer')
+    if loggedin:
+        subject = f"StyleitHQ: {comment.custtpayobj.cust_fname} payment update"
+        body = f"Hi {comment.custtpayobj.cust_fname},\n\n Your payment for the delivery of the task completed by {comment.desitpayobj.desi_businessName} payment was successful. Your total charges for payment is  {comment.tpay_amount}. \n Thanks. \n\n\n StyleitHQ Team"
+        send_email_alert(subject, body, [post_author_email])
+      
+# @subactivate_signal.connect
+# def send_subactivate_email_alart(sender, comment, post_author_email, receipients):
+#     desiloggedin = session.get('designer')
+#     msg = Message(f"StyleitHQ: Subscription Activation", sender, post_author_email)
+#     msg.html= render_template('designer/sub_notification.html', comment=comment)
+#     mail.send(msg)
+

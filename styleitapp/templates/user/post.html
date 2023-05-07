@@ -197,7 +197,7 @@ Styleit | Post details
                                                                     {% elif y.com_delete=='deleted' %}
                                                                     <span class="text-justify" style="padding:20px;"><i> This comment has been deleted </i></span>
                                                                     {% else %} 
-                                                                    <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')">{{y.com_body}} <i class=" fa-solid fa-reply"></i></span>
+                                                                    <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')"><i class=" fa-solid fa-reply"></i> {{y.com_body}} </span>
                                                                     {% endif %}
                                                                 </div>
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >

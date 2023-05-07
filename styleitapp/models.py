@@ -102,7 +102,7 @@ class Customer(db.Model):
     custjbobj=db.relationship('Job', back_populates='jbcustobj')
     tpaycustobj=db.relationship('Transaction_payment', back_populates='custtpayobj')
     followcustobj = db.relationship('Follow', back_populates='custfollowobj')
-    
+    logincustobj = db.relationship('Login', back_populates='custloginobj')
     
 
 class State(db.Model): 
@@ -160,7 +160,7 @@ class Designer(db.Model):
     tpaydesiobj=db.relationship('Transaction_payment', back_populates='desitpayobj')
     bnkdesiobj = db.relationship('Bank', back_populates='desibnkobj')
     followdesiobj = db.relationship('Follow', back_populates='desifollowobj')
-    
+    logindesiobj = db.relationship('Login', back_populates='desiloginobj')
         
 
 class Subscription(db.Model):
@@ -393,5 +393,19 @@ class Follow(db.Model):
     #relationship
     desifollowobj = db.relationship('Designer', back_populates='followdesiobj')
     custfollowobj = db.relationship('Customer', back_populates='followcustobj')
+
+
+class Login(db.Model):
+    login_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    login_email=db.Column(db.String(225), nullable=False)
+    login_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    logout_date = db.Column(db.DateTime(), nullable=False)
+    
+    #foreignKey
+    login_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    login_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    #relationship
+    desiloginobj = db.relationship('Designer', back_populates='logindesiobj')
+    custloginobj = db.relationship('Customer', back_populates='logincustobj')
     
     

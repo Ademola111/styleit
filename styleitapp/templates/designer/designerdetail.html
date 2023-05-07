@@ -19,31 +19,33 @@ Styleit | Designer Profile
                                 </div>
                                 
                                 <div class="p-2 text-center" style="line-height:2; color:white"> 
-                                <p class="fs-1"><b>{{design.desi_businessName}}</b></p>
-                                {% if loggedin %}
-                                    {% if is_following %}
-                                    {% if follow|length > 1 %}
-                                    <span class="mt-2 mb-2">{{ follow|length }} followers</span>
-                                    {% else %}
-                                    <span class="mt-2 mb-2">{{ follow|length }} follower</span>
-                                    {% endif %}
-                                    <form action="{{url_for('unfollow', id=design.desi_id)}}" method="POST">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-primary">Unfollow</button>
-                                    </form>
-                                    {% elif not is_following %}
-                                    {% if follow|length > 1 %}
-                                    <span class="mt-2 mb-2">{{ follow|length }} followers</span>
-                                    {% else %}
-                                    <span class="mt-2 mb-2">{{ follow|length }} follower</span>
-                                    {% endif %}
-                                    <form action="{{url_for('follow', id=design.desi_id)}}" method="POST">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-primary">Follow</button>
-                                    </form>
+                                    <p class="fs-1"><b>{{design.desi_businessName}}</b></p>
+                                    
+                                    {% if loggedin %}
+                                        {% if is_following %}
+                                            {% if follow|length > 1 %}
+                                            <span class="mt-2 mb-2">{{ follow|length }} followers</span>
+                                            {% else %}
+                                            <span class="mt-2 mb-2">{{ follow|length }} follower</span>
+                                            {% endif %}
+                                        <form action="{{url_for('unfollow', id=design.desi_id)}}" method="POST">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-primary">Unfollow</button>
+                                        </form>
+                                        {% elif not is_following %}
+                                            {% if follow|length > 1 %}
+                                            <span class="mt-2 mb-2">{{ follow|length }} followers</span>
+                                            {% else %}
+                                            <span class="mt-2 mb-2">{{ follow|length }} follower</span>
+                                            {% endif %}
+                                        <form action="{{url_for('follow', id=design.desi_id)}}" method="POST">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-primary">Follow</button>
+                                        </form>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
-                                {% endif %}
+                                
                             </div>
                             <div class="col-md-12">
                                 <div class="row">

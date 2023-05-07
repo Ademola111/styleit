@@ -3,6 +3,8 @@ from flask.signals import Namespace
 
 app_signal=Namespace()
 
+
+""" signals for email notifications on activities"""
 post_signal = app_signal.signal('post')
 comment_signal = app_signal.signal('comment')
 reply_signal = app_signal.signal('reply')
@@ -14,6 +16,8 @@ payment_signal = app_signal.signal('payment')
 transpay_signal = app_signal.signal('transpay')
 share_signal = app_signal.signal('share')
 bookappointment_signal = app_signal.signal('bookappointment')
+acceptappointment_signal = app_signal.signal('acceptappointment')
+declineappointment_signal = app_signal.signal('declineappointment')
 completetask_signal = app_signal.signal('completetask')
 confirmdelivery_signal = app_signal.signal('confirmdelivery')
 follow_signal = app_signal.signal('follow')
