@@ -10,7 +10,7 @@ Styleit | Post details
             <div class="col-md-3"></div>
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col mt-3 mb-3">
+                    <div class="col-md-12 mt-3 mb-3">
                         {% if pstn.post_suspend=="suspended" %}
                         <div class="col mt-3 mb-3" id="divdisplay">
                             <span class="p-3">
@@ -164,7 +164,7 @@ Styleit | Post details
                                     </div>
                                 </form>
                             </div>                            
-                            <div class="col-md-12">
+                            <div class="col-md-12 p-2">
                                 <div class ='row'>
                                     {% for y in comnt %}                                    
                                     <div class="col-md-12 p-2" id="commint">
@@ -174,13 +174,13 @@ Styleit | Post details
                                             {% elif y.level() == 1 %}
                                             <div class="col-md-11 offset-md-1 border-start border-secondary">
                                                 {% elif y.level() == 2 %}
-                                                <div class="col-md-10 offset-md-2 border-start border-secondary">
+                                                <div class="col-md-10 offset-md-2 border-start border-warning">
                                                     {% elif y.level() == 3 %}
-                                                    <div class="col-md-9 offset-md-3 border-start border-secondary">
+                                                    <div class="col-md-9 offset-md-3 border-start border-dark">
                                                         {% elif y.level() == 4 %}
-                                                        <div class="col-md-8 offset-md-4 border-start border-secondary">
+                                                        <div class="col-md-8 offset-md-4 border-start border-danger">
                                                             {% else %}
-                                                            <div class="col-md-7 offset-md-5 border-start border-primary">
+                                                            <div class="col-md-7 offset-md-5 border-start border-light">
                                                                 {% endif %}
                                                                 <!-- end of comment indentation -->
                                                                 <div>

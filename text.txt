@@ -214,3 +214,58 @@ const noti = document.getElementById('notif');
                 noti.style.display='block';
               }
             });
+
+$(window).scroll(function() {
+    if($(window).scrollTop() + $(window).height() >= $('#post-list').offset().top + $('#post-list').outerHeight()) {
+        if(!loading) {
+            loading = true;
+            offset += 10;
+            $.get('/trending?offset=' + offset, function(data) {
+                if(data.trim().length == 0) {
+                    // no more data to load
+                } else {
+                    $('.post').append(data);
+                    loading = false;
+                }
+            });
+        }
+    }
+});
+
+$(window).scroll(function() {
+    if($(window).scrollTop() == $(document).height() - $(window).height()) {
+        if(!loading) {
+            loading = true;
+            offset += 10;
+            $.get('/trending?offset=' + offset, function(data) {
+                if(data.trim().length == 0) {
+                    // no more data to load
+                } else {
+                    $('.posts').append(data);
+                    loading = false;
+                }
+            });
+        }
+    }
+});
+
+var offset = 0;
+var loading = false;
+
+$("#post-list").on("scroll", function() {
+  var element = $(this);
+  if (element.scrollTop() + element.innerHeight() >= element[0].scrollHeight) {
+    if (!loading) {
+      loading = true;
+      offset += 10;
+      $.get("/trending?offset=" + offset, function(data) {
+        if (data.trim().length == 0) {
+          alert('No more data to load')
+        } else {
+          $('.post').append(data);
+          loading = false;
+        }
+      });
+    }
+  }
+});

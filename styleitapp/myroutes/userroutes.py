@@ -65,26 +65,37 @@ def trending():
         return redirect('/')
 
     if request.method == "GET":
-        today = date.today()
         cus=Customer.query.get(loggedin)
         des=Designer.query.get(desiloggedin)
-        """the main query for the production"""
-        subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-        subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-        subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
-
-        """query post with daily rank"""
-        # pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today), Posting.post_suspend=='unsuspended').order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
-
-        """query post without daily rank"""
-        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
+        today = date.today()
+        
+        page = request.args.get('page', 1, type=int)
+        offset = (page - 1) * 10
+        # offset = request.args.get('offset', 0, type=int)
+        pstn = fetch_posts(offset)
+        has_more = len(pstn) == 10
         
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
         if desiloggedin:
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
         elif loggedin:
             noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
-        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk, noti=noti)
+        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk, noti=noti, has_more=has_more, page=page)
+
+
+@app.route('/loadmore')
+def fetch_posts(offset):
+    """the main query for the production"""
+    subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
+    subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
+    subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+
+    """query post with daily rank"""
+    # pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today), Posting.post_suspend=='unsuspended').order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).offset(offset).all()
+
+    """query post without daily rank"""    
+    pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).offset(offset).all()
+    return pstn
 
 
 """ post detail session """
@@ -375,7 +386,7 @@ def reply(postid, commentid):
                 k.save()
                 d=Notification(notify_custid=cus.cust_id, notify_comid=commentid ) 
                 d.save()
-                commenter=k.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
+                commenter=k.query.filter_by(com_postid=postid, parent_id=k.parent_id).first()
                 dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
                 custom=dso.condesiobj.desi_businessName
                 recipients={'custom':custom}
@@ -1477,7 +1488,7 @@ def confirm_delivery(id):
             commenter_email=commenter.jbdesiobj.desi_email
             confirmdelivery_signal.send(app, comment=commenter, post_author_email=commenter_email)
             flash('You have confoirmed your task delivery')
-            return redirect(f'/custpayment/{id}/')
+            return redirect('/customer/profile/')
             # return 'You have confoirmed your task delivery'
         else:
             flash('one or more filed is empty')
@@ -1493,7 +1504,7 @@ def custpayment(id):
     
     if request.method=='GET':
         cus=Customer.query.get(loggedin)
-        jb=Job.query.filter(Job.jb_baid==id).first()
+        jb=Bookappointment.query.filter(Bookappointment.ba_id==id).first()
         # des=Designer.query.filter(Designer.desi_id==jb.jb_desiid).first()
         return render_template('user/custpayment.html', jb=jb, cus=cus)
     

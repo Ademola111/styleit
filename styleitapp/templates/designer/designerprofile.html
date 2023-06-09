@@ -215,7 +215,11 @@ Styleit|Profile
                                             {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
                                             <span class="m-2 p-2 btn btn-success">Accepted</span>
                                             {% else %}
-                                            <button type="submit" class="m-2 p-2 btn btn-success" id="accept">Accept</button>
+                                                {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
+                                                <button type="submit" class="m-2 p-2 btn btn-success" id="accept" disabled>Accept</button>
+                                                {% else %}
+                                                <button type="submit" class="m-2 p-2 btn btn-success" id="accept">Accept</button>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                         </form>
@@ -226,7 +230,11 @@ Styleit|Profile
                                             {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
                                             <span class="m-2 p-2 btn btn-danger">Declined</span>
                                             {% else %}
-                                            <button type="submit" class="m-2 p-2 btn btn-danger" id="decline">Decline</button>
+                                                {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
+                                                <button type="submit" class="m-2 p-2 btn btn-danger" id="decline" disabled>Decline</button>
+                                                {% else %}
+                                                <button type="submit" class="m-2 p-2 btn btn-danger" id="decline">Decline</button>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                         </form>                                        

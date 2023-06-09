@@ -172,7 +172,16 @@ Styleit|Profile
                                     <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
                                     <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
 
-                                    {% if bk.ba_status == 'completed' and bk.ba_custstatus =='not collected' %}
+                                    {% if bk.ba_status == 'accept' and bk.ba_paystatus=='pending' %}
+                                        <div class="col-md-12">
+                                            <p style="background-color: rgb(219, 8, 8); padding: 2px; color:#fff; margin: 2px; text-align: center;">If negotiation is sealed, kindly make payment below</p>
+                                            <span class="m-2 p-2 btn btn-danger"><a href="{{url_for('custpayment', id=bk.ba_id)}}" style="color:white"> Make Payment</a></span>
+                                        </div>
+                                    {% elif bk.ba_status == 'accept' and bk.ba_paystatus=='paid' %}
+                                        <div class="col-md-12">
+                                            <span class="m-2 p-2 text-primary btn">Payment completed </span>
+                                        </div>
+                                    {% elif bk.ba_status == 'completed' and bk.ba_custstatus =='not collected' %}
                                         <div class="col-md-12">
                                             <span class="m-2 p-2 btn btn-danger"><a href="{{url_for('confirm_delivery', id=bk.ba_id)}}" style="color:white"> Confirm Delivery</a></span>
                                         </div>
@@ -184,8 +193,9 @@ Styleit|Profile
                                         </div>
                                     {% elif bk.ba_custstatus =='collected' and bk.ba_status == 'completed' and bk.ba_paystatus=='paid' %}
                                         <div class="col-md-12">
-                                            <span class="m-2 p-2 text-primary btn">Payment for the job is completed </span>
+                                            <span class="m-2 p-2 text-primary btn">Task completed </span>
                                         </div>
+                                    
                                     {% endif %}
                                 </span>                               
                             </div>

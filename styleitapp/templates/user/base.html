@@ -288,8 +288,7 @@
 {% endblock %}
 
     <!-- footer section -->
-<div class="container-fluid" id="footer">
-
+  <div class="container-fluid" id="footer">
     <div class="row">
       <div class="col-md-12">
         <div class="row">
@@ -496,7 +495,71 @@
                 });
               });
 
+              
+
           });
+
+
+//window scroll to load more post 
+
+// var offset = 0;
+var loading = false;
+
+// {#$(window).scroll(function() {
+//     if($(window).scrollTop() == $(document).height() - $(window).height()) {
+//         if(!loading) {
+//             loading = true;
+//             offset += 10;
+//             $.get('/trending?offset=' + offset, function(data) {
+//                 if(data.trim().length == 0) {
+//                     // no more data to load
+//                 } else {
+//                     $('.post').append(data);
+//                     loading = false;
+//                 }
+//             });
+//         }
+//     }
+// });#}
+
+// {#$("#post-list").on("scroll", function() {
+//   var element = $(this);
+//   if (element.scrollTop() + element.innerHeight() >= element[0].scrollHeight) {
+//     if (!loading) {
+//       loading = true;
+//       offset += 10;
+//       $.get("/trending?offset=" + offset, function(data) {
+//         if (data.trim().length == 0) {
+//           alert('No more data to load')
+//         } else {
+//           console.log(data)
+//           $('.post').append(data);
+//           loading = false;
+//         }
+//       });
+//     }
+//   }
+// });#}
+
+$(window).scroll(function() {
+  if($(window).scrollTop() == $(document).height() - $(window).height()){
+    if (!loading) {
+      loading = true;
+      var page = $(this).data('page');
+      $.get('/trending?page=' + page, function(data) {
+        if(data.trim().length==0){
+          alert('No more data to load')
+        }else{
+          var posts = $(data).find('.post');
+          $('.post').append(posts);
+        };
+      });
+    }
+  };
+  
+});
+
+
 
 //Javascript to change multiple divs
           function divchange(){
@@ -537,7 +600,12 @@
 
             //reply function            
             function reply(id){
-              document.getElementById(id).style.display='block';
+              var rep=document.getElementById(id)
+              if(rep.style.display==='block'){
+                rep.style.display='none';
+              }else{
+                rep.style.display='block';
+              };
             };
 
             // designer delete display
@@ -556,6 +624,7 @@
               document.getElementById('shareon').style.display='block';
               document.getElementById('share').style.display='none';
             };
+
 
             // notification toggle
             const noti=document.getElementById('notif');
@@ -599,14 +668,13 @@
               }
             });
             };
+
             
-          
             
             
       </script>
     </footer>
-  
-</div>
+  </div>
   <!-- footer ends -->
 </body>
 </html>

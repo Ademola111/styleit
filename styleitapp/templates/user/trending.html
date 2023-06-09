@@ -11,9 +11,9 @@ Styleit | Trending
             <div class="col-md-3"></div>
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col-12 mt-3 mb-3">
+                    <div class="col-12 mt-3 mb-3 mt-3" id="post-list">
                         {% for y in pstn %}
-                        <div class="col-md-12 mb-3" id="divdisplay">
+                        <div class="col-md-12 mb-3 mt-3 post" id="divdisplay">
                             {% if y.post_suspend=="suspended" %}
                             <a href="/post/{{y.post_id}}">
                                 <span class="p-3">
@@ -70,12 +70,14 @@ Styleit | Trending
                             
                             {% endif %}
                         </div> 
-                        {% endfor %}          
+                        {% endfor %}        
                     </div>
+                    
                 </div>
             </div>
             <div class="col-md-3"></div>
         </div>
     </div>
 </div>
+
 {% endblock %}
