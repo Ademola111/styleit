@@ -16,24 +16,30 @@
 		<!-- metas-->
 		<meta charset="utf-8">
 		<meta name="description" content="styleit your No1 fashion hub in Nigeria">
-		<meta name="author" content="styleit.com">
+		<meta name="author" content="styleit Africa">
 		<meta name="keywords" content="styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya">
 		
 		<!--facebook meta integration-->
-		<meta property="og:styleit.com" content="Hola Cakes your No1 cake shop in Nigeria"/>
-		<meta property="og:www.styleit.com/home" content="website"/>
+		<meta property="og:https://www.styleit.africa" content="Styleit is a home of professional fashionista"/>
+		<meta property="og:https://www.styleit.africa/home" content="website"/>
 		<meta property="og:image" content="images/ceo.jpg"/>
 		<meta property="og:image-width" content="400"/>
 		<meta property="og:image-height" content="300"/>
 		<meta property="og:locale:alternative" content="fr_FR"/>
-		<meta property="og:url" content="www.styleit.com"/>
+		<meta property="og:url" content="https://www.styleit.africa"/>
 		
 		<!-- twitter meta integeration-->
-		<meta name="twitter.www.styleit.com" content="@holacakes"/>
-		<meta name="twitter.title" content="@styleit"/>
-		<meta name="twitter.card" content="styleit is your No1 fashion hub in Nigeria"/>
-		<meta name="twitter.description" content="Styleit your No1 cake shop in Nigeria where yu can get high quality salivating designer wears for your next occasion"/>
-		<meta name="twitter.url" content="www.styleit.com"/>
+		<meta name="twitter.www.styleit.africa" content="@styleitafrica"/>
+		<meta name="twitter.title" content="@styleitafrica"/>
+		<meta name="twitter.card" content="styleit is your No1 home of professional fashionista"/>
+		<meta name="twitter.description" content="Styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya"/>
+		<meta name="twitter.url" content="https://www.styleit.africa"/>
+		
+		<!-- fav icon -->
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+		<link rel="manifest" href="/static/images/site.webmanifest">
 
 		<!-- font awesome -->
 		<link href="{{url_for('static', filename='fa/css/all.min.css')}}" rel="stylesheet">
@@ -159,13 +165,6 @@
 					<span class="card-text fs-1"><a href="#"><i class="fab fa-linkedin"></i></a></span>
 					<span class="card-text fs-1"><a href="#"><i class="fab fa-instagram"></i></a></span>
         </div>
-        <div class="col-md-3 m-2" id="quicklinks">
-          
-        </div>
-        <div class="col-md-3 m-2" id="subscribe">
-          
-        </div>
-        <div class="col-md-3 m-2" id="locations">
           
         </div>
     </div>
@@ -294,6 +293,80 @@
                $('#btn1').removeAttr('disabled')
               }
             })
+
+            //searching payment by ref no
+            $('#refbtn').click(function(){
+              const searchref = $('#searchref').val();
+              var csrf = "{{csrf_token()}}";
+              var data = {"searchref":searchref, "csrf_token":csrf}
+
+              $.ajax({
+                url:'/searchref/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  
+                  if(message.message){
+                    value=message.message
+                    var difa = `<span class="p-3">
+                      <p style="font-size:12px;">${value}</p>                                                       
+                  </span>`
+                    $('#displaysearch').html(difa);
+                    console.log(difa)
+                  }else{
+                    rediif= JSON.parse(message);
+                    const value1 = rediif.desipaymentobj;
+                    const value2 = rediif.payment_amount;
+                    const value3 = rediif.payment_transdate;
+                    const value4 = rediif.payment_status;
+                    const value5 = rediif.payment_transNo;
+                    const tvalue1 = rediif.desitpayobj;
+                    const tvalue2 = rediif.custtpayobj;
+                    const tvalue3 = rediif.custtpayobj2;
+                    const tvalue4 = rediif.tpay_amount;
+                    const tvalue5 = rediif.tpay_baid;
+                    const tvalue6 = rediif.tpay_status;
+                    const tvalue7 = rediif.tpay_transNo;
+                    const tvalue8 = rediif.tpay_transdate;
+                    const tvalue9 = rediif.tpaybaobj;
+                    const tvalue10 = rediif.tpaybaobj2;
+                    const apfund = '/approve/';
+
+
+                    if(value1 && value2 && value3 && value4 && value5){
+                      var difa = `<span class="p-3">
+                        <p style="font-size:12px;"> Business Name: ${value1}</p>
+                        <p style="font-size:12px;">Amount Paid: ${value2}</p>
+                        <p style="font-size:12px;">Payment Date: ${value3}</p>
+                        <p style="font-size:12px;">Payment Status: ${value4}</p>
+                        <p style="font-size:12px;">Ref No: ${value5}</p>                                                            
+                    </span>`
+                      $('#displaysearch').html(difa);
+                      console.log(difa)
+                    }else{
+                      var difa = `<span class="p-3">
+                        <p style="font-size:12px;"> Business Name: ${tvalue1}</p>
+                        <p style="font-size:12px;"> Payment by: ${tvalue2} ${tvalue3}</p>                        
+                        <p style="font-size:12px;">Amount Paid: ${tvalue4}</p>
+                        <p style="font-size:12px;">Booked Appointment ID: ${tvalue5}</p>
+                        <p style="font-size:12px;">Payment Date: ${tvalue8}</p>
+                        <p style="font-size:12px;">Payment Status: ${tvalue6}</p>
+                        <p style="font-size:12px;">Ref No: ${tvalue7}</p>
+                        <p style="font-size:12px;">Booking Payment Status: ${tvalue9}</p>
+                        <p style="font-size:12px;">Collection Status: ${tvalue10}</p>
+                    </span>`
+                    if (tvalue10==='collected'){
+                      difa += `<p> <a href='${apfund}${tvalue7}/'> Approve Payment </a> </p>
+                              <input type='hidden' value='${tvalue7}' id='refno' name='refno'>`
+                    }
+                      $('#displaysearch').html(difa);
+                      console.log(difa)
+                    }
+                    
+                    }
+                }
+              });
+            });
 
           })
 

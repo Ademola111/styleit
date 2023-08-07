@@ -6,11 +6,18 @@ Styleit|Profile
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <span>{% with m = get_flashed_messages() %}
-            {% for i in m %}
-            <span class="fw-4">{{i}}</span>
-            {% endfor %}
-            {% endwith %}</span>
+        <span>{% with m = get_flashed_messages(with_categories=true) %}
+            {% for c, i in m %}
+                {% if c == 'success' %}
+                <P class="alert alert-success fw-4">{{i}} </P>
+                {% elif c == 'warning' %}
+                <P class="alert alert-warning fw-4">{{i}} </P>
+                {% else %}
+                <P class="alert alert-danger fw-4">{{i}} </P>
+                {% endif %}
+            {% endfor %} 
+        {% endwith %}</span>
+        
         <div class="col-md-1" id="tog">
             <span id="profiletoggler" data-bs-toggle="collapse" data-bs-target="#profilewhole" class="toggler-icon" aria-expanded="false" ><img src="/static/images/profile/customer/{{cus.cust_pic}}" alt="{{cus.cust_fname}}" width="50px" class="img rounded-circle p-1"></span>
         </div>

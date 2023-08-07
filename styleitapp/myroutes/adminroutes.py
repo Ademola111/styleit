@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report
+from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer
 from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
 
@@ -263,10 +263,10 @@ def ban():
         postid = request.form.get('postid')
         comid = request.form.get('comid')
         if postid =="":
-            flash('file error')
+            flash('file error', 'danger')
             return redirect(f'/adminpost/{postid}/')
         elif comid =="":
-            flash('file error')
+            flash('file error', 'danger')
             return redirect(f'/adminpost/{postid}/')
         else:
             if postid:
@@ -300,10 +300,10 @@ def trash():
         postid = request.form.get('postid')
         comid = request.form.get('comid')
         if postid =="":
-            flash('file error')
+            flash('file error', 'error')
             return redirect(f'/adminpost/{postid}/')
         elif comid =="":
-            flash('file error')
+            flash('file error', 'error')
             return redirect(f'/adminpost/{postid}/')
         else:
             if postid:
@@ -555,3 +555,133 @@ def adminsignup():
                         db.session.commit()
                         return redirect('/admin/signup/')
                     # return redirect('/admin/signup/')
+
+"""searching for refno to approve payment"""
+@app.route('/searchref/', methods=['POST'])
+def searchref():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin and request.method=='POST':
+        nomba=request.form.get('searchref')
+        if nomba != "":
+            pymt=Payment.query.filter_by(payment_transNo=nomba).first()
+            typmt=Transaction_payment.query.filter_by(tpay_transNo=nomba).first()
+            if pymt == None and typmt==None:
+                message ={"message":f"This refno {nomba} is not available"}
+                return message
+            else:
+                if pymt:
+                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
+                    message=json.dumps(msg)
+                    return message
+                elif typmt:
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus}
+                    message=json.dumps(msg)
+                    return message
+        else:
+            message={"message":"your refno is incorrect"}
+            return message
+    elif spadmin and request.method=='POST':
+        nomba=request.form.get('searchref')
+        if nomba != "":
+            pymt=Payment.query.filter_by(payment_transNo=nomba).first()
+            typmt=Transaction_payment.query.filter_by(tpay_transNo=nomba).first()
+            if pymt == None and typmt==None:
+                message ={"message":f"This refno {nomba} is not available"}
+                return message
+            else:
+                if pymt:
+                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
+                    message=json.dumps(msg)
+                    return message
+                elif typmt:
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus}
+                    message=json.dumps(msg)
+                    return message
+        else:
+            message={"message":"your refno is incorrect"}
+            return message
+    else:
+        return redirect('/adminhome')
+    
+"""approve payment"""
+@app.route('/approve/<id>/', methods=['POST', 'GET'])
+def approve_payment(id):
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin:
+        typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
+        desi=typm.desitpayobj.desi_id
+        sendname=typm.custtpayobj.cust_fname + " " + typm.custtpayobj.cust_lname
+        bnk=Bank.query.filter_by(bnk_desiid=desi).first()
+        bnkcode = Bankcodes.query.filter_by(name=bnk.bnk_bankname).first()
+        ac= bnk.bnk_acno
+        accd=bnkcode.code
+        url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
+        payload = {}
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("GET", url, headers=headers, data=payload)
+        res=response.json()
+        
+        if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
+            data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+            url = "https://api.paystack.co/transferrecipient"
+            headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+            response = requests.request("post", url, headers=headers, data=json.dumps(data))
+            res2=response.json()
+            
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=typm.tpay_transNo, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id)
+            db.session.add(tf)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+        else:
+            flash("Invalid Name and Account Number. Please check again", 'warning')
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+    elif spadmin:
+        typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
+        desi=typm.desitpayobj.desi_id
+        sendname=typm.custtpayobj.cust_fname + " " + typm.custtpayobj.cust_lname
+        bnk=Bank.query.filter_by(bnk_desiid=desi).first()
+        bnkcode = Bankcodes.query.filter_by(name=bnk.bnk_bankname).first()
+        ac= bnk.bnk_acno
+        accd=bnkcode.code
+        url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
+        payload = {}
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("GET", url, headers=headers, data=payload)
+        res=response.json()
+        
+        if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
+            data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+            url = "https://api.paystack.co/transferrecipient"
+            headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+            response = requests.request("post", url, headers=headers, data=json.dumps(data))
+            res2=response.json()
+            
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=typm.tpay_transNo, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id)
+            db.session.add(tf)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+        else:
+            flash("Invalid Name and Account Number. Please check again", 'warning')
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+
+"""initiating transfer of payment"""
+@app.route('/sendfund', methods=['GET', 'POST'])
+def send_fund():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if request.method=="GET":
+        return redirect('/admin/logout/')
+    
+    if admin and request.method=='POST':
+        return ""
+    elif spadmin and request.method=='POST':
+        return ""
+            

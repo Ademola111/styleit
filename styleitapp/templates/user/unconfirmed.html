@@ -8,11 +8,17 @@ Styleit | Unconfirmed
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <span>{% with m = get_flashed_messages() %}
-                {% for i in m %}
-                <span class="fw-4">{{i}}</span>
-                {% endfor %}
-                {% endwith %}</span>
+            <span>{% with m = get_flashed_messages(with_categories=true) %}
+                {% for c, i in m %}
+                    {% if c == 'success' %}
+                    <P class="alert alert-success fw-4">{{i}} </P>
+                    {% elif c == 'warning' %}
+                    <P class="alert alert-warning fw-4">{{i}} </P>
+                    {% else %}
+                    <P class="alert alert-danger fw-4">{{i}} </P>
+                    {% endif %}
+                {% endfor %} 
+            {% endwith %}</span>
         </div>
         <div class="col-md-12 mt-3 mb-3">
             <h1>Welcome!</h1>

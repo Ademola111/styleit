@@ -6,6 +6,23 @@ Styleit | Subscription
 {% block content %}
 <div class="container-flluid">
     <div class="row">
+        <div class="col">
+            <span>
+                {% with m = get_flashed_messages(with_categories=true) %}
+                    {% for c, i in m %}
+                        {% if c == 'success' %}
+                        <P class="alert alert-success fw-4">{{i}} </P>
+                        {% elif c == 'warning' %}
+                        <P class="alert alert-warning fw-4">{{i}} </P>
+                        {% else %}
+                        <P class="alert alert-danger fw-4">{{i}} </P>
+                        {% endif %}
+                    {% endfor %} 
+                {% endwith %}
+            </span>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-12 text-center mt-3">
             <h4>Subscription Plans</h4>
         </div>

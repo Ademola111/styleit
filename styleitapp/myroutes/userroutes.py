@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -556,7 +556,7 @@ def unconfirmed():
         desi = Designer.query.filter_by(desi_id=desiloggedin).first_or_404()
         if desi.desi_status=='actived':
             return redirect('/designer/profile/')
-    flash('Confirm your account !', 'warning')
+    flash('Confirm your account!', 'warning')
     return render_template('user/unconfirmed.html', desiloggedin=desiloggedin, loggedin=loggedin, des=des, cus=cus)   
 
 
@@ -687,18 +687,23 @@ def customerLogin():
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             user=db.session.query(Customer).filter(Customer.cust_email==email).first()
-            formated_pwd=user.cust_pass
-            # checking password hash
-            checking = check_password_hash(formated_pwd, pwd)
-            if checking:
-                session['customer']=user.cust_id
-                lo=Login(login_email=user.cust_email, login_custid=user.cust_id)
-                db.session.add(lo)
-                db.session.commit()
-                return redirect('/customer/profile/')
-            else:
-                flash('kindly supply a valid email address and password', 'warning')
+            if user ==None:
+                flash('kindly supply a valid credentials', 'warning')
                 return render_template('user/customerlogin.html', login=login, user=user)
+            else:
+                formated_pwd=user.cust_pass
+                # checking password hash
+                checking = check_password_hash(formated_pwd, pwd)
+                if checking:
+                    session['customer']=user.cust_id
+                    lo=Login(login_email=user.cust_email, login_custid=user.cust_id)
+                    db.session.add(lo)
+                    db.session.commit()
+                    flash('Login successful, Click on your profile picture to see the side bar', 'success')
+                    return redirect('/customer/profile/')
+                else:
+                    flash('kindly supply a valid email address and password', 'warning')
+                    return render_template('user/customerlogin.html', login=login, user=user)
 
 
 """Customer Forgotten Password"""
@@ -750,7 +755,7 @@ def customerProfile():
             flash('Please confirm your account', 'warning')
             return redirect(url_for('unconfirmed'))
         elif cus.cust_access=='deactived':
-            flash('Your account has been deactivated contact Styleit for help')
+            flash('Your account has been deactivated contact Styleit for help', 'danger')
             session.pop('customer', None)
             return redirect('/user/customer/login/')
         else:
@@ -831,7 +836,7 @@ def book_appointment():
         cdate = getfor.get('cdate')
         ctime = getfor.get('ctime')
         if dsignername =="" or bdate =="" or btime =="" or cdate =="" or ctime=="":
-            flash('Kindly fill each fields')
+            flash('Kindly fill each fields', 'warning')
             return redirect(request.url)
         else:
             bookapp=Bookappointment(ba_desiid=dsignername, ba_custid=loggedin, ba_bookingDate=bdate, ba_bookingTime=btime, ba_collectionDate=cdate, ba_collectionTime=ctime)
@@ -849,6 +854,7 @@ def book_appointment():
             custom=commenter.desibaobj.desi_businessName
             recipients={"custom":custom}
             bookappointment_signal.send(app, comment=commenter, post_author_email=commenter_email, recipients=recipients)
+            flash(f'You have made a successful booking with {custom}', 'success')
         return redirect('/customer/profile/')
 
 # customer section ends
@@ -976,18 +982,23 @@ def designerLogin():
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             designer=db.session.query(Designer).filter(Designer.desi_email==email).first()
-            formated_pwd=designer.desi_pass
-            # checking password hash
-            checking = check_password_hash(formated_pwd, pwd)
-            if checking:
-                session['designer']=designer.desi_id
-                le=Login(login_email=designer.desi_email, login_desiid=designer.desi_id)
-                db.session.add(le)
-                db.session.commit()
-                return redirect('/designer/profile/')
-            else:
-                flash('kindly supply a valid email address and password', 'warning')
+            if designer==None:
+                flash('kindly supply a valid credentials', category='warning')
                 return render_template('designer/designerlogin.html', logins=logins, designer=designer)
+            else:
+                formated_pwd=designer.desi_pass
+                # checking password hash
+                checking = check_password_hash(formated_pwd, pwd)
+                if checking:
+                    session['designer']=designer.desi_id
+                    le=Login(login_email=designer.desi_email, login_desiid=designer.desi_id)
+                    db.session.add(le)
+                    db.session.commit()
+                    flash('Login successful, Click your profile picture to view the side bar', category='success')
+                    return redirect('/designer/profile/')
+                else:
+                    flash('kindly supply a valid email address and password', category='warning')
+                    return render_template('designer/designerlogin.html', logins=logins, designer=designer)
 
 
 """Designer Profile"""
@@ -1014,9 +1025,10 @@ def designerProfile():
             subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
             bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=rows_per_page)
-            bnk=Bank.query.get(desiloggedin)
+            bnk=Bank.query.filter_by(bnk_desiid=desiloggedin).first()
+            bnkcode=Bankcodes.query.all()
             follow = Follow.query.filter_by(follow_desiid=desiloggedin).all()
-            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt, noti=noti, bk=bk, bnk=bnk, follow=follow)
+            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt, noti=noti, bk=bk, bnk=bnk, follow=follow, bnkcode=bnkcode)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -1308,6 +1320,7 @@ def paystack():
             bk.bk_paystatus = 'paid'
             db.session.add(bk)
             db.session.commit()
+            flash("Payment successful", "success")
             commenter=tpay.query.filter_by(tpay_transNo=refno).first()
             commenter_email=commenter.desitpayobj.desi_email
             transpay_signal.send(app, comment=commenter, post_author_email=commenter_email)
@@ -1450,15 +1463,16 @@ def complete_task(id):
                 ds=Bookappointment.query.get(id)
                 ds.ba_status=lev
                 db.session.commit()
+                flash('Thank you for adding more stars to your diginity ', 'success')
                 commenter=dk.query.filter_by(jb_baid=id, jb_status=lev).first()
                 commenter_email=commenter.jbcustobj.cust_email
                 completetask_signal.send(app, comment=commenter, post_author_email=commenter_email)
                 return redirect('/designer/profile/')
             else:
-                flash('a field is empty')
+                flash('a field is empty', 'warning')
                 return redirect('/complete_task/{id}') 
         else:
-            flash('one or more field is empty')
+            flash('one or more field is empty', 'warning')
             return redirect('/complete_task/{id}') 
 
 
@@ -1487,7 +1501,7 @@ def confirm_delivery(id):
             commenter=jb.query.filter_by(jb_baid=id, jb_status=status).first()
             commenter_email=commenter.jbdesiobj.desi_email
             confirmdelivery_signal.send(app, comment=commenter, post_author_email=commenter_email)
-            flash('You have confoirmed your task delivery')
+            flash("Tahank You! You've confirmed a job weldone for quality service", 'success')
             return redirect('/customer/profile/')
             # return 'You have confoirmed your task delivery'
         else:
@@ -1609,7 +1623,7 @@ def trashit():
         postid = request.form.get('postid')
         print(postid)
         if postid =="":
-            flash('file error')
+            flash('file error', 'error')
             return redirect(f'/post/{postid}/')
         else:
             if postid !="":
@@ -1661,6 +1675,7 @@ def reports():
                 rep = Report(report_reason=reson, report_desiid=desid, reporter=custname)
                 db.session.add(rep)
                 db.session.commit()
+                flash('report logged', 'success')
                 return redirect('/customer/profile/')
 
             elif desiloggedin:
@@ -1668,19 +1683,21 @@ def reports():
                     rep = Report(report_reason=reson, report_custid=custid, reporter=desname)
                     db.session.add(rep)
                     db.session.commit()
+                    flash('report logged', 'success')
                     return redirect('/designer/profile/')
                 elif desid:
                     rep = Report(report_reason=reson, report_desiid=desid, reporter=desname)
                     db.session.add(rep)
                     db.session.commit()
+                    flash('report logged', 'success')
                     return redirect('/designer/profile/')
                 
         else:
             if loggedin:
-                flash('one ore more file is empty')
+                flash('one ore more file is empty', 'warning')
                 return redirect(f'/report/{desid}/')
             elif desiloggedin:
-                flash('one ore more file is empty')
+                flash('one ore more file is empty', 'warning')
                 return redirect(f'/report/{custid}/')
 
 
@@ -1718,11 +1735,11 @@ def rate():
                 rate=Rating(rat_rating=reson, rat_custid=loggedin, rat_desiid=desid)
                 db.session.add(rate)
                 db.session.commit()
-                flash('Thank you for the review')
+                flash('Thank you for the review', 'success')
                 return redirect(f'/designer/{desid}/')
         else:
             if loggedin:
-                flash('one ore more file is empty')
+                flash('one ore more file is empty', 'warning')
                 return redirect(f'/rating/{desid}/')
             # elif desiloggedin:
             #     flash('one ore more file is empty')
@@ -1765,9 +1782,10 @@ def bank_detail():
         acno=request.form.get('acno')
         
         if name != "" and bkname!= "" and acno != "":
-            bnk=Bank(bnk_acname=name, bnk_bankname=bkname, bnk_acno=acno, bnk_bnk_desiid=desiloggedin)
+            bnk=Bank(bnk_acname=name, bnk_bankname=bkname, bnk_acno=acno, bnk_desiid=desiloggedin)
             db.session.add(bnk)
             db.session.commit()
+            flash('Thank you! Your bank detail have been saved.', 'success')
             return redirect('/designer/profile/')
 
 
@@ -1812,7 +1830,7 @@ def unfollow(id):
 @comment_signal.connect
 def send_comment_email_alert(sender, comment, post_author_email): 
     subject = f"StyleitHQ: {comment.comcustobj.cust_fname} commented on your post"
-    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: 'https://www.stylist.africa/post/{comment.com_postid}/' \n\n StyleitHQ" 
     send_email_alert(subject, body, [post_author_email])
 
 
@@ -1822,11 +1840,11 @@ def send_reply_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.comdesiobj.desi_businessName} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: 'https://www.stylist.africa/post/{comment.com_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.comcustobj.cust_fname} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: 'http://127.0.0.1:8080/post/{comment.com_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: 'https://www.stylist.africa/post/{comment.com_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1836,11 +1854,11 @@ def send_like_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} like your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: 'https://www.stylist.africa/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} like your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: 'https://www.stylist.africa/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1850,23 +1868,23 @@ def send_unlike_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: 'https://www.stylist.africa/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.like_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: 'https://www.stylist.africa/post/{comment.like_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 @subactivate_signal.connect
 def send_subactivate_email_alart(sender, comment, post_author_email, recipients):
     subject = f"Subcription Alert by StyleitHQ"
-    body = f"Hi {recipients['custom']},\n\n You have successfully subscribe to a new plan \n\n Your subscription details is as shown below \n plan: {comment.subpaymentobj.sub_plan} \n Sub Start Date: {comment.subpaymentobj.sub_startdate} \n Sub End Date: {comment.subpaymentobj.sub_enddate} \n Thank you for doing business with us.\n\n Visit: 'http://127.0.0.1:8080/designer/subplan/' \n\n StyleitHQ Team" 
+    body = f"Hi {recipients['custom']},\n\n You have successfully subscribe to a new plan \n\n Your subscription details is as shown below \n plan: {comment.subpaymentobj.sub_plan} \n Sub Start Date: {comment.subpaymentobj.sub_startdate} \n Sub End Date: {comment.subpaymentobj.sub_enddate} \n Thank you for doing business with us.\n\n Visit: 'https://www.stylist.africa/designer/subplan/' \n\n StyleitHQ Team" 
     send_email_alert(subject, body, [post_author_email])
 
 @subdeactivate_signal.connect
 def send_subdeactivate_email_alart(sender, comment, post_author_email, recipients):
     subject = f"Subcription Alert by StyleitHQ"
-    body = f"Hi {recipients['custom']},\n\n Your subscription have been deactivated.\n Kindly click the link below to subscribe. \n Thank you for doing business with us.\n\n Visit: 'http://127.0.0.1:8080/designer/subplan/' \n\n StyleitHQ Team" 
+    body = f"Hi {recipients['custom']},\n\n Your subscription have been deactivated.\n Kindly click the link below to subscribe. \n Thank you for doing business with us.\n\n Visit: 'https://www.stylist.africa/designer/subplan/' \n\n StyleitHQ Team" 
     send_email_alert(subject, body, [post_author_email])
 
 @share_signal.connect
@@ -1875,11 +1893,11 @@ def send_share_email_alart(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desishareobj.desi_businessName} shared your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desishareobj.desi_businessName} shared your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.share_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desishareobj.desi_businessName} shared your post: \n\n Visit: 'https://www.stylist.africa/post/{comment.share_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custshareobj.cust_fname} shared your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custshareobj.cust_fname} shared your post: \n\n Visit: 'http://127.0.0.1:8080/post/{comment.share_postid}/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custshareobj.cust_fname} shared your post: \n\n Visit: 'https://www.stylist.africa/post/{comment.share_postid}/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1888,7 +1906,7 @@ def send_bookappointment_email_alart(sender, comment, post_author_email, recipie
     loggedin = session.get('customer')
     if loggedin:
         subject = f"StyleitHQ: {comment.custbaobj.cust_fname} booking appointment"
-        body = f"Hi {recipients['custom']},\n\n {comment.custbaobj.cust_fname} needs for your service. \n Kindly visit the link below to respond to the appointment \n\n Visit: 'http://127.0.0.1:8080/designer/profile/' \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custbaobj.cust_fname} needs for your service. \n Kindly visit the link below to respond to the appointment \n\n Visit: 'https://www.stylist.africa/designer/profile/' \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 @acceptappointment_signal.connect
@@ -1896,7 +1914,7 @@ def send_acceptappointment_email_alart(sender, comment, post_author_email, recip
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Booking Appointment Update!"
-        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has accepted your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has accepted your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'https://www.stylist.africa/customer/profile/' \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1905,7 +1923,7 @@ def send_declineappointment_email_alart(sender, comment, post_author_email, reci
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Booking Appointment Update!"
-        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has decline your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has decline your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: 'https://www.stylist.africa/customer/profile/' \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1914,7 +1932,7 @@ def send_completetask_email_alart(sender, comment, post_author_email):
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Job Update!"
-        body = f"Hi {comment.jbcustobj.cust_fname},\n\n {comment.jbdesiobj.desi_businessName} has completed your task. \n Kindly use the link below to approve delivery and collection \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        body = f"Hi {comment.jbcustobj.cust_fname},\n\n {comment.jbdesiobj.desi_businessName} has completed your task. \n Kindly use the link below to approve delivery and collection \n\n Visit: 'https://www.stylist.africa/customer/profile/' \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1923,7 +1941,7 @@ def send_confirmdelivery_email_alart(sender, comment, post_author_email):
     loggedin = session.get('customer')
     if loggedin:
         subject = f"StyleitHQ: Job Update!"
-        body = f"Hi {comment.jbdesiobj.desi_businessName},\n\n {comment.jbcustobj.cust_fname} has confirm your task delivery. Kindly await your payment from Styleit HQ once payment is confirmed.\n Kindly use the link below to view details. \n\n Visit: 'http://127.0.0.1:8080/customer/profile/' \n\n StyleitHQ Team"
+        body = f"Hi {comment.jbdesiobj.desi_businessName},\n\n {comment.jbcustobj.cust_fname} has confirm your task delivery. Kindly await your payment from Styleit HQ once payment is confirmed.\n Kindly use the link below to view details. \n\n Visit: 'https://www.stylist.africa/customer/profile/' \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
         
 @follow_signal.connect
@@ -1966,3 +1984,50 @@ def send_transpay_signal_email_alart(sender, comment, post_author_email):
 #     msg.html= render_template('designer/sub_notification.html', comment=comment)
 #     mail.send(msg)
 
+@app.route('/code', methods=['GET'])
+def code():
+    loggedin = session.get('customer')
+    if loggedin:
+        # ac='0019207800'
+        ac='2215986702'
+        
+        import requests
+
+        url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code=057"
+        url2 = "https://api.paystack.co/bank?currency=NGN" #use this to confirm bank 
+        payload1 = {}
+        payload2 = {}
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+
+        response = requests.request("GET", url, headers=headers, data=payload1)
+        response1 = requests.request("GET", url2, headers=headers, data=payload2)
+        # with open("response1.sql", "w") as file:
+        #     file.write(response1.text)
+        
+        # print(response1.text)
+        print(response.text)
+        jj=response1.json()
+        j=response.json()
+        jjj=jj['data']
+        # print(jjj)
+        for jo in jjj:
+            if jo['code']=="057":
+                print(f"response bank of {j['data']['account_name']} is equal to {jo['name']}")
+                # print(jj['data'])
+        return redirect('/code2/')
+
+"""generating tranfer receipt"""
+@app.route('/code2/', methods=['GET', 'POST'])
+def code2():
+    loggedin = session.get('customer')
+    if loggedin:
+        url = "https://api.paystack.co/transferrecipient"
+
+        data = {"type": "nuban", "name": "Onayemi Hakeem A", "account_number": "2215986702", "bank_code": "057", "currency": "NGN", "email":"virgintinny@gmail.com", "description":"payment for the just conculeded service"}
+        payload = {}
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+
+        response = requests.request("post", url, headers=headers, data=json.dumps(data))
+
+        print(response.text)
+        return "successfully"

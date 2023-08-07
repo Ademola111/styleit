@@ -104,6 +104,24 @@ class Customer(db.Model):
     followcustobj = db.relationship('Follow', back_populates='custfollowobj')
     logincustobj = db.relationship('Login', back_populates='custloginobj')
     
+    def __init__(self, cust_id, cust_regdate, cust_fname, cust_lname,
+                    cust_username, cust_gender, cust_phone, cust_email, cust_pass, cust_address, cust_pic, cust_activationdate, cust_status, cust_access, cust_stateid, cust_lgaid):
+            self.cust_id = cust_id
+            self.sdesi_regdate = cust_regdate
+            self.cust_fname = cust_fname
+            self.cust_lname = cust_lname
+            self.cust_businessName = cust_username
+            self.cust_gender = cust_gender 
+            self.cust_phone = cust_phone
+            self.cust_email = cust_email
+            self.cust_pass = cust_pass
+            self.cust_address = cust_address
+            self.cust_pic = cust_pic
+            self.cust_activationdate = cust_activationdate
+            self.cust_status = cust_status
+            self.cust_access = cust_access
+            self.cust_stateid = cust_stateid
+            self.cust_lgaid = cust_lgaid
 
 class State(db.Model): 
     state_id = db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -161,7 +179,26 @@ class Designer(db.Model):
     bnkdesiobj = db.relationship('Bank', back_populates='desibnkobj')
     followdesiobj = db.relationship('Follow', back_populates='desifollowobj')
     logindesiobj = db.relationship('Login', back_populates='desiloginobj')
-        
+    
+    def __init__(self, desi_id, desi_regdate, desi_fname, desi_lname,
+                    desi_businessName, desi_gender, desi_phone, desi_email, desi_pass, desi_address, desi_pic, desi_activationdate, desi_status, desi_access, desi_stateid, desi_lgaid):
+            self.desi_id = desi_id
+            self.sdesi_regdate = desi_regdate
+            self.desi_fname = desi_fname
+            self.desi_lname = desi_lname
+            self.desi_businessName = desi_businessName
+            self.desi_gender = desi_gender 
+            self.desi_phone = desi_phone
+            self.desi_email = desi_email
+            self.desi_pass = desi_pass
+            self.desi_address = desi_address
+            self.desi_pic = desi_pic
+            self.desi_activationdate = desi_activationdate
+            self.desi_status = desi_status
+            self.desi_access = desi_access
+            self.desi_stateid = desi_stateid
+            self.desi_lgaid = desi_lgaid
+            
 
 class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -179,7 +216,19 @@ class Subscription(db.Model):
     paysubobj=db.relationship('Payment', back_populates='subpaymentobj')
     subnotifyobj = db.relationship('Notification', back_populates='notifysubobj')
     
-
+    def __init__(self, sub_id, sub_plan, sub_date, sub_startdate,
+                    sub_enddate, sub_ref , sub_status, sub_paystatus, sub_desiid, subdesiobj, paysubobj):
+            self.sub_id = sub_id
+            self.sub_plan = sub_plan
+            self.sub_date = sub_date
+            self.sub_startdate = sub_startdate
+            self.sub_enddate = sub_enddate
+            self.sub_ref = sub_ref 
+            self.sub_status = sub_status
+            self.sub_paystatus = sub_paystatus
+            self.sub_desiid = sub_desiid
+            self.subdesiobj = subdesiobj
+            self.paysubobj = paysubobj
 
 class Payment(db.Model):
     payment_id=db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -195,6 +244,18 @@ class Payment(db.Model):
     subpaymentobj=db.relationship('Subscription', back_populates='paysubobj')
     paynotifyobj = db.relationship('Notification', back_populates='notifypayobj')
 
+    def __init__(self, payment_id, payment_transNo, payment_transdate, payment_amount,
+                    payment_status, payment_desiid, payment_subid, desipaymentobj, subpaymentobj):
+            self.payment_id = payment_id
+            self.payment_transNo = payment_transNo
+            self.payment_transdate = payment_transdate
+            self.payment_amount = payment_amount
+            self.payment_status = payment_status
+            self.payment_desiid = payment_desiid
+            self.payment_subid = payment_subid
+            self.desipaymentobj = desipaymentobj
+            self.subpaymentobj = subpaymentobj
+        
 
 class Transaction_payment(db.Model):
     tpay_id=db.Column(db.Integer(), primary_key=True,autoincrement=True)
@@ -212,7 +273,23 @@ class Transaction_payment(db.Model):
     custtpayobj=db.relationship('Customer', back_populates='tpaycustobj')
     tpaynotifyobj = db.relationship('Notification', back_populates='notifytpayobj')
     tpaybaobj = db.relationship('Bookappointment', back_populates='batpayobj')
+    tpaytfobj = db.relationship('Transfer', back_populates='tftpayobj')
     
+    def __init__(self, tpay_id, tpay_transNo, tpay_transdate, tpay_amount,
+                    tpay_status, tpay_desiid, tpay_custid, tpay_baid, desitpayobj, custtpayobj, tpaybaobj, tpaytfobj):
+            self.tpay_id = tpay_id
+            self.tpay_transNo = tpay_transNo
+            self.tpay_transdate = tpay_transdate
+            self.tpay_amount = tpay_amount
+            self.tpay_status = tpay_status
+            self.tpay_desiid = tpay_desiid
+            self.tpay_custid = tpay_custid
+            self.tpay_baid = tpay_baid
+            self.desitpayobj = desitpayobj
+            self.custtpayobj = custtpayobj
+            self.tpaybaobj = tpaybaobj
+            self.tpaytfobj = tpaytfobj
+            
 
 class Admin (db.Model):
     admin_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -290,6 +367,23 @@ class Bookappointment(db.Model):
     bajbobj=db.relationship('Job', back_populates='jbbaobj')
     batpayobj = db.relationship('Transaction_payment', back_populates='tpaybaobj')
     
+    def __init__(self, ba_id, ba_bookingDate, ba_date, ba_bookingTime,
+                    ba_collectionDate , ba_collectionTime, ba_status, ba_custstatus, ba_paystatus, ba_desiid, ba_custid, desibaobj, custbaobj, bajbobj, batpayobj):
+            self.ba_id = ba_id
+            self.ba_bookingDate = ba_bookingDate
+            self.ba_date = ba_date
+            self.ba_bookingTime = ba_bookingTime
+            self.ba_collectionDate  = ba_collectionDate 
+            self.ba_collectionTime = ba_collectionTime
+            self.ba_status = ba_status
+            self.ba_custstatus = ba_custstatus
+            self.ba_paystatus = ba_paystatus
+            self.ba_desiid = ba_desiid
+            self.ba_custid = ba_custid
+            self.desibaobj = desibaobj
+            self.custbaobj = custbaobj
+            self.bajbobj = bajbobj
+            self.batpayobj = batpayobj
 
 class Job(db.Model):
     jb_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -385,6 +479,16 @@ class Bank(db.Model):
     #relationship
     desibnkobj = db.relationship('Designer', back_populates='bnkdesiobj')
 
+class Bankcodes(db.Model):
+    id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    name=db.Column(db.String(100), nullable=False)
+    code=db.Column(db.String(10), nullable=False)
+    
+    def __init__(self, id, name, code):
+        self.id = id
+        self.name = name
+        self.code = code
+    
 class Follow(db.Model):
     follow_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
     #foreignKey
@@ -407,5 +511,50 @@ class Login(db.Model):
     #relationship
     desiloginobj = db.relationship('Designer', back_populates='logindesiobj')
     custloginobj = db.relationship('Customer', back_populates='logincustobj')
+
+
+class Transfer(db.Model):
+    tf_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    tf_createdAt = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    tf_updatedAt = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    tf_reference = db.Column(db.Integer(), nullable=True)
+    tf_RecipientCode = db.Column(db.String(225), nullable=False)
+    tf_receiverAcName = db.Column(db.String(100), nullable=False)
+    tf_receiverAcNo = db.Column(db.String(10), nullable=False)
+    tf_receiverbankName = db.Column(db.String(100), nullable=False)
+    tf_receiverEmail = db.Column(db.String(225), nullable=False)
+    tf_amountRemited = db.Column(db.String(225), nullable=False)
+    tf_integrationCode = db.Column(db.String(10), nullable=False)
+    tf_receiptId = db.Column(db.String(225), nullable=False)
+    tf_message = db.Column(db.String(225), nullable=False)
+    tf_depositor = db.Column(db.String(225), nullable=False)
+    tf_status = db.Column(db.Enum("pending","success", "failed", "reversed"), nullable=False, server_default="pending")
+    # ForeignKey
+    tf_tpayid = db.Column(db.Integer(), db.ForeignKey('transaction_payment.tpay_id'))
+    #Relationship
+    tftpayobj = db.relationship('Transaction_payment', back_populates='tpaytfobj')
     
-    
+    def __init__(self, tf_id, tf_createdAt, tf_updatedAt, tf_reference, tf_RecipientCode,
+                 tf_receiverAcName, tf_receiverAcNo, tf_receiverbankName, tf_receiverEmail,
+                 tf_amountRemited, tf_integrationCode, tf_receiptId, tf_message, tf_depositor, 
+                 tf_status, tf_tpayid, tftpayobj):
+        
+        self.tf_id=tf_id
+        self.tf_createdAt = tf_createdAt
+        self.tf_updatedAt = tf_updatedAt
+        self.tf_reference = tf_reference
+        self.tf_RecipientCode = tf_RecipientCode
+        self.tf_receiverAcName = tf_receiverAcName
+        self.tf_receiverAcNo = tf_receiverAcNo
+        self.tf_receiverbankName = tf_receiverbankName
+        self.tf_receiverEmail = tf_receiverEmail
+        self.tf_amountRemited = tf_amountRemited
+        self.tf_integrationCode = tf_integrationCode
+        self.tf_receiptId = tf_receiptId
+        self.tf_message = tf_message
+        self.tf_depositor = tf_depositor
+        self.tf_status = tf_status
+        self.tf_tpayid = tf_tpayid
+        self.tftpayobj = tftpayobj
+        
+        

@@ -12,7 +12,7 @@ Styleit | Home
         <h4 class="text-center mt-4"></h4>
         <form class="d-flex text-center" id="search" method="POST" action="{{url_for('desisearch')}}">
 			<input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <input class="form-control me-2" type="search" name="search" placeholder="Looking for professional designer? search here" aria-label="Search">
+            <input class="form-control me-2" type="search" name="search" placeholder="Looking for professional fashionista? Search here" aria-label="Search">
             <button class="btn btn-outline-danger" type="submit">Search</button>
         </form>
         </div>
@@ -42,12 +42,13 @@ Styleit | Home
 	   <div class="col-md-6 mt-5" id="indexdesignerformdiv2">
 			<div class="row">
 				<div class="col-md-7" id="indexinnderdesignerformdiv2">
-					<p id="indexdesignerhead" class="mt-3">Designer's Benefits</p><hr>
-					<h2 id="indexdesignertitle">What You Get As a Designer</h2>
-					<span id="features1">Features you will get if you register as a desginer</span><br>
+					<p id="indexdesignerhead" class="mt-3">Creator's Benefits</p><hr>
+					<h2 id="indexdesignertitle">What You Get As a Creator</h2>
+					<span id="features1">Features you will get if you register as a creator</span><br>
 					<ul class="mt-3" id="indexfeaturelist">
 						<li>Direct contact with clients</li>
-						<li>Determined your payment mode</li>
+						<li>Product showcase on trending</li>
+						<li>Secure payment mode</li>
 					</ul><hr>
 					<div class="text-center mb-4 mt-3">
 						<span id="indexgetstarted"><a href="{{url_for('designerSignup')}}"> Get Started <i class="fa fa-arrow-right"></i></a></span>
@@ -68,13 +69,14 @@ Styleit | Home
 
 				</div>
 				<div class="col-md-7" id="indexinnderdesignerformdiv21">
-					 <p id="indexdesignerhead1" class="mt-3">User's Benefits</p><hr>
-					 <h2 id="indexdesignertitle1">What You Get As a User</h2>
-					 <span id="features2">Features you will get if you register as a desginer</span><br>
+					 <p id="indexdesignerhead1" class="mt-3">Client's Benefits</p><hr>
+					 <h2 id="indexdesignertitle1">What You Get As a Client</h2>
+					 <span id="features2">Features you will get if you register as a Client</span><br>
 					 <ul class="mt-3" id="indexfeaturelist1">
-						 <li>Direct contact with Designers</li>
-						 <li>Get the best designer for your next event</li>
-						 <li>Book a designer</li>
+						 <li>Direct contact with creators</li>
+						 <li>Get the best professional for your next outfits</li>
+						 <li>Book a creator</li>
+						 <li>Prompt and secure service delivery</li>
 					 </ul><hr>
 					 <div class="text-center mb-4 mt-3">
 						 <span id="indexgetstarted1"><a href="{{url_for('customerSignup')}}"> Get Started <i class="fa fa-arrow-right"></i></a></span>
@@ -110,63 +112,7 @@ Styleit | Home
 <div class="container-fluid">
     <div class="row">
 		<div class="row mt-3 mb-3">
-			<h3 class="text-center"><u>Testimonies</u></h3>
-			<div class="col-md-3 mt-3">
-				<div class="card">
-					<div class="text-center clientback">
-						<a href="#"><img src="{{url_for('static', filename='images/ademola.jpg')}}" class="rounded-circle text-center img-thumbnail" alt="client image"></a>
-					</div>
-				  <div class="card-body text-light text-center" style="background-color: black;">
-					<h6 class="card-title text-center">Aderoju Ronke</h6>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-instagram"></i></a></span>
-				  </div>
-				</div>
-			</div>
-            <div class="col-md-3 mt-3">
-				<div class="card">
-					<div class="text-center clientback">
-						<a href="#"><img src="{{url_for('static', filename='images/ademola.jpg')}}" class="rounded-circle text-center img-thumbnail" alt="client image"></a>
-					</div>
-				  <div class="card-body text-light text-center" style="background-color: black;">
-					<h6 class="card-title text-center">Temitope James</h6>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-instagram"></i></a></span>
-				  </div>
-				</div>
-			</div>
-            <div class="col-md-3 mt-3">
-				<div class="card">
-					<div class="text-center clientback">
-						<a href="#"><img src="{{url_for('static', filename='images/ademola.jpg')}}" class="rounded-circle text-center img-thumbnail" alt="client image"></a>
-					</div>
-				  <div class="card-body text-light text-center" style="background-color: black;">
-					<h6 class="card-title text-center">Adewale Yusuf</h6>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-instagram"></i></a></span>
-				  </div>
-				</div>
-			</div>
-            <div class="col-md-3 mt-3">
-				<div class="card">
-					<div class="text-center clientback">
-						<a href="#"><img src="{{url_for('static', filename='images/ademola.jpg')}}" class="rounded-circle text-center img-thumbnail" alt="client image"></a>
-					</div>
-				  <div class="card-body text-light text-center" style="background-color: black;">
-					<h6 class="card-title text-center">Opeyemi Moses</h6>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-facebook"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-twitter"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-linkedin"></i></a></span>
-					<span class="card-tex text-center fs-4"><a href="#"><i class="fab fa-instagram"></i></a></span>
-				  </div>
-				</div>
-			</div>
+			
 		</div>
 	</div>
 </div>
