@@ -118,12 +118,17 @@ Styleit|Profile
                         <div class="row">
                             {% if mylike %}
                                 {% for like in mylike.items %}
-                                <div class="col-md-2">
-                                    <a href="/post/{{like.posts.post_id}}/">   
-                                    <span><span>{{like.like_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br>
-                                    <span>{{like.posts.post_title}} </span><br>
-                                    <span>{{like.posts.post_body| truncate(50)}}</span></span><br>
+                                <div class="col-md-2 m-2" style="background-color: rgb(231, 80, 168); padding: 4px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; ">    
+                                <div>
+                                    {#<span style="font-size: 10px; padding: 4px;">{{like.like_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br>#}
+                                    <div class="text-center mt-2">
+                                    <a href="/post/{{like.posts.post_id}}/">
+                                    <span ><img src="/static/images/postpic/{{like.posts.imagepostobj[0].image_url}}" alt="{{like.posts.imagepostobj.image_name}}" class="img img-fluid" style="height: 150px !important; width:fit-content"></span><br>
+                                    <span style="font-size:12px;"><b>{{like.posts.post_title|title}}</b></span>
                                     </a>
+                                    </div>
+                                </div>
+                                    
                                 </div>
                                 {% endfor %}
                                 <!-- pagination links -->
@@ -174,10 +179,10 @@ Styleit|Profile
                                         still <strong>{{bk.ba_status}}.</strong> Kindly book another if urgent. Click <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a> to book now.
                                     {% endif %}
                                     </span></p>
-                                    <p><span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span></p>
-                                    <p><span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span></p>
-                                    <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
-                                    <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
+                                    <p><span><strong>Booking Date:</strong></span> <span style="font-size: 12px;">{{bk.ba_bookingDate}}</span></p>
+                                    <p><span><strong>Booking Time:</strong></span> <span style="font-size: 12px;">{{bk.ba_bookingTime}}</span></p>
+                                    <p><span><strong>Collection Date:</strong></span> <span style="font-size: 12px;">{{bk.ba_collectionDate}}</span></p>
+                                    <p><span><strong>Collection Time:</strong></span> <span style="font-size: 12px;">{{bk.ba_collectionTime}}</span></p>
 
                                     {% if bk.ba_status == 'accept' and bk.ba_paystatus=='pending' %}
                                         <div class="col-md-12">

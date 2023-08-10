@@ -47,7 +47,7 @@ Styleit | Designer Profile
                                             {% endif %}
                                         <form action="{{url_for('unfollow', id=design.desi_id)}}" method="POST">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-primary">Unfollow</button>
+                                            <button type="submit" style="margin: 5px; padding: 5px; background-color: rgb(236, 60, 90); border-radius: 10px; color:white;">Unfollow</button>
                                         </form>
                                         {% elif not is_following %}
                                             {% if follow|length > 1 %}
@@ -57,7 +57,7 @@ Styleit | Designer Profile
                                             {% endif %}
                                         <form action="{{url_for('follow', id=design.desi_id)}}" method="POST">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-primary">Follow</button>
+                                            <button type="submit" style="margin: 5px; padding: 5px; background-color: rgb(236, 60, 90); border-radius: 10px; color:white;">Follow</button>
                                         </form>
                                         {% endif %}
                                     {% endif %}
@@ -79,7 +79,7 @@ Styleit | Designer Profile
                                         <p>State: <b>{{design.stateobj2.state_name}}</b></p>
                                         <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
                                         <span class="me-2"><a href="{{url_for('report', id=design.desi_id)}}">Report</a></span>
-                                        <span class="me-2"><a href="{{url_for('rating', id=design.desi_id)}}">Rate Now</a></span>
+                                        <span class="me-2" style="margin: 5px; padding: 5px; background-color: rgb(236, 60, 90); border-radius: 5px;"><a href="{{url_for('rating', id=design.desi_id)}}" style=" color: white !important;">Rate Now</a></span>
                                         {% endif %}
                                     </div>
                                     <div class="col-md-6 mt-2">                                

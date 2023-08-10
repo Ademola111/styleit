@@ -27,15 +27,18 @@ Styleit|Profile
             </div>
             <div class="col-md-4 mt-3 mb-3 generalface2">
 
-                <form action="" method="POST">
+                <form action="{{url_for('send_fund')}}" method="POST">
                 <h5>Transfer Receipt</h5>
-                {#{% if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname|upper %}#}
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <p><span><b>Created At:</b></span> <span>{{data['data']['createdAt']}}</span></p>
-                <p><span><b>Reference:</b></span> <span>{{typm.tpay_transNo}}</span></p>
+                {% if Tns.tf_reference %}
+                <p><span><b>Reference:</b></span> <span>{{Tns.tf_reference }}</span></p>
+                {% elif session['refno'] %}
+                <p><span><b>Reference:</b></span> <span>{{session['refno']}}</span></p>
+                {% endif %}
                 <p><span><b>Recipient:</b></span> <span>{{data['data']['recipient_code']}}</span></p>
                 <p><span><b>Currency Type:</b></span> <span>{{data['data']['type']}} {{data['data']['currency']}}</span></p>
                 <p><span><b>Sender:</b></span> <span>{{typm.custtpayobj.cust_fname}} {{typm.custtpayobj.cust_lname}}</span></p>
-                {#<p><span>Amount Sent:</span> <span> {{typm.tpay_amount}}</span></p>#}
                 <p><span><b>Receiver:</b></span> <span>{{typm.desitpayobj.desi_businessName}}</span></p>
                 <p><span><b>Account Name:</b></span> <span>{{data['data']['details']['account_name']}}</span></p>
                 <p><span><b>Account No:</b></span> <span>{{data['data']['details']['account_number']}}</span></p>
@@ -46,9 +49,7 @@ Styleit|Profile
                 
                 <button type="submit" class="btn btn-danger form-control">Confirm Payment</button>
                 </form>
-                {#{% else %}
-                <p><span>Invalid Name and Account Number. Please check again</span></p>
-                {% endif %}#}
+                
                 
             </div>
             <div class="col-md-4 mt-3 mb-3 generalface2">

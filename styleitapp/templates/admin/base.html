@@ -1,52 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- <meta content="5"; url="http://127.0.0.1:8080/trending/" http-equiv="refresh"> -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %} {% endblock %}</title>
-    <!-- External stylesheet-->
-		<link href="{{url_for('static', filename='css/styleit.css')}}" rel="stylesheet" type="text/css">
-    <!-- Share on cdn -->
-    <link href="https://cdn.jsdelivr.net/npm/shareon@2/dist/shareon.min.css" rel="stylesheet">
-		<!-- bootstrap -->
-		<link href="{{url_for('static', filename='css/css/bootstrap.css')}}" rel="stylesheet" type="text/css">
+  <meta charset="UTF-8">
+  <!-- <meta content="5"; url="http://127.0.0.1:8080/trending/" http-equiv="refresh"> -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %} {% endblock %}</title>
+  <!-- External stylesheet-->
+  <link href="{{url_for('static', filename='css/styleit.css')}}" rel="stylesheet" type="text/css">
+  <!-- Share on cdn -->
+  <link href="https://cdn.jsdelivr.net/npm/shareon@2/dist/shareon.min.css" rel="stylesheet">
+  <!-- bootstrap -->
+  <link href="{{url_for('static', filename='css/css/bootstrap.css')}}" rel="stylesheet" type="text/css">
 
-		<!-- metas-->
-		<meta charset="utf-8">
-		<meta name="description" content="styleit your No1 fashion hub in Nigeria">
-		<meta name="author" content="styleit Africa">
-		<meta name="keywords" content="styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya">
-		
-		<!--facebook meta integration-->
-		<meta property="og:https://www.styleit.africa" content="Styleit is a home of professional fashionista"/>
-		<meta property="og:https://www.styleit.africa/home" content="website"/>
-		<meta property="og:image" content="images/ceo.jpg"/>
-		<meta property="og:image-width" content="400"/>
-		<meta property="og:image-height" content="300"/>
-		<meta property="og:locale:alternative" content="fr_FR"/>
-		<meta property="og:url" content="https://www.styleit.africa"/>
-		
-		<!-- twitter meta integeration-->
-		<meta name="twitter.www.styleit.africa" content="@styleitafrica"/>
-		<meta name="twitter.title" content="@styleitafrica"/>
-		<meta name="twitter.card" content="styleit is your No1 home of professional fashionista"/>
-		<meta name="twitter.description" content="Styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya"/>
-		<meta name="twitter.url" content="https://www.styleit.africa"/>
-		
-		<!-- fav icon -->
-		<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
-		<link rel="manifest" href="/static/images/site.webmanifest">
+  <!-- metas-->
+  <meta charset="utf-8">
+  <meta name="description" content="styleit your No1 fashion hub in Nigeria">
+  <meta name="author" content="styleit Africa">
+  <meta name="keywords" content="styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya">
+  
+  <!--facebook meta integration-->
+  <meta property="og:https://www.styleit.africa" content="Styleit is a home of professional fashionista"/>
+  <meta property="og:https://www.styleit.africa/home" content="website"/>
+  <meta property="og:image" content="images/ceo.jpg"/>
+  <meta property="og:image-width" content="400"/>
+  <meta property="og:image-height" content="300"/>
+  <meta property="og:locale:alternative" content="fr_FR"/>
+  <meta property="og:url" content="https://www.styleit.africa"/>
+  
+  <!-- twitter meta integeration-->
+  <meta name="twitter.www.styleit.africa" content="@styleitafrica"/>
+  <meta name="twitter.title" content="@styleitafrica"/>
+  <meta name="twitter.card" content="styleit is your No1 home of professional fashionista"/>
+  <meta name="twitter.description" content="Styleit, best fashion but in Nigeria, tailor, fashion, fashionista, owanbe, ceremonies, african styles, international styles, designer, suit wears, female dress, male wears, agbada, buba, sokoto, abaya"/>
+  <meta name="twitter.url" content="https://www.styleit.africa"/>
+  
+  <!-- fav icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+  <link rel="manifest" href="/static/images/site.webmanifest">
 
-		<!-- font awesome -->
-		<link href="{{url_for('static', filename='fa/css/all.min.css')}}" rel="stylesheet">
+  <!-- font awesome -->
+  <link href="{{url_for('static', filename='fa/css/all.min.css')}}" rel="stylesheet">
 
 
-		<!-- jquery animation-->
-		<link href="{{url_for('static', filename='css/css/animate.min.css')}}" rel="stylesheet">
+  <!-- jquery animation-->
+  <link href="{{url_for('static', filename='css/css/animate.min.css')}}" rel="stylesheet">
 
 		<!-- internal stylesheet-->
 		<style type="text/css">
@@ -62,12 +62,12 @@
     <div class="container-fluid" id="header">
         <header>
             <div class="row">
-                <div class="col-md-2 mt-5 mb-5" id="logo">
+                {#<div class="col-md-2 mt-5 mb-5" id="logo">
                     <h1 id="logoname">Styleit</h1>
-                </div>
-                <div class="col-md-10 mt-5 b-5" id="banner">
-                    <img src="{{url_for('static', filename='images/girl.jpg')}}" alt="girl fashion" width="100%" height="200">
-                </div>
+                </div>#}
+                <div class="col-md-12 mt-5 b-5 text-center" id="banner">
+                  <img src="{{url_for('static', filename='images/logo11.png')}}" alt="logo1">
+              </div>
             </div>
         </header>
     </div>

@@ -613,6 +613,7 @@ def approve_payment(id):
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
+    
     if admin:
         typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
         desi=typm.desitpayobj.desi_id
@@ -633,14 +634,29 @@ def approve_payment(id):
             headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
             response = requests.request("post", url, headers=headers, data=json.dumps(data))
             res2=response.json()
+            Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
+            if Tns==None:
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                
+                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+                db.session.add(tf)
+                db.session.commit()
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            elif Tns.tf_reference==None:
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                
+                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+                db.session.add(tf)
+                db.session.commit()
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=typm.tpay_transNo, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id)
-            db.session.add(tf)
-            db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            elif Tns.tf_reference !=None:
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno)
     elif spadmin:
         typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
         desi=typm.desitpayobj.desi_id
@@ -661,27 +677,77 @@ def approve_payment(id):
             headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
             response = requests.request("post", url, headers=headers, data=json.dumps(data))
             res2=response.json()
+            Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
+            if Tns==None:
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                
+                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+                db.session.add(tf)
+                db.session.commit()
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            elif Tns.tf_reference==None:
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                
+                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+                db.session.add(tf)
+                db.session.commit()
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=typm.tpay_transNo, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id)
-            db.session.add(tf)
-            db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            elif Tns.tf_reference !=None:
+                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
             return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
 
 """initiating transfer of payment"""
-@app.route('/sendfund', methods=['GET', 'POST'])
+@app.route('/sendfund/', methods=['GET', 'POST'])
 def send_fund():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
+    refno=session.get('refno')
     if request.method=="GET":
         return redirect('/admin/logout/')
     
     if admin and request.method=='POST':
-        return ""
+        tf=Transfer.query.filter_by(tf_reference=refno).first()
+        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
+        url = "https://api.paystack.co/transfer"
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("post", url, headers=headers, data=json.dumps(data))
+        print(response.text)
+        return "transfer successful"
     elif spadmin and request.method=='POST':
-        return ""
-            
+        refno=request.form.get('refno')
+        tf=Transfer.query.filter_by(tf_reference=refno).first()
+        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
+        url = "https://api.paystack.co/transfer"
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("post", url, headers=headers, data=json.dumps(data))
+        print(response.text)
+        rspjson = json.loads(response.text) 
+        if rspjson.get('status') == True:
+            authurl = rspjson['data']["transfer_code"]
+            return redirect(authurl)
+        else:
+            return "Please try again"
+
+
+@app.route('/verify_transfer', method=['GET', 'POST'])
+def verifytransfer():
+    if request.method=='GET':
+        return redirect('/adminhome')
+    
+    if request.method == 'POST':
+
+        url = "https://api.paystack.co/transfer/{id_or_code}"
+
+        payload = {}
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        print(response.text)

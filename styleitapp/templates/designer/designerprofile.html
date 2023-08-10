@@ -65,7 +65,9 @@ Styleit|Profile
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen"></i> Create a Post</span></a></p>
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
                         {% else %}
+                        <p><span style="color:rgb(240, 5, 5); margin:2px; font-size:10px;">Subcription Expired. Subcribe to gain access to post</span></p>
                         <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
+                        
                         {% endif %}
                         <p class="mt-3 mb-3 generalface2" onclick="divchange5()"><span id="tasks" class="m-1 p-1"><i class="fa fa-tasks"></i> Task History</span></p>
                     </div>
@@ -74,9 +76,9 @@ Styleit|Profile
                     {% if bnk.bnk_desiid==desiloggedin %}
                     <div class="col-md-12 generalface2">
                     <span class="text-light mt-3 mb-3">Bank Detail</span>
-                    <p class="text-light mt-3 mb-3"><span>Account Name:</span><span> {{bnk.bnk_acname}}</span></p>
-                    <p class="text-light mt-3 mb-3"><span>Account Number:</span><span> {{bnk.bnk_acno}}</span></p>
-                    <p class="text-light mt-3 mb-3"><span>Bank Name:</span><span> {{bnk.bnk_bankname}}</span></p>
+                    <p class="text-light mb-2"><span>Account Name:</span><span> {{bnk.bnk_acname}}</span></p>
+                    <p class="text-light mb-2"><span>Account Number:</span><span> {{bnk.bnk_acno}}</span></p>
+                    <p class="text-light mb-2"><span>Bank Name:</span><span> {{bnk.bnk_bankname}}</span></p>
 
                     </div>
                     {% else %}
@@ -163,8 +165,10 @@ Styleit|Profile
                                             </span>
                                             {% endif %}                                            
                                         </a>
-                                        <span class="text-left">{{pst.post_title}}</span>
                                     </span>
+                                    <p class="text-center" style="background-color: rgb(231, 80, 168); padding: 4px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px;">   
+                                    <a href="/post/{{pst.post_id}}" ><span >{{pst.post_title}}</span></a></p>
+                                    
                                     
                                 </div>                                
                                 {% endfor %}
@@ -332,17 +336,20 @@ Styleit|Profile
                                 <div class="col-md-2">
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <span class="card p-3" style="background-color:transparent;">
+                                            <span class="card text-center" style="background-color:transparent;">
                                                 {% if pt.jb_pic %}
                                                     <div class="col-md-12">
                                                         <span class="col-md-2">
                                                             <img src="/static/images/completed_task/{{pt.jb_pic}}" alt="{{pt.jb_id}}" class="img img-fluid" style="height: 150px !important; width:fit-content">
                                                         </span>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <p class="text-left" style="font-size:10px;">{{pt.jbcustobj.cust_fname}} {{pt.jbcustobj.cust_lname}}</p>
-                                                        <p class="text-left" style="font-size:10px;">{{pt.jb_date}}</p>
-                                                        <p class="text-left">{{pt.jb_status | title}}</p>
+                                            </span>        
+                                                    <div class="col-md-12 text-center" style="background-color: rgb(231, 80, 168); padding: 4px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px;">
+                                                        <span class="text-left" style="font-size:12px;">{{pt.jbcustobj.cust_fname}} {{pt.jbcustobj.cust_lname}}</span>
+                                                        <span class="d-flex justify-content-between mt-2">
+                                                        <span class="text-left" style="font-size:6px; margin: 2px; padding: 2px; border-radius: 5px; color:#000000">{{pt.jb_date}}</span>
+                                                        <span class="text-left" style="font-size:8px; background-color: rgb(245, 238, 239); margin: 2px; padding: 2px; border-radius: 5px; color:#000000">{{pt.jb_status | title}}</span>
+                                                        </span>
                                                     </div>
                                                 {% else %}
                                                     <span class="col-md-2">
@@ -351,7 +358,7 @@ Styleit|Profile
                                                 {% endif %}                                            
                                                 
                                                 
-                                            </span>
+                                            
                                         </div>
                                     </div>
                                     
