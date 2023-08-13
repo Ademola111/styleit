@@ -10,7 +10,7 @@ def send_email(to, subject, template):
         recipients=[to], 
         html=template, 
         sender=app.config['MAIL_DEFAULT_SENDER'],
-        # sender='admin@styleit.com'
+        # sender='admin@styleit.africa'
         )
     mail.send(msg)
 

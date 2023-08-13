@@ -13,8 +13,9 @@ MAIL_USE_SSL=True
 MAIL_USE_TLS=False
 
 # gmail authentication
+# MAIL_USERNAME='africastyleit@gmail.com'
 MAIL_USERNAME='onayemi.hakeem@gmail.com'
 MAIL_PASSWORD='ypdqkqoxmxshhmdt'
 
 # mail account
-MAIL_DEFAULT_SENDER = 'admin@styleit.com'
+MAIL_DEFAULT_SENDER = 'admin@styleit.africa'

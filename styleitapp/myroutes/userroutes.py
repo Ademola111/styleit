@@ -1974,7 +1974,7 @@ def send_transpay_signal_email_alart(sender, comment, post_author_email):
     loggedin = session.get('customer')
     if loggedin:
         subject = f"StyleitHQ: {comment.custtpayobj.cust_fname} payment update"
-        body = f"Hi {comment.custtpayobj.cust_fname},\n\n Your payment for the delivery of the task completed by {comment.desitpayobj.desi_businessName} payment was successful. Your total charges for payment is  {comment.tpay_amount}. \n Thanks. \n\n\n StyleitHQ Team"
+        body = f"Hi {comment.custtpayobj.cust_fname},\n\n Your payment for the negotiated {comment.desitpayobj.desi_businessName} payment was successful. Your total charges for payment is  {comment.tpay_amount}. \n Thanks. \n\n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
       
 # @subactivate_signal.connect
@@ -1984,50 +1984,3 @@ def send_transpay_signal_email_alart(sender, comment, post_author_email):
 #     msg.html= render_template('designer/sub_notification.html', comment=comment)
 #     mail.send(msg)
 
-@app.route('/code', methods=['GET'])
-def code():
-    loggedin = session.get('customer')
-    if loggedin:
-        # ac='0019207800'
-        ac='2215986702'
-        
-        import requests
-
-        url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code=057"
-        url2 = "https://api.paystack.co/bank?currency=NGN" #use this to confirm bank 
-        payload1 = {}
-        payload2 = {}
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
-
-        response = requests.request("GET", url, headers=headers, data=payload1)
-        response1 = requests.request("GET", url2, headers=headers, data=payload2)
-        # with open("response1.sql", "w") as file:
-        #     file.write(response1.text)
-        
-        # print(response1.text)
-        print(response.text)
-        jj=response1.json()
-        j=response.json()
-        jjj=jj['data']
-        # print(jjj)
-        for jo in jjj:
-            if jo['code']=="057":
-                print(f"response bank of {j['data']['account_name']} is equal to {jo['name']}")
-                # print(jj['data'])
-        return redirect('/code2/')
-
-"""generating tranfer receipt"""
-@app.route('/code2/', methods=['GET', 'POST'])
-def code2():
-    loggedin = session.get('customer')
-    if loggedin:
-        url = "https://api.paystack.co/transferrecipient"
-
-        data = {"type": "nuban", "name": "Onayemi Hakeem A", "account_number": "2215986702", "bank_code": "057", "currency": "NGN", "email":"virgintinny@gmail.com", "description":"payment for the just conculeded service"}
-        payload = {}
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
-
-        response = requests.request("post", url, headers=headers, data=json.dumps(data))
-
-        print(response.text)
-        return "successfully"
