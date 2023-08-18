@@ -295,7 +295,9 @@
 {% endblock %}
 
     <!-- footer section -->
+  {% if not exclude_footer %}  
   <div class="container-fluid" id="footer">
+    
     <div class="row">
       <div class="col-md-12">
         <div class="row">
@@ -380,7 +382,11 @@
             <span>&copy; Styleit Africa Copyright 2023. All Right Reserved</span>
         </div>
     </div>
+  </div>
+  {% else %}
 
+  {% endif %}
+    
     <footer>
       <!-- jquery -->
         <script src="{{url_for('static', filename='js/jquery-3.6.0.min.js')}}"></script>
@@ -720,7 +726,8 @@ $(window).scroll(function() {
             
       </script>
     </footer>
-  </div>
+  
+  
   <!-- footer ends -->
 </body>
 </html>

@@ -80,7 +80,7 @@ def trending():
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
         elif loggedin:
             noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
-        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk, noti=noti, has_more=has_more, page=page)
+        return render_template('user/trending.html', pstn=pstn, loggedin=loggedin, desiloggedin=desiloggedin, des=des, cus=cus, lk=lk, noti=noti, has_more=has_more, page=page, exclude_footer=True)
 
 
 @app.route('/loadmore')
@@ -120,7 +120,7 @@ def post(id):
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
         elif loggedin:
             noti = Notification.query.filter(Notification.notify_postid | Notification.notify_likeid | Notification.notify_baid | Notification.notify_comid | Notification.notify_paymentid | Notification.notify_shareid | Notification.notify_subid, Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).all()
-        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn, share=share, i=i, noti=noti)
+        return render_template('user/post.html', loggedin=loggedin, desiloggedin=desiloggedin, des=des,cus=cus,comnt=comnt, pstn=pstn, share=share, i=i, noti=noti, exclude_footer=True)
 
 
 """post notification"""

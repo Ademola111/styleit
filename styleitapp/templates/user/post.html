@@ -170,25 +170,25 @@ Styleit | Post details
                                     <div class="col-md-12 p-2" id="commint">
                                         <!-- comment indentation starts here -->
                                         {% if y.level() == 0 %}
-                                        <div class="col-md-12 border-start border-primary">
+                                        <div class="col-md-12 border-start border-primary" style="background-color: rgb(255, 232, 240); border-radius: 10px;">
                                             {% elif y.level() == 1 %}
-                                            <div class="col-md-11 offset-md-1 border-start border-secondary">
+                                            <div class="col-md-11 offset-md-1 border-start border-secondary" style="background-color: rgb(231, 231, 231); border-radius: 10px;">
                                                 {% elif y.level() == 2 %}
-                                                <div class="col-md-10 offset-md-2 border-start border-warning">
+                                                <div class="col-md-11 offset-md-1 border-start border-warning" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
                                                     {% elif y.level() == 3 %}
-                                                    <div class="col-md-9 offset-md-3 border-start border-dark">
+                                                    <div class="col-md-11 offset-md-1 border-start border-dark" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
                                                         {% elif y.level() == 4 %}
-                                                        <div class="col-md-8 offset-md-4 border-start border-danger">
+                                                        <div class="col-md-11 offset-md-1 border-start border-danger" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
                                                             {% else %}
-                                                            <div class="col-md-7 offset-md-5 border-start border-light">
+                                                            <div class="col-md-11 offset-md-1 border-start border-light" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
                                                                 {% endif %}
                                                                 <!-- end of comment indentation -->
                                                                 <div>
                                                                     
                                                                     {% if y.comdesiobj %}
-                                                                    <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle"><a href="{{url_for('desi_detail', id=y.comdesiobj.desi_id)}}">{{y.comdesiobj.desi_fname}}</a></span>
+                                                                    <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle m-2"><a href="{{url_for('desi_detail', id=y.comdesiobj.desi_id)}}">{{y.comdesiobj.desi_fname}}</a></span>
                                                                     {% elif y.comcustobj %}
-                                                                    <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle"><a href="{{url_for('custdetail', id=y.comcustobj.cust_id)}}">{{y.comcustobj.cust_fname}} </a></span>
+                                                                    <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle m-2"><a href="{{url_for('custdetail', id=y.comcustobj.cust_id)}}">{{y.comcustobj.cust_fname}} </a></span>
                                                                     {% endif %}
                                                                     <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br> 
                                                                     
@@ -197,7 +197,7 @@ Styleit | Post details
                                                                     {% elif y.com_delete=='deleted' %}
                                                                     <span class="text-justify" style="padding:20px;"><i> This comment has been deleted </i></span>
                                                                     {% else %} 
-                                                                    <span class="text-justify" style="padding:20px;" onclick="reply('{{y.com_id}}')"><i class=" fa-solid fa-reply"></i> {{y.com_body}} </span>
+                                                                    <span class="text-justify me-2" style="padding:20px;" onclick="reply('{{y.com_id}}')"> {% if y.level() != 0 %} <i class=" fa-solid fa-reply"></i>{% else %}{% endif %} {{y.com_body}} </span>
                                                                     {% endif %}
                                                                 </div>
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >

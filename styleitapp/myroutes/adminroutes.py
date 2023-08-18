@@ -736,7 +736,7 @@ def send_fund():
             return "Please try again"
 
 
-@app.route('/verify_transfer', method=['GET', 'POST'])
+@app.route('/verify_transfer', methods=['GET', 'POST'])
 def verifytransfer():
     if request.method=='GET':
         return redirect('/adminhome')
