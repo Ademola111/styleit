@@ -29,7 +29,7 @@ Styleit | Post details
                         <div class="col mt-3 mb-3" id="divdisplay">
                             {% if desiloggedin == des.desi_id %}
                             <span id="trashi" class="me-2 ms-1"><i class="fa fa-ellipsis-v"></i></span>
-                            <span style="display:none; position:absolute" id="3dot">
+                            <span style="display:none; position:absolute; background-color: #ffffff;" id="3dot">
                                 <input type="hidden" name="potid" id="potid" value="{{pstn.post_id}}">
                                 <span id="trashit"><i class="fa fa-trash p-2"></i>Delete</span>
                             </span>
@@ -155,6 +155,7 @@ Styleit | Post details
                                     {% endif %}
                                 </div>
                             </div>
+                            <!-- comment form -->
                             <div class="col-md-12 mb-2 p-3 send" id="commentform">
                                 <form action="{{url_for('comment', postid=pstn.post_id)}}" method="POST" id="form2">
                                     <div style="display:flex; direction:row; justify-content:space-between;">
@@ -170,7 +171,7 @@ Styleit | Post details
                                     <div class="col-md-12 p-2" id="commint">
                                         <!-- comment indentation starts here -->
                                         {% if y.level() == 0 %}
-                                        <div class="col-md-12 border-start border-primary" style="background-color: rgb(255, 232, 240); border-radius: 10px;">
+                                        <div class="col-md-12 border-start border-primary" style="background-color: rgb(255, 232, 240); border-radius: 10px;">   
                                             {% elif y.level() == 1 %}
                                             <div class="col-md-11 offset-md-1 border-start border-secondary" style="background-color: rgb(231, 231, 231); border-radius: 10px;">
                                                 {% elif y.level() == 2 %}
@@ -184,22 +185,34 @@ Styleit | Post details
                                                                 {% endif %}
                                                                 <!-- end of comment indentation -->
                                                                 <div>
-                                                                    
+                                                                    <!-- display user pics and name -->
                                                                     {% if y.comdesiobj %}
                                                                     <span><img src="/static/images/profile/designer/{{y.comdesiobj.desi_pic}}" width="25" alt="{{y.comdesiobj.desi_fname}}" class="img-rounded-circle m-2"><a href="{{url_for('desi_detail', id=y.comdesiobj.desi_id)}}">{{y.comdesiobj.desi_fname}}</a></span>
                                                                     {% elif y.comcustobj %}
                                                                     <span><img src="/static/images/profile/customer/{{y.comcustobj.cust_pic}}" width="25" alt="{{y.comcustobj.cust_fname}}" class="img-rounded-circle m-2"><a href="{{url_for('custdetail', id=y.comcustobj.cust_id)}}">{{y.comcustobj.cust_fname}} </a></span>
                                                                     {% endif %}
                                                                     <span style="font-size:10px;">{{y.com_date.strftime('%d-%m-%Y %H:%M:%S')}}</span><br> 
-                                                                    
+                                                                    <!-- suspension condition -->
                                                                     {% if y.com_suspend=='suspended' %}
                                                                     <span class="text-justify" style="padding:20px;"><i> This comment has been flagged </i></span>
+                                                                    <!-- delete condition -->
                                                                     {% elif y.com_delete=='deleted' %}
                                                                     <span class="text-justify" style="padding:20px;"><i> This comment has been deleted </i></span>
                                                                     {% else %} 
-                                                                    <span class="text-justify me-2" style="padding:20px;" onclick="reply('{{y.com_id}}')"> {% if y.level() != 0 %} <i class=" fa-solid fa-reply"></i>{% else %}{% endif %} {{y.com_body}} </span>
+                                                                    <!-- main reply body -->
+                                                                    <span class="text-justify me-2" style="padding:20px;" onclick="reply('{{y.com_id}}')"> 
+                                                                        {% if y.level() != 0 %} <i class=" fa-solid fa-reply"></i>
+                                                                        {% else %}
+                                                                        {% endif %} 
+                                                                        {{y.com_body}} 
+                                                                    </span>
                                                                     {% endif %}
+                                                                    <!-- see more comment and replies -->
+                                                                    {#{% if y.path|length > 3 %}
+                                                                    <span>see more replies</span>
+                                                                    {% endif %}#}
                                                                 </div>
+                                                                <!-- reply form  -->
                                                                     <div class="mb-2 p-3 send" id="{{y.com_id}}" style="display:none;" >
                                                                         <form action="{{url_for('reply',postid=pstn.post_id,commentid=y.com_id) }}" method="POST" id="form1">
                                                                             <div style="display:flex; direction:row; justify-content:space-between;">

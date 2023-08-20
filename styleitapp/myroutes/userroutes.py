@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes, State, Lga
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -1596,7 +1596,7 @@ def search():
     cus=Customer.query.get(loggedin)
     word=request.form.get('search')
     page = request.args.get('page', 1, type=int)
-    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
+    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%')| Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
     if desiloggedin:
         noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
     elif loggedin:
@@ -1609,7 +1609,8 @@ def search():
 def desisearch():
     word=request.form.get('search')
     page = request.args.get('page', 1, type=int)
-    wordsearch=Designer.query.filter(Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Designer.desi_id)).paginate(page=page, per_page=rows_per_page)
+    wordsearch=Designer.query.join(Lga).join(Subscription).filter(Designer.desi_businessName.ilike(f'%{word}%')| Designer.desi_fname.ilike(f'%{word}')| Designer.desi_lname.ilike(f'%{word}') | Lga.lga_name.ilike(f'%{word}%'), Subscription.sub_status=='active').order_by(desc(Designer.desi_id)).paginate(page=page, per_page=rows_per_page)
+    print(wordsearch)
     return render_template('user/search2.html', wordsearch=wordsearch, word=word)
 
 """delete section"""

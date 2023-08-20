@@ -47,6 +47,7 @@ Styleit | Trending
                             </div>
                             <div class="p-3 text-justify">
                                 <span class="text-justify">{{y.post_body| truncate(250)}}</span>
+                                
                             </div>
                             </a>
                             
@@ -58,7 +59,16 @@ Styleit | Trending
                             {% else %}
                             <span class="p-3 m-3"><i class="far fa-thumbs-up"></i> Like</span>
                             {% endif %}
-                            
+
+                            <!-- numbers of comments -->
+                            {% if y.postcomobj|length == 1 %}
+                            <span class="p-3 m-3"> {{y.postcomobj|length}} <i class="fas fa-comment"></i> Comment</span>
+                            {% elif y.postcomobj|length > 1 %}
+                            <span class="p-3 m-3"> {{y.postcomobj|length}} <i class="fas fa-comment"></i> Comments</span>
+                            {% else %}
+                            <span class="p-3 m-3"> {{y.postcomobj|length}} <i class="fas fa-comment"></i> Comment</span>
+                            {% endif %}
+
                             <!-- numbers of shares -->
                             {% if y.sharepostobj|length == 1 %}
                             <span class="p-3 m-3"> {{y.sharepostobj|length}} <i class="fas fa-share-alt"></i> Share</span>
