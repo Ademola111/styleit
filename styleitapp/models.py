@@ -1,5 +1,7 @@
 import datetime, humanize
+from sqlalchemy import func
 from styleitapp import db
+
 
 class Posting(db.Model):
     post_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -82,11 +84,15 @@ class Customer(db.Model):
     cust_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     cust_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
     cust_access = db.Column(db.Enum('actived', 'deactived'), server_default='actived')
-
+    cust_state=db.Column(db.String(225), nullable=True)
+    cust_city=db.Column(db.String(225), nullable=True)
+    
     #foreignkey
+    cust_countryid = db.Column(db.Integer(), db.ForeignKey('countries.country_id'))
     cust_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     cust_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
     #relationship
+    custcountry = db.relationship('Countries', back_populates='countryobjcust')
     stateobj = db.relationship('State', back_populates='statecustomerobj')
     lgaobj = db.relationship('Lga', back_populates='lgacustomerobj')
     custcomobj = db.relationship('Comment', back_populates='comcustobj')
@@ -135,11 +141,15 @@ class Designer(db.Model):
     desi_activationdate = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
     desi_status = db.Column(db.Enum('actived', 'deactived'), server_default='deactived')
     desi_access = db.Column(db.Enum('actived', 'deactived'), server_default='actived')
+    desi_state=db.Column(db.String(225), nullable=True)
+    desi_city=db.Column(db.String(225), nullable=True)
     
     #foreignkey
+    desi_countryid = db.Column(db.Integer(), db.ForeignKey('countries.country_id'))
     desi_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     desi_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
     #relationship
+    desicountry = db.relationship('Countries', back_populates='countryobj')
     stateobj2 = db.relationship('State', back_populates='statedesignerobj')
     lgaobj2 = db.relationship('Lga', back_populates='lgadesignerobj')
     designerpostobj = db.relationship("Posting", back_populates='designerobj')
@@ -442,4 +452,18 @@ class Transfer(db.Model):
     #Relationship
     tftpayobj = db.relationship('Transaction_payment', back_populates='tpaytfobj')
     
+
+class Countries(db.Model):
+    country_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    country_name=db.Column(db.String(10), nullable=False)
+    # relationship
+    countryobj = db.relationship('Designer', back_populates='desicountry')
+    countryobjcust = db.relationship('Customer', back_populates='custcountry')
     
+class States(db.Model):
+    id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    name=db.Column(db.String(10), nullable=False)
+    
+class Cities(db.Model):
+    id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    name=db.Column(db.String(10), nullable=False)

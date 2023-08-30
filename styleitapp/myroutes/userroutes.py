@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes, State, Lga
+from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes, State, Lga, Countries, States, Cities
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -595,14 +595,18 @@ def customerSignup():
     loggedin = session.get('customer')
     cus=Customer.query.get(loggedin)
     state=State.query.all()
+    natn=Countries.query.all()
     if loggedin:
         return redirect('/customer/profile/')
 
     if request.method == 'GET':
-        return render_template('user/customersignup.html', state=state, cus=cus)
+        return render_template('user/customersignup.html', state=state, cus=cus, natn=natn)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
+        country=request.form.get('country')
+        fstate=request.form.get('fstate')
+        cities=request.form.get('cities')
         lname=request.form.get('lname')
         username=request.form.get('username')
         email=request.form.get('email')
@@ -610,57 +614,108 @@ def customerSignup():
         pwd=request.form.get('pwd')
         cpwd=request.form.get('cpwd')
         address= request.form.get('address')
-        state=request.form.get('state')
+        stat=request.form.get('state')
         lga=request.form.get('lga')
         gender=request.form.get('gender')
         pic=request.files.get('pic')
         original_name=pic.filename
 
-
-        if fname=="" or lname=="" or username=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
-            flash('One or more field is empty', 'danger')
-            return redirect('/user/customer/signup/')
-    
-        # checking length of password
-        elif len(pwd) < 8:
-            flash('Password should be atleast 8 character long', 'warning')
-            return redirect('/user/customer/signup/')
-        # compairing password match
-        elif pwd !=cpwd:
-            flash('Password match error', 'danger')
-            return redirect('/user/customer/signup/')
-        else:
-            # spliting to check email extension
-            mail = email.split('@')
-            if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
-                flash('kindly provide a valid email', 'warning')
+        if country == '161':
+            if fname=="" or lname=="" or username=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or stat=="" or lga=="" or gender=="" or country=="":
+                flash('One or more field is empty', 'danger')
+                return redirect('/user/customer/signup/')
+        
+            # checking length of password
+            elif len(pwd) < 8:
+                flash('Password should be atleast 8 character long', 'warning')
+                return redirect('/user/customer/signup/')
+            # compairing password match
+            elif pwd !=cpwd:
+                flash('Password match error', 'danger')
                 return redirect('/user/customer/signup/')
             else:
-                eemail = mail[0] + '@' + mail[1]
-                # hashing password
-                formated = generate_password_hash(pwd)
-                
-                # checking image field if empty
-                if original_name != "":
-                    # spliting image path
-                    extension = os.path.splitext(original_name)
-                    if extension[1].lower() in ['.jpg', '.gif', '.png']:
-                        fn=math.ceil(random.random()*10000000000)
-                        saveas = str(fn) + extension[1]
-                        pic.save(f'styleitapp/static/images/profile/customer/{saveas}')
-                        # committing to Customer table
-                        k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=eemail, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_stateid=state, cust_lgaid=lga)
-                        db.session.add(k)
-                        db.session.commit()
-
-                        token = generate_confirmation_token(k.cust_email)
-                        confirm_url = url_for('confirm_email', token=token, _external=True)
-                        html = render_template('user/activate.html', confirm_url=confirm_url)
-                        subject = "Please confirm your email"
-                        send_email(k.cust_email, subject, html)
-                        flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
-                        return redirect(url_for('customerLogin'))
+                # spliting to check email extension
+                mail = email.split('@')
+                if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                    flash('kindly provide a valid email', 'warning')
                     return redirect('/user/customer/signup/')
+                else:
+                    eemail = mail[0] + '@' + mail[1]
+                    # hashing password
+                    formated = generate_password_hash(pwd)
+                    
+                    # checking image field if empty
+                    if original_name != "":
+                        # spliting image path
+                        extension = os.path.splitext(original_name)
+                        if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                            fn=math.ceil(random.random()*10000000000)
+                            saveas = str(fn) + extension[1]
+                            pic.save(f'styleitapp/static/images/profile/customer/{saveas}')
+                            # committing to Customer table
+                            k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=eemail, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_stateid=stat, cust_lgaid=lga, cust_countryid=country)
+                            db.session.add(k)
+                            db.session.commit()
+
+                            token = generate_confirmation_token(k.cust_email)
+                            confirm_url = url_for('confirm_email', token=token, _external=True)
+                            html = render_template('user/activate.html', confirm_url=confirm_url)
+                            subject = "Please confirm your email"
+                            send_email(k.cust_email, subject, html)
+                            flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                            return redirect(url_for('unconfirmed'))
+                        return redirect('/user/customer/signup/')
+        else:
+            if fname=="" or lname=="" or username=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or fstate=="" or cities=="" or gender=="" or country=="":
+                flash('One or more field is empty', 'danger')
+                return redirect('/user/customer/signup/')
+        
+            # checking length of password
+            elif len(pwd) < 8:
+                flash('Password should be atleast 8 character long', 'warning')
+                return redirect('/user/customer/signup/')
+            # compairing password match
+            elif pwd !=cpwd:
+                flash('Password match error', 'danger')
+                return redirect('/user/customer/signup/')
+            else:
+                # spliting to check email extension
+                mail = email.split('@')
+                if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                    flash('kindly provide a valid email', 'warning')
+                    return redirect('/user/customer/signup/')
+                else:
+                    eemail = mail[0] + '@' + mail[1]
+                    # hashing password
+                    formated = generate_password_hash(pwd)
+                    
+                    # checking image field if empty
+                    if original_name != "":
+                        # spliting image path
+                        extension = os.path.splitext(original_name)
+                        if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                            fn=math.ceil(random.random()*10000000000)
+                            saveas = str(fn) + extension[1]
+                            pic.save(f'styleitapp/static/images/profile/customer/{saveas}')
+                            # committing to Customer table
+                            k=Customer(cust_fname=fname, cust_username=username, cust_lname=lname, cust_gender=gender, cust_phone=phone, cust_email=eemail, cust_pass=formated, cust_address=address, cust_pic=saveas,cust_state=fstate, cust_city=cities, cust_countryid=country)
+                            db.session.add(k)
+                            db.session.commit()
+                            ci=Cities(name=cities)
+                            db.session.add(ci)
+                            db.session.commit()
+                            st=States(name=fstate)
+                            db.session.add(st)
+                            db.session.commit()
+
+                            token = generate_confirmation_token(k.cust_email)
+                            confirm_url = url_for('confirm_email', token=token, _external=True)
+                            html = render_template('user/activate.html', confirm_url=confirm_url)
+                            subject = "Please confirm your email"
+                            send_email(k.cust_email, subject, html)
+                            flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                            return redirect(url_for('unconfirmed'))
+                        return redirect('/user/customer/signup/')
 
 
 
@@ -866,14 +921,18 @@ def designerSignup():
     desiloggedin = session.get('designer')
     des=Designer.query.get(desiloggedin)
     state=State.query.all()
+    natn=Countries.query.all()
     if desiloggedin:
         return redirect('/designer/profile/')
 
     if request.method == 'GET':
-        return render_template('designer/designersignup.html', state=state, des=des)
+        return render_template('designer/designersignup.html', state=state, des=des, natn=natn)
     
     if request.method == 'POST':
         fname=request.form.get('fname')
+        country=request.form.get('country')
+        fstate=request.form.get('fstate')
+        cities=request.form.get('cities')
         busname=request.form.get('busname')
         lname=request.form.get('lname')
         email=request.form.get('email')
@@ -881,56 +940,109 @@ def designerSignup():
         pwd=request.form.get('pwd')
         cpwd=request.form.get('cpwd')
         address= request.form.get('address')
-        state=request.form.get('state')
+        stat=request.form.get('state')
         lga=request.form.get('lga')
         gender=request.form.get('gender')
         pic=request.files.get('pic')
         original_name=pic.filename
-
-        # validating form fields
-        if fname=="" or lname=="" or busname=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or state=="" or lga=="" or gender=="":
-            flash('One or more field is empty', 'warning')
-            return redirect('/user/designer/signup/')
-        # checking length of password
-        elif len(pwd) < 8:
-            flash('Password should be atleast 8 character long', 'warning')
-            return redirect('/user/designer/signup/')
-        # compairing password match
-        elif pwd !=cpwd:
-            flash('Password match error', 'danger')
-            return redirect('/user/designer/signup/')
-        else:
-            # spliting to check email extension
-            mail = email.split('@')
-            if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
-                flash('kindly provide a valid email', 'warning')
+        
+        if country == '161':
+            # validating form fields
+            if fname=="" or lname=="" or busname=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or stat=="" or lga=="" or gender=="" or country=="":                
+                flash('One or more field is empty', 'warning')
+                return redirect('/user/designer/signup/')
+            # checking length of password
+            elif len(pwd) < 8:
+                flash('Password should be atleast 8 character long', 'warning')
+                return redirect('/user/designer/signup/')
+            # compairing password match
+            elif pwd !=cpwd:
+                flash('Password match error', 'danger')
                 return redirect('/user/designer/signup/')
             else:
-                eemail = mail[0] + '@' + mail[1]
-                # print(eemail)
-                # hashing password
-                formated = generate_password_hash(pwd)
-                # checking image field if empty
-                if original_name != "":
-                    # spliting image path
-                    extension = os.path.splitext(original_name)
-                    if extension[1].lower() in ['.jpg', '.gif', '.png']:
-                        fn=math.ceil(random.random()*10000000000)
-                        saveas = str(fn) + extension[1]
-                        pic.save(f'styleitapp/static/images/profile/designer/{saveas}')
-                        # committing to Customer table
-                        dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=eemail, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_stateid=state, desi_lgaid=lga)
-                        db.session.add(dk)
-                        db.session.commit()
-
-                        token = generate_confirmation_token(dk.desi_email)
-                        confirm_url = url_for('confirm_email', token=token, _external=True)
-                        html = render_template('user/activate.html', confirm_url=confirm_url)
-                        subject = "Please confirm your email"
-                        send_email(dk.desi_email, subject, html)
-                        flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
-                        return redirect(url_for('unconfirmed'))
+                # spliting to check email extension
+                mail = email.split('@')
+                if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                    flash('kindly provide a valid email', 'warning')
                     return redirect('/user/designer/signup/')
+                else:
+                    eemail = mail[0] + '@' + mail[1]
+                    # print(eemail)
+                    # hashing password
+                    formated = generate_password_hash(pwd)
+                    # checking image field if empty
+                    if original_name != "":
+                        # spliting image path
+                        extension = os.path.splitext(original_name)
+                        if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                            fn=math.ceil(random.random()*10000000000)
+                            saveas = str(fn) + extension[1]
+                            pic.save(f'styleitapp/static/images/profile/designer/{saveas}')
+                            # committing to Customer table
+                            dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=eemail, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_stateid=stat, desi_lgaid=lga, desi_countryid=country)
+                            db.session.add(dk)
+                            db.session.commit()
+
+                            token = generate_confirmation_token(dk.desi_email)
+                            confirm_url = url_for('confirm_email', token=token, _external=True)
+                            html = render_template('user/activate.html', confirm_url=confirm_url)
+                            subject = "Please confirm your email"
+                            send_email(dk.desi_email, subject, html)
+                            flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                            return redirect(url_for('unconfirmed'))
+                        return redirect('/user/designer/signup/')
+        else:
+            # validating form fields
+            if fname=="" or lname=="" or busname=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or fstate=="" or cities=="" or gender=="" or country=="":
+                flash('One or more field is empty', 'warning')
+                return redirect('/user/designer/signup/')
+            # checking length of password
+            elif len(pwd) < 8:
+                flash('Password should be atleast 8 character long', 'warning')
+                return redirect('/user/designer/signup/')
+            # compairing password match
+            elif pwd !=cpwd:
+                flash('Password match error', 'danger')
+                return redirect('/user/designer/signup/')
+            else:
+                # spliting to check email extension
+                mail = email.split('@')
+                if mail[1] not in ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']:
+                    flash('kindly provide a valid email', 'warning')
+                    return redirect('/user/designer/signup/')
+                else:
+                    eemail = mail[0] + '@' + mail[1]
+                    # print(eemail)
+                    # hashing password
+                    formated = generate_password_hash(pwd)
+                    # checking image field if empty
+                    if original_name != "":
+                        # spliting image path
+                        extension = os.path.splitext(original_name)
+                        if extension[1].lower() in ['.jpg', '.gif', '.png']:
+                            fn=math.ceil(random.random()*10000000000)
+                            saveas = str(fn) + extension[1]
+                            pic.save(f'styleitapp/static/images/profile/designer/{saveas}')
+                            # committing to Customer table
+                            dk=Designer(desi_fname=fname, desi_businessName=busname, desi_lname=lname, desi_gender=gender, desi_phone=phone, desi_email=eemail, desi_pass=formated, desi_address=address, desi_pic=saveas, desi_state=fstate, desi_city=cities, desi_countryid=country)
+                            db.session.add(dk)
+                            db.session.commit()
+                            ci=Cities(name=cities)
+                            db.session.add(ci)
+                            db.session.commit()
+                            st=States(name=fstate)
+                            db.session.add(st)
+                            db.session.commit()
+
+                            token = generate_confirmation_token(dk.desi_email)
+                            confirm_url = url_for('confirm_email', token=token, _external=True)
+                            html = render_template('user/activate.html', confirm_url=confirm_url)
+                            subject = "Please confirm your email"
+                            send_email(dk.desi_email, subject, html)
+                            flash('Profile setup completed. A confirmation mail has been sent via email', 'success')
+                            return redirect(url_for('unconfirmed'))
+                        return redirect('/user/designer/signup/')
+
 
 
 

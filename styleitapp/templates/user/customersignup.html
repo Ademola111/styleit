@@ -55,7 +55,8 @@ Styleit | Signup
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <select name="state" id="state" class="form-control" required>
+                    <label style="font-size: 11px; color: red;">For Nigerians Only</label>
+                    <select name="state" id="state" class="form-control mt-3 mb-3">
                         <option value="">Choose State</option>
                         {% for m in state %}
                         <option value="{{m.state_id}}">{{m.state_name}}</option>
@@ -63,8 +64,29 @@ Styleit | Signup
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <select class="form-control" name="lga" id="lga" required>
+                    <label style="font-size: 11px; color: red;">For Nigerians Only</label>
+                    <select class="form-control mt-3 mb-3" name="lga" id="lga">
                         <option value="">Choose L.G.A</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label style="font-size: 11px; color: red;">For Non-Nigerians Only</label>
+                    <input type="text" name="fstate" placeholder="Enter Your State" class="form-control mt-3 mb-3">
+                </div>
+                <div class="col-md-6">
+                    <label style="font-size: 11px; color: red;">For Non-Nigerians Only</label>
+                    <input type="text" name="cities" placeholder="Enter Your Cities" class="form-control mt-3 mb-3">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 mt-3 mb-3">
+                    <select name="country" id="country" class="form-control" required>
+                        <option value="">Choose Country</option>
+                        {% for cn in natn %}
+                        <option value="{{cn.country_id}}">{{cn.country_name}}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
