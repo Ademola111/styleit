@@ -462,8 +462,8 @@ class Countries(db.Model):
     
 class States(db.Model):
     id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    name=db.Column(db.String(10), nullable=False)
+    name=db.Column(db.String(225), nullable=False)
     
 class Cities(db.Model):
     id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    name=db.Column(db.String(10), nullable=False)
+    name=db.Column(db.String(225), nullable=False)
