@@ -56,6 +56,16 @@ def lgacheck():
     select_html = select_html + "</select>"
     return select_html
 
+
+"""Country Check"""
+@app.route('/countrycheck/', methods=['POST'])
+def countrycheck():
+    countryid=request.form.get('countryid')
+    cn=Countries.query.filter_by(country_id=countryid).first()
+    msg=cn.country_name
+    return jsonify(msg)
+
+
 """Trending section"""
 @app.route('/trending/', methods=['GET', 'POST'])
 def trending():
