@@ -1,0 +1,22 @@
+<html>
+{% block title %}
+{{ subject }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ subject }}</h1>
+    <p>{{ body }}</p>
+    <p>Visit us today at <a href="www.styleit.africa">Styleit Africa</a>
+    <div class="col-md-12 m-2 text-center" id="socials">
+        <span style="display: flex; justify-content: space-between;">
+          <span>
+            <span class="card-text mt-3" style="font-size: 11px;"><a href="https://www.facebook.com/styleitafrica/"><i class="fab fa-facebook"></i></a></span>
+            <span class="card-text mt-3" style="font-size: 11px;"><a href="https://www.twitter.com/styleitafrica/"><i class="fab fa-twitter"></i></a></span>
+            <span class="card-text mt-3" style="font-size: 11px;"><a href="https://www.linkedin.com/company/styleit-africa/"><i class="fab fa-linkedin"></i></a></span>
+            <span class="card-text mt-3" style="font-size: 11px;"><a href="https://www.instagram.com/styleitafrica/"><i class="fab fa-instagram"></i></a></span>
+          </span>
+          <span class="mt-2" style="font-size: 11px;"> &copy; <a href="www.styleit.africa">Styleit Africa</a> Copyright 2023. All Right Reserved </span>
+        </span>
+      </div>
+{% endblock %}
+</html>

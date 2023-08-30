@@ -8,6 +8,7 @@ from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
 from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer
+from styleitapp import Message, mail
 from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
 
@@ -751,3 +752,40 @@ def verifytransfer():
         response = requests.request("GET", url, headers=headers, data=payload)
 
         print(response.text)
+
+
+@app.route('/mail-notification', methods=['GET', 'POST'])
+def admin_general_mail():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if request.method=='GET':
+        return render_template('admin/maillinglist.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa)
+
+    if request.method=="POST":
+        subj=request.form.get('subject')
+        bodi = request.form.get('body')
+        dsn=Designer.query.all()
+        ctn = Customer.query.all()
+        recipients = []
+        for d in dsn:
+            recipients.append(d.desi_email)
+        for c in ctn:
+            recipients.append(c.cust_email)
+        if subj != None or bodi !=None:
+            with app.app_context():
+                for recipient in recipients:
+                    subject = subj
+                    body = bodi
+                    msg = Message(subject=subject, recipients=[recipient])
+                    # Attach a file (optional)
+                    with app.open_resource('static/images/logo11.PNG') as attachment:
+                        msg.attach('logo11.PNG', 'application/PNG', attachment.read())
+                    msg.html = render_template('admin/email_template.html', subject=subject, body=body)
+                    mail.send(msg)
+                    flash('message sent', 'success')
+            return redirect("/admin/dashboard/")
+        else:
+            flash('one or more filed is empty', 'danger')
+            return render_template('admin/maillinglist.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa)
