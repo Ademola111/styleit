@@ -455,7 +455,7 @@ class Transfer(db.Model):
 
 class Countries(db.Model):
     country_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    country_name=db.Column(db.String(10), nullable=False)
+    country_name=db.Column(db.String(225), nullable=False)
     # relationship
     countryobj = db.relationship('Designer', back_populates='desicountry')
     countryobjcust = db.relationship('Customer', back_populates='custcountry')
