@@ -298,7 +298,7 @@ Styleit|Profile
                             <div class="text-center mt-3">
                                 <a href="{{url_for('designerProfile', page=getbk.prev_num)}}" class="btn btn-outline-primary {% if getbk.page ==  1 %} disabled {% endif %}">&laquo;</a>
                                 <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in getbk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% for page_num in getbk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
 
                                 {% if page_num %}
                                 <!-- check for active page and set the link to active -->

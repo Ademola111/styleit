@@ -14,8 +14,6 @@ from styleitapp.token import generate_confirmation_token, confirm_token
 from styleitapp.email import send_email, send_email_alert
 from styleitapp.signal import comment_signal, reply_signal, like_signal, unlike_signal, subactivate_signal, subdeactivate_signal, payment_signal, transpay_signal, share_signal, bookappointment_signal, declineappointment_signal, acceptappointment_signal, completetask_signal, confirmdelivery_signal, follow_signal, unfollow_signal
 
-rows_per_page = 12
-rows_page = 20
 
 """homepage"""
 @app.route('/')
@@ -277,8 +275,8 @@ def designers():
         des=Designer.query.get(desiloggedin)
         cus=Customer.query.get(loggedin)
         page = request.args.get('page', 1, type=int)
-        design=Designer.query.paginate(page=page, per_page=rows_page)
-        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)
+        design=Designer.query.paginate(page=page, per_page=20)
+        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=20)
         if desiloggedin:
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
         elif loggedin:
@@ -825,8 +823,8 @@ def customerProfile():
             return redirect('/user/customer/login/')
         else:
             page=request.args.get('page', 1, type=int)
-            mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=rows_per_page)
-            getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
+            mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=12)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=12)
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).order_by(desc(Notification.notify_date)).all()
             follow = Follow.query.filter_by(follow_custid=loggedin).all()
             return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk, noti=noti, follow=follow)
@@ -1142,11 +1140,11 @@ def designerProfile():
             return redirect('/user/designer/login/')
         else:
             page = request.args.get('page', 1, type=int)
-            pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=rows_per_page)
-            getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=rows_per_page)
+            pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=12)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=12)
             subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
-            bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=rows_per_page)
+            bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=12)
             bnk=Bank.query.filter_by(bnk_desiid=desiloggedin).first()
             bnkcode=Bankcodes.query.all()
             follow = Follow.query.filter_by(follow_desiid=desiloggedin).all()
@@ -1346,7 +1344,7 @@ def subplan():
     if request.method =='GET':
         des=Designer.query.get(desiloggedin)
         page=request.args.get('page', 1, type=int)
-        sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
+        sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=12)
         noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
         return render_template('designer/subscribeplans.html', des=des, sublist=sublist, noti=noti)
 
@@ -1722,7 +1720,7 @@ def search():
     cus=Customer.query.get(loggedin)
     word=request.form.get('search')
     page = request.args.get('page', 1, type=int)
-    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%')| Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
+    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%')| Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=12)
     if desiloggedin:
         noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
     elif loggedin:
@@ -1735,7 +1733,7 @@ def search():
 def desisearch():
     word=request.form.get('search')
     page = request.args.get('page', 1, type=int)
-    wordsearch=Designer.query.join(Lga).join(Subscription).filter(Designer.desi_businessName.ilike(f'%{word}%')| Designer.desi_fname.ilike(f'%{word}')| Designer.desi_lname.ilike(f'%{word}') | Lga.lga_name.ilike(f'%{word}%'), Subscription.sub_status=='active').order_by(desc(Designer.desi_id)).paginate(page=page, per_page=rows_per_page)
+    wordsearch=Designer.query.join(Lga).join(Subscription).filter(Designer.desi_businessName.ilike(f'%{word}%')| Designer.desi_fname.ilike(f'%{word}')| Designer.desi_lname.ilike(f'%{word}') | Lga.lga_name.ilike(f'%{word}%'), Subscription.sub_status=='active').order_by(desc(Designer.desi_id)).paginate(page=page, per_page=12)
     print(wordsearch)
     return render_template('user/search2.html', wordsearch=wordsearch, word=word)
 
