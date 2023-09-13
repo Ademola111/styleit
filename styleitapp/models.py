@@ -286,6 +286,7 @@ class Bookappointment(db.Model):
     ba_status = db.Column(db.Enum('accept', 'decline', 'not decided', 'completed', 'not done'), nullable=False, server_default='not decided')
     ba_custstatus = db.Column(db.Enum('collected', 'not collected'), nullable=False, server_default='not collected')
     ba_paystatus = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
+    ba_reason = db.Column(db.String(255), nullable=True)
     
     #foreignKey
     ba_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
@@ -420,7 +421,7 @@ class Login(db.Model):
     login_id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
     login_email=db.Column(db.String(225), nullable=False)
     login_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
-    logout_date = db.Column(db.DateTime(), nullable=False)
+    logout_date = db.Column(db.DateTime(), nullable=True)
     
     #foreignKey
     login_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))

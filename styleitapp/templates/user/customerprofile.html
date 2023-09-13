@@ -174,7 +174,7 @@ Styleit|Profile
                                     {% if bk.ba_status == 'accept' or bk.ba_status == 'completed'%}
                                         was <strong> accepted. </strong>You can reach out at <strong> {{bk.desibaobj.desi_phone}} </strong> to makeup decisions.
                                     {% elif bk.ba_status == 'decline' %}
-                                        was <strong> declined. </strong> Click <a href="{{url_for('designers')}}" class="text-primary">Designers</a> to view list of designers and book here <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a>
+                                        was <strong> declined. </strong><br> Reason: <br> {{bk.ba_reason}} <br> Click <a href="{{url_for('designers')}}" class="text-primary">Designers</a> to view list of designers and book here <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a>
                                     {% else %}
                                         still <strong>{{bk.ba_status}}.</strong> Kindly book another if urgent. Click <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a> to book now.
                                     {% endif %}
