@@ -27,7 +27,23 @@ def home():
         return redirect('/designer/profile/')
     elif loggedin:
         return redirect('/customer/profile/')
-    else:     
+    else:  
+        today = date.today()
+        print(str(today))
+        if today:
+            subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate==str(today)).all()
+            
+            if subt != None:
+                for su in subt:
+                    su.sub_status='deactive'
+                    db.session.commit()
+                    
+                    commenter_email=su.subdesiobj.desi_email
+                    custom=su.subdesiobj.desi_businessName
+                    recipients={"custom":custom}
+                    subdeactivate_signal.send(app, comment=su, post_author_email=commenter_email, recipients=recipients)
+            else:
+                pass   
         return render_template('user/index.html', cus=cus, des=des)
 
 
@@ -727,6 +743,8 @@ def customerSignup():
 
 
 
+        
+        
 """Custormer Login"""
 @app.route('/user/customer/login/', methods=['GET', 'POST'])
 def customerLogin():
@@ -1054,29 +1072,42 @@ def designerSignup():
 
 
 
-""" checking sub status for automatic deactivation """
-@app.before_request
-def before_request_func():
-    desiloggedin = session.get('designer')
-    des=Designer.query.get(desiloggedin)
-    if desiloggedin:
-        subt=db.session.query(Subscription).filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
-        today = date.today()
-        # print(subt)
-        # print(today)
-        # today = '2022-12-01'
-        if subt != None:
-            if subt.sub_enddate < str(today):
-                subt.sub_status='deactive'
-                db.session.commit()
+# """ checking sub status for automatic deactivation """
+# @app.before_request
+# def before_request_func():
+#     desiloggedin = session.get('designer')
+#     des=Designer.query.get(desiloggedin)
+#     today = date.today()
+#     if desiloggedin:
+#         subt=db.session.query(Subscription).filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
+#         # print(subt)
+#         # print(today)
+#         # today = '2022-12-01'
+#         if subt != None:
+#             if subt.sub_enddate < str(today):
+#                 subt.sub_status='deactive'
+#                 db.session.commit()
                 
-                commenter_email=subt.subdesiobj.desi_email
-                custom=subt.subdesiobj.desi_businessName
-                recipients={"custom":custom}
-                subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
-        else:
-            pass
-
+#                 commenter_email=subt.subdesiobj.desi_email
+#                 custom=subt.subdesiobj.desi_businessName
+#                 recipients={"custom":custom}
+#                 subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
+#         else:
+#             pass
+#     else:
+#         subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate==str(today) ).all()
+        
+#         if subt != None:
+#             for su in subt:
+#                 su.sub_status='deactive'
+#                 db.session.commit()
+                
+#                 commenter_email=su.subdesiobj.desi_email
+#                 custom=su.subdesiobj.desi_businessName
+#                 recipients={"custom":custom}
+#                 subdeactivate_signal.send(app, comment=su, post_author_email=commenter_email, recipients=recipients)
+#         else:
+#             pass
 
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
@@ -1955,7 +1986,7 @@ def unfollow(id):
 @comment_signal.connect
 def send_comment_email_alert(sender, comment, post_author_email): 
     subject = f"StyleitHQ: {comment.comcustobj.cust_fname} commented on your post"
-    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: https://www.stylist.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
+    body = f"Hi {comment.compostobj.designerobj.desi_businessName},\n\n{comment.comcustobj.cust_fname} commented on your post: \n {comment.com_body} \n\n Visit: https://www.styleit.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
     send_email_alert(subject, body, [post_author_email])
 
 
@@ -1965,11 +1996,11 @@ def send_reply_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.comdesiobj.desi_businessName} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: https://www.stylist.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.comdesiobj.desi_businessName} replied to your comment: \n {comment.com_body} \n\n Visit: https://www.styleit.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.comcustobj.cust_fname} replied to your comment"
-        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: https://www.stylist.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.comcustobj.cust_fname} replied to your comment: \n {comment.com_body} \n\n Visit: https://www.styleit.africa/post/{comment.com_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1979,11 +2010,11 @@ def send_like_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} like your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: https://www.stylist.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} like your post: \n\n Visit: https://www.styleit.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} like your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: https://www.stylist.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} like your post:  \n\n Visit: https://www.styleit.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -1993,23 +2024,23 @@ def send_unlike_email_alert(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desilikesobj.desi_businessName} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: https://www.stylist.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desilikesobj.desi_businessName} unlike your post: \n\n Visit: https://www.styleit.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custlikesobj.cust_fname} unlike your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: https://www.stylist.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custlikesobj.cust_fname} unlike your post: \n\n Visit: https://www.styleit.africa/post/{comment.like_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 @subactivate_signal.connect
 def send_subactivate_email_alart(sender, comment, post_author_email, recipients):
     subject = f"Subcription Alert by StyleitHQ"
-    body = f"Hi {recipients['custom']},\n\n You have successfully subscribe to a new plan \n\n Your subscription details is as shown below \n plan: {comment.subpaymentobj.sub_plan} \n Sub Start Date: {comment.subpaymentobj.sub_startdate} \n Sub End Date: {comment.subpaymentobj.sub_enddate} \n Thank you for doing business with us.\n\n Visit: https://www.stylist.africa/designer/subplan/ \n\n StyleitHQ Team" 
+    body = f"Hi {recipients['custom']},\n\n You have successfully subscribe to a new plan \n\n Your subscription details is as shown below \n plan: {comment.subpaymentobj.sub_plan} \n Sub Start Date: {comment.subpaymentobj.sub_startdate} \n Sub End Date: {comment.subpaymentobj.sub_enddate} \n Thank you for doing business with us.\n\n Visit: https://www.styleit.africa/designer/subplan/ \n\n StyleitHQ Team" 
     send_email_alert(subject, body, [post_author_email])
 
 @subdeactivate_signal.connect
 def send_subdeactivate_email_alart(sender, comment, post_author_email, recipients):
     subject = f"Subcription Alert by StyleitHQ"
-    body = f"Hi {recipients['custom']},\n\n Your subscription have been deactivated.\n Kindly click the link below to subscribe. \n Thank you for doing business with us.\n\n Visit: https://www.stylist.africa/designer/subplan/ \n\n StyleitHQ Team" 
+    body = f"Hi {recipients['custom']},\n\n Your subscription have been deactivated.\n Kindly click the link below to subscribe. \n Thank you for doing business with us.\n\n Visit: https://www.styleit.africa/designer/subplan/ \n\n StyleitHQ Team" 
     send_email_alert(subject, body, [post_author_email])
 
 @share_signal.connect
@@ -2018,11 +2049,11 @@ def send_share_email_alart(sender, comment, post_author_email, recipients):
     loggedin = session.get('customer')
     if desiloggedin:
         subject = f"StyleitHQ: {comment.desishareobj.desi_businessName} shared your post"
-        body = f"Hi {recipients['custom']},\n\n{comment.desishareobj.desi_businessName} shared your post: \n\n Visit: https://www.stylist.africa/post/{comment.share_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n{comment.desishareobj.desi_businessName} shared your post: \n\n Visit: https://www.styleit.africa/post/{comment.share_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
     elif loggedin:
         subject = f"StyleitHQ: {comment.custshareobj.cust_fname} shared your post"
-        body = f"Hi {recipients['custom']},\n\n {comment.custshareobj.cust_fname} shared your post: \n\n Visit: https://www.stylist.africa/post/{comment.share_postid}/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custshareobj.cust_fname} shared your post: \n\n Visit: https://www.styleit.africa/post/{comment.share_postid}/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -2031,7 +2062,7 @@ def send_bookappointment_email_alart(sender, comment, post_author_email, recipie
     loggedin = session.get('customer')
     if loggedin:
         subject = f"StyleitHQ: {comment.custbaobj.cust_fname} booking appointment"
-        body = f"Hi {recipients['custom']},\n\n {comment.custbaobj.cust_fname} needs for your service. \n Kindly visit the link below to respond to the appointment \n\n Visit: https://www.stylist.africa/designer/profile/ \n\n StyleitHQ" 
+        body = f"Hi {recipients['custom']},\n\n {comment.custbaobj.cust_fname} needs your service. \n Kindly visit the link below to respond to the appointment \n\n Visit: https://www.styleit.africa/designer/profile/ \n\n StyleitHQ" 
         send_email_alert(subject, body, [post_author_email])
 
 @acceptappointment_signal.connect
@@ -2039,7 +2070,7 @@ def send_acceptappointment_email_alart(sender, comment, post_author_email, recip
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Booking Appointment Update!"
-        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has accepted your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: https://www.stylist.africa/customer/profile/ \n\n StyleitHQ Team"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has accepted your appointment. \n Kindly visit the link below to respond to the appointment status \n\n Visit: https://www.styleit.africa/customer/profile/ \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -2048,7 +2079,7 @@ def send_declineappointment_email_alart(sender, comment, post_author_email, reci
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Booking Appointment Update!"
-        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has decline your appointment with the below response: \n {comment.ba_reason}. \n\n Kindly visit the link below to to book new appointment \n\n Visit: https://www.stylist.africa/bookappointment/ \n\n StyleitHQ Team"
+        body = f"Hi {comment.custbaobj.cust_fname},\n\n {comment.desibaobj.desi_businessName} has decline your appointment with the below response: \n {comment.ba_reason}. \n\n Kindly visit the link below to to book new appointment \n\n Visit: https://www.styleit.africa/bookappointment/ \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -2057,7 +2088,7 @@ def send_completetask_email_alart(sender, comment, post_author_email):
     desiloggedin = session.get('designer')
     if desiloggedin:
         subject = f"StyleitHQ: Job Update!"
-        body = f"Hi {comment.jbcustobj.cust_fname},\n\n {comment.jbdesiobj.desi_businessName} has completed your task. \n Kindly use the link below to approve delivery and collection \n\n Visit: https://www.stylist.africa/customer/profile/ \n\n StyleitHQ Team"
+        body = f"Hi {comment.jbcustobj.cust_fname},\n\n {comment.jbdesiobj.desi_businessName} has completed your task. \n Kindly use the link below to approve delivery and collection \n\n Visit: https://www.styleit.africa/customer/profile/ \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
 
 
@@ -2066,7 +2097,7 @@ def send_confirmdelivery_email_alart(sender, comment, post_author_email):
     loggedin = session.get('customer')
     if loggedin:
         subject = f"StyleitHQ: Job Update!"
-        body = f"Hi {comment.jbdesiobj.desi_businessName},\n\n {comment.jbcustobj.cust_fname} has confirm your task delivery. Kindly await your payment from Styleit HQ once payment is confirmed.\n Kindly use the link below to view details. \n\n Visit: https://www.stylist.africa/customer/profile/ \n\n StyleitHQ Team"
+        body = f"Hi {comment.jbdesiobj.desi_businessName},\n\n {comment.jbcustobj.cust_fname} has confirm your task delivery. Kindly await your payment from Styleit HQ once payment is confirmed.\n Kindly use the link below to view details. \n\n Visit: https://www.styleit.africa/customer/profile/ \n\n StyleitHQ Team"
         send_email_alert(subject, body, [post_author_email])
         
 @follow_signal.connect
