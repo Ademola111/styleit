@@ -44,13 +44,11 @@ Styleit|Profile
                 <p><span><b>Account No:</b></span> <span>{{data['data']['details']['account_number']}}</span></p>
                 <p><span><b>Bank Name:</b></span> <span>{{data['data']['details']['bank_name']}}</span></p>
                 <p><span><b>Email:</b></span> <span>{{data['data']['email']}}</span></p>
-                <p><span><b>Amount to be remited:</b></span> <span> N{{(typm.tpay_amount) - (typm.tpay_amount * 0.2)}} </span></p>
+                <p><span><b>Amount to be remited:</b></span> <span> N{{(typm.tpay_amount) - (typm.tpay_amount * 0.5)}} </span></p>
                 <p><span><b>Descriptions:</b></span> <span> {{data['message']}} </span></p>
                 
                 <button type="submit" class="btn btn-danger form-control">Confirm Payment</button>
                 </form>
-                
-                
             </div>
             <div class="col-md-4 mt-3 mb-3 generalface2">
                 

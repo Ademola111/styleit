@@ -12,7 +12,7 @@ Styleit | Home
         <h4 class="text-center mt-4"></h4>
         <form class="d-flex text-center" id="search" method="POST" action="{{url_for('desisearch')}}">
 			<input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <input class="form-control me-2" type="search" name="search" placeholder="Looking for professional fashionista? Search with 'name' or 'location' " aria-label="Search">
+            <input class="form-control me-2" type="search" name="search" placeholder="Looking for professional fashionista? Search with 'name' or 'location' " aria-label="Search" required="required">
             <button class="btn btn-outline-danger" type="submit">Search</button>
         </form>
         </div>

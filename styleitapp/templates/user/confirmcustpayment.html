@@ -36,8 +36,13 @@ Styleit | Comfirm payment
             <p>{{pymt.tpay_transdate}}</p>
             <label>Payment Refrence No</label>
             <p>{{pymt.tpay_transNo}}</p>
+            {% if pymt.tpay_currencyicon=='NGN' %}
             <label>Amount Paid </label>
-            <p>{{pymt.tpay_amount}}</p>
+            <p>{{pymt.tpay_currencyicon}} {{pymt.tpay_amount}}</p>
+            {% else %}
+            <label>Amount Paid </label>
+            <p>{{pymt.tpay_currencyicon}} {{pymt.tpay_amount}}</p>
+            {% endif %}
             <label>Payment Status</label>
             <p>{{pymt.tpay_status}}</p> 
             <button type="submit" class="form-control mt-3 mb-3 btn btn-danger"> Confirm Payment </button>

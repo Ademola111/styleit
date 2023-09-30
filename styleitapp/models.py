@@ -208,6 +208,7 @@ class Transaction_payment(db.Model):
     tpay_transdate=db.Column(db.DateTime(), default=datetime.datetime.utcnow())
     tpay_amount=db.Column(db.Float(), nullable=False)
     tpay_status = db.Column(db.Enum('pending', 'paid', 'failed'), server_default='pending')
+    tpay_currencyicon = db.Column(db.String(10), nullable=False)
     #foreignkey
     tpay_desiid = db.Column(db.Integer(), db.ForeignKey("designer.desi_id"))
     tpay_custid = db.Column(db.Integer(), db.ForeignKey("customer.cust_id"))

@@ -291,8 +291,7 @@ def designers():
         des=Designer.query.get(desiloggedin)
         cus=Customer.query.get(loggedin)
         page = request.args.get('page', 1, type=int)
-        design=Designer.query.paginate(page=page, per_page=20)
-        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=20)
+        design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=50)
         if desiloggedin:
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==desiloggedin).all()
         elif loggedin:
@@ -841,8 +840,8 @@ def customerProfile():
             return redirect('/user/customer/login/')
         else:
             page=request.args.get('page', 1, type=int)
-            mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=12)
-            getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=12)
+            mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=30)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=20)
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_custid==cus.cust_id).order_by(desc(Notification.notify_date)).all()
             follow = Follow.query.filter_by(follow_custid=loggedin).all()
             return render_template('user/customerprofile.html', loggedin=loggedin, cus=cus, state=state, mylike=mylike, getbk=getbk, noti=noti, follow=follow)
@@ -1071,44 +1070,6 @@ def designerSignup():
 
 
 
-
-# """ checking sub status for automatic deactivation """
-# @app.before_request
-# def before_request_func():
-#     desiloggedin = session.get('designer')
-#     des=Designer.query.get(desiloggedin)
-#     today = date.today()
-#     if desiloggedin:
-#         subt=db.session.query(Subscription).filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
-#         # print(subt)
-#         # print(today)
-#         # today = '2022-12-01'
-#         if subt != None:
-#             if subt.sub_enddate < str(today):
-#                 subt.sub_status='deactive'
-#                 db.session.commit()
-                
-#                 commenter_email=subt.subdesiobj.desi_email
-#                 custom=subt.subdesiobj.desi_businessName
-#                 recipients={"custom":custom}
-#                 subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
-#         else:
-#             pass
-#     else:
-#         subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate==str(today) ).all()
-        
-#         if subt != None:
-#             for su in subt:
-#                 su.sub_status='deactive'
-#                 db.session.commit()
-                
-#                 commenter_email=su.subdesiobj.desi_email
-#                 custom=su.subdesiobj.desi_businessName
-#                 recipients={"custom":custom}
-#                 subdeactivate_signal.send(app, comment=su, post_author_email=commenter_email, recipients=recipients)
-#         else:
-#             pass
-
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
 def designerLogin():
@@ -1161,7 +1122,9 @@ def designerProfile():
 
     if request.method == 'GET':
         des=Designer.query.get(desiloggedin)
-        state=State.query.all()       
+        state=State.query.all()
+        states=States.query.all()       
+               
         if des.desi_status == 'deactived':
             flash('Please confirm your account', 'warning')
             return redirect(url_for('unconfirmed'))
@@ -1171,15 +1134,15 @@ def designerProfile():
             return redirect('/user/designer/login/')
         else:
             page = request.args.get('page', 1, type=int)
-            pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=12)
-            getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=12)
+            pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=30)
+            getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=20)
             subt=Subscription.query.filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
             noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
-            bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=12)
+            bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=20)
             bnk=Bank.query.filter_by(bnk_desiid=desiloggedin).first()
             bnkcode=Bankcodes.query.all()
             follow = Follow.query.filter_by(follow_desiid=desiloggedin).all()
-            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt, noti=noti, bk=bk, bnk=bnk, follow=follow, bnkcode=bnkcode)
+            return render_template('designer/designerprofile.html', desiloggedin=desiloggedin, des=des, state=state, pos=pos, getbk=getbk, subt=subt, noti=noti, bk=bk, bnk=bnk, follow=follow, bnkcode=bnkcode, states=states)
 
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -1375,7 +1338,7 @@ def subplan():
     if request.method =='GET':
         des=Designer.query.get(desiloggedin)
         page=request.args.get('page', 1, type=int)
-        sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=12)
+        sublist = Subscription.query.filter_by(sub_desiid=desiloggedin).order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=50)
         noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
         return render_template('designer/subscribeplans.html', des=des, sublist=sublist, noti=noti)
 
@@ -1668,11 +1631,11 @@ def confirm_delivery(id):
 @app.route('/custpayment/<int:id>/', methods=['GET', 'POST'])
 def custpayment(id):
     loggedin = session.get('customer')
+    cus=Customer.query.get(loggedin)
     if loggedin==None:
         return redirect('/')
     
     if request.method=='GET':
-        cus=Customer.query.get(loggedin)
         jb=Bookappointment.query.filter(Bookappointment.ba_id==id).first()
         # des=Designer.query.filter(Designer.desi_id==jb.jb_desiid).first()
         return render_template('user/custpayment.html', jb=jb, cus=cus)
@@ -1682,15 +1645,24 @@ def custpayment(id):
         receiver=request.form.get('desiid')
         amt=request.form.get('amount')
         charges = request.form.get('charges')
-        
-        if sender !="" and receiver !="" and amt !="" and charges !="":
-            refno = int(random.random()*10000000) 
-            session['refno'] = refno
-            total_amount= int(amt) + int(charges)
-            tpay=Transaction_payment(tpay_transNo=refno, tpay_custid=sender, tpay_desiid=receiver, tpay_amount=total_amount, tpay_baid=id)
-            db.session.add(tpay)
-            db.session.commit()
-            return redirect(f'/confirm_payment/{id}/')
+        if cus.cust_countryid ==161: 
+            if sender !="" and receiver !="" and amt !="" and charges !="":
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                total_amount= int(amt) + int(charges)
+                tpay=Transaction_payment(tpay_transNo=refno, tpay_custid=sender, tpay_desiid=receiver, tpay_amount=total_amount, tpay_baid=id, tpay_currencyicon="NGN")
+                db.session.add(tpay)
+                db.session.commit()
+                return redirect(f'/confirm_payment/{id}/')
+        else:
+            if sender !="" and receiver !="" and amt !="" and charges !="":
+                refno = int(random.random()*10000000) 
+                session['refno'] = refno
+                total_amount= int(amt) + int(charges)
+                tpay=Transaction_payment(tpay_transNo=refno, tpay_custid=sender, tpay_desiid=receiver, tpay_amount=total_amount, tpay_baid=id, tpay_currencyicon="$")
+                db.session.add(tpay)
+                db.session.commit()
+                return redirect(f'/confirm_payment/{id}/')
 
 """ customer payment """
 @app.route('/confirm_payment/<int:id>/', methods=['GET', 'POST'])
@@ -1743,15 +1715,24 @@ def page_not_found(error):
 
 
 """Search section"""
-@app.route('/postsearch/', methods=['POST'])
+@app.route('/postsearch/', methods=['POST', 'GET'])
 def search():
     desiloggedin = session.get('designer')
     loggedin = session.get('customer')
     des=Designer.query.get(desiloggedin)
     cus=Customer.query.get(loggedin)
-    word=request.form.get('search')
+    word=request.form.get('search')    
+    return redirect(f'/postsearch/{word}')
+
+"""the search response"""
+@app.route('/postsearch/<word>', methods=['GET'])
+def result(word):
+    desiloggedin = session.get('designer')
+    loggedin = session.get('customer')
+    des=Designer.query.get(desiloggedin)
+    cus=Customer.query.get(loggedin)
     page = request.args.get('page', 1, type=int)
-    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%')| Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=12)
+    wordsearch=Posting.query.join(Designer).filter(Posting.post_title.ilike(f'%{word}%')| Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=50)
     if desiloggedin:
         noti = Notification.query.filter(Notification.notify_read=='unread', Notification.notify_desiid==des.desi_id).all()
     elif loggedin:
@@ -1763,10 +1744,18 @@ def search():
 @app.route('/search/', methods=['POST'])
 def desisearch():
     word=request.form.get('search')
+    return redirect(f'/search/{word}')
+
+
+""" The search response 2"""
+@app.route('/search/<word>', methods=['GET'])
+def search_result(word):
+    print(word)
     page = request.args.get('page', 1, type=int)
-    wordsearch=Designer.query.join(Lga).join(Subscription).filter(Designer.desi_businessName.ilike(f'%{word}%')| Designer.desi_fname.ilike(f'%{word}')| Designer.desi_lname.ilike(f'%{word}') | Lga.lga_name.ilike(f'%{word}%'), Subscription.sub_status=='active').order_by(desc(Designer.desi_id)).paginate(page=page, per_page=12)
-    print(wordsearch)
+    wordsearch=Designer.query.join(Lga).join(Subscription).filter(Designer.desi_businessName.ilike(f'%{word}%')| Designer.desi_fname.ilike(f'%{word}%')| Designer.desi_lname.ilike(f'%{word}%') | Designer.desi_state.ilike(f'%{word}%') | Designer.desi_city.ilike(f'%{word}%') | Lga.lga_name.ilike(f'%{word}%'), Subscription.sub_status=='active').order_by(desc(Designer.desi_id)).paginate(page=page, per_page=50)
+    print(wordsearch.items)
     return render_template('user/search2.html', wordsearch=wordsearch, word=word)
+
 
 """delete section"""
 @app.route('/trashit/', methods=['GET', 'POST'])
@@ -1981,6 +1970,11 @@ def unfollow(id):
             db.session.commit()            
             return redirect(f'/designer/{id}/')
 
+"""frequently asked questions"""
+@app.route('/faq', methods=['GET'])
+def faq():
+    return render_template('user/faq.html')
+
 
 """ signals connects """
 @comment_signal.connect
@@ -2140,3 +2134,73 @@ def send_transpay_signal_email_alart(sender, comment, post_author_email):
 #     msg.html= render_template('designer/sub_notification.html', comment=comment)
 #     mail.send(msg)
 
+
+""" list of booking"""
+@app.route('/booking_appointment_list/', methods=['GET'])
+def bkappoint_list():
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        page = request.args.get('page', 1, type=int)
+        getbk=Bookappointment.query.filter(Bookappointment.ba_desiid==desiloggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=4)
+        return render_template('designer/morepage.html', page=page, getbk=getbk, des=des)
+
+
+""" List of post list"""
+@app.route('/postlist/', methods=['GET'])
+def postlist():
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        page = request.args.get('page', 1, type=int)
+        pos=Posting.query.filter(Posting.post_desiid==des.desi_id).paginate(page=page, per_page=30)
+        return render_template('designer/morepage.html', pos=pos, page=page, des=des)
+
+
+""" list of job done"""
+@app.route('/jobdone/', methods=['GET'])
+def jobdone():
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        page = request.args.get('page', 1, type=int)
+        bk=Job.query.filter((Job.jb_status=='completed') | (Job.jb_status=='collected')).order_by(desc(Job.jb_date)).paginate(page=page, per_page=30)
+        return render_template('designer/morepage.html', bk=bk, page=page, des=des)
+
+
+""" List of customer appointment list"""
+@app.route('/appoint_list/', methods=['GET'])
+def appoint():
+    loggedin = session.get('customer')
+    cus=Customer.query.get(loggedin)
+    
+    if loggedin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        page = request.args.get('page', 1, type=int)
+        getbk=Bookappointment.query.filter(Bookappointment.ba_custid==loggedin).order_by(desc(Bookappointment.ba_date)).paginate(page=page, per_page=3)
+        return render_template('user/morepages.html', getbk=getbk, page=page, cus=cus)
+
+
+@app.route('/like_list/', methods=['GET'])
+def like_list():
+    loggedin = session.get('customer')
+    cus=Customer.query.get(loggedin)
+    
+    if loggedin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        page = request.args.get('page', 1, type=int)
+        mylike = Like.query.filter(Like.like_custid==cus.cust_id).paginate(page=page, per_page=1)
+        return render_template('user/morepages.html', mylike=mylike, page=page, cus=cus)

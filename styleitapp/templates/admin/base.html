@@ -121,18 +121,18 @@
                   <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/customer/{{adm.admin_pic}}" alt="{{adm.admin_fname}}" width="25px" class="img rounded-circle">{{cus.cust_fname}}</a>
                 </li>#}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/admin/{{adm.admin_pic}}" width="25px" class="img rounded-circle">{{adm.admin_fname}}</a>
+                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/admin/{{adm.admin_pic}}" width="25px" class="img rounded-circle me-2">{{adm.admin_fname}}</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{url_for('admin_logout')}}">Logout</a>
                 </li>
                 {% elif session.get('superadmin') != None: %}
                 {#<li class="nav-item">
-                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/superadmin/{{spa.spadmin_pic}}" alt="{{spa.spadmin_fname}}" width="25px" class="img rounded-circle">{{spa.spadmin_fname}}</a>
+                  <a class="nav-link" href="#">Welcome! <img src="/static/images/profile/spadmin/{{spa.spadmin_pic}}" alt="{{spa.spadmin_fname}}" width="25px" class="img rounded-circle">{{spa.spadmin_fname}}</a>
                 </li>#}
                 
                 <li class="nav-item">
-                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/superadmin/{{spa.spadmin_pic}}" width="25px" class="img rounded-circle">{{spa.spadmin_fname}} </a>
+                  <a class="nav-link" href="{{url_for('dashboard')}}"><img src="/static/images/profile/spadmin/{{spa.spadmin_pic}}" width="25px" class="img rounded-circle me-2">{{spa.spadmin_fname}} </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{url_for('admin_logout')}}">Logout</a>
@@ -331,6 +331,7 @@
                     const tvalue8 = rediif.tpay_transdate;
                     const tvalue9 = rediif.tpaybaobj;
                     const tvalue10 = rediif.tpaybaobj2;
+                    const tvalue11 = rediif.tpay_currencyicon;
                     const apfund = '/approve/';
 
 
@@ -348,7 +349,7 @@
                       var difa = `<span class="p-3">
                         <p style="font-size:12px;"> Business Name: ${tvalue1}</p>
                         <p style="font-size:12px;"> Payment by: ${tvalue2} ${tvalue3}</p>                        
-                        <p style="font-size:12px;">Amount Paid: ${tvalue4}</p>
+                        <p style="font-size:12px;">Amount Paid: ${tvalue11} ${tvalue4}</p>
                         <p style="font-size:12px;">Booked Appointment ID: ${tvalue5}</p>
                         <p style="font-size:12px;">Payment Date: ${tvalue8}</p>
                         <p style="font-size:12px;">Payment Status: ${tvalue6}</p>
@@ -369,92 +370,7 @@
               });
             });
 
-          })
-
-//Javascript to change multiple divs       
-var alltred=document.getElementById("alltrend");
-var tred=document.getElementById("tred");
-var allappoint=document.getElementById('allappoint');
-var appoint=document.getElementById('appoint');
-var allpayment=document.getElementById('allpayment');
-var payment=document.getElementById('payment');
-var allsub=document.getElementById('allsub');
-var sublist=document.getElementById('sublist');
-var allreport=document.getElementById('allreport')
-var report=document.getElementById('report')
-
-alltred.addEventListener("click", function(){
-  if(tred.style.display==='none'){
-    tred.style.display='block';
-    appoint.style.display='none';
-    payment.style.display='none';
-    sublist.style.display='none';
-    report.style.diplay='none';
-  }else{
-    if(tred.style.display==='block'){
-      tred.style.display='none';
-    }
-  };
-});
-
-allappoint.addEventListener("click", function(){
-  if(appoint.style.display==='none'){
-    appoint.style.display='block';
-    tred.style.display='none';
-    payment.style.display='none';
-    sublist.style.display='none';
-    report.style.diplay='none';
-  }else{
-    if(appoint.style.display==='block'){
-      appoint.style.display='none';
-    }
-  };
-});
-
-allpayment.addEventListener("click", function(){
-  if(payment.style.display==='none'){
-    payment.style.display='block';
-    tred.style.display='none';
-    appoint.style.display='none'; 
-    sublist.style.display='none';
-    report.style.diplay='none';
-  }else{
-    if(payment.style.display==='block'){
-      payment.style.display='none';
-    }
-  };
-});
-
-allsub.addEventListener("click", function(){
-  if(sublist.style.display==='none'){
-    sublist.style.display='block';
-    payment.style.display='none';
-    tred.style.display='none';
-    appoint.style.display='none';
-    report.style.diplay='none';
-  }else{
-    if(sublist.style.display==='block'){
-      sublist.style.display='none';
-    }
-  };
-});
-
-allreport.addEventListener("click", function(){
-  if(report.style.display==='none'){
-    report.style.display='block';
-    sublist.style.display='none';
-    payment.style.display='none';
-    tred.style.display='none';
-    appoint.style.display='none';
-  }else{
-    if(report.style.display==='block'){
-      report.style.display='none';
-    }
-  }
-})
-
-
-
+          });
 
 function comban(id){
   var comid=id;
@@ -470,7 +386,7 @@ function comban(id){
       location.reload(true);
     }
   });
-}
+};
 
 function comtrash(id){
   var comid=id;
@@ -486,7 +402,7 @@ function comtrash(id){
       location.reload(true);
     }
   });
-}
+};
 
 
             

@@ -13,7 +13,7 @@ from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
 
 rows_per_page = 12
-rows_page = 20
+rows_page = 3
 
 """homepage"""
 @app.route('/adminhome/')
@@ -50,13 +50,13 @@ def admin_login():
         pwd = request.form.get('pwd')
         # validating form data field
         if email=="" or pwd=="":
-            flash('Invalid Credentials', 'danger')
+            flash('one or more field is empty', 'danger')
             return redirect('/admin/login/')
         
         if email !="" or pwd !="":
             # quering Customer by filtering with email
             adm=db.session.query(Admin).filter(Admin.admin_email==email).first()
-            spa=db.session.query(Superadmin).filter(Superadmin.spadmin_email==email).first()
+            spa=db.session.query(Superadmin).filter(Superadmin.spadmin_email==email).first()           
             if adm:
                 formated_pwd=adm.admin_pass
                 # checking password hash
@@ -71,7 +71,9 @@ def admin_login():
             else:
                 flash('kindly supply a valid email address and password', 'warning')
                 return render_template('admin/adminlogin.html', logini=logini, adm=adm, spa=spa)
-       
+        else:
+            flash('Invalid Credentials', 'warning')
+            return render_template('admin/adminlogin.html', logini=logini, adm=adm, spa=spa)
 
 
 """Admin Forgotten Password"""
@@ -122,41 +124,25 @@ def dashboard():
         return redirect('/')
 
     if request.method == 'GET':
+        """the main query for the production"""
+        subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
+        subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
+        subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+        
+        """query post without daily rank"""           
+        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).all()
+        appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).all()
+        pymt=Payment.query.order_by(desc(Payment.payment_id)).all()
+        sublist = Subscription.query.order_by(desc(Subscription.sub_date)).all()
+        srepo = Report.query.order_by(desc(Report.report_id)).all()
+        lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
         if admin:
             prof=Admin.query.filter(Admin.admin_id==adm.admin_id).first()
-            
-            """the main query for the production"""
-            subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-            subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-            subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
-            
-            """query post without daily rank"""
-            page = request.args.get('page', 1, type=int)
-            pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).paginate(page=page, per_page=rows_page)
-            lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-            appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
-            pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
-            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
-            srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, pstn=pstn, lk=lk, appt=appt, pymt=pymt, sublist=sublist)
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn)
         
         elif spadmin:
             prof=Superadmin.query.filter(Superadmin.spadmin_id==spa.spadmin_id).first()
-
-            """the main query for the production"""
-            subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-            subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-            subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
-            
-            """query post without daily rank"""
-            page = request.args.get('page', 1, type=int)            
-            pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).paginate(page=page, per_page=rows_page)
-            appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
-            pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
-            lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-            sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
-            srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, pstn=pstn, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof)
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn)
     
     if request.method == 'POST':
         fname=request.form.get('fname')
@@ -578,7 +564,7 @@ def searchref():
                     message=json.dumps(msg)
                     return message
                 elif typmt:
-                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus}
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
                     return message
         else:
@@ -598,8 +584,9 @@ def searchref():
                     message=json.dumps(msg)
                     return message
                 elif typmt:
-                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus}
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
+                    print(message)
                     return message
         else:
             message={"message":"your refno is incorrect"}
@@ -789,3 +776,85 @@ def admin_general_mail():
         else:
             flash('one or more filed is empty', 'danger')
             return render_template('admin/maillinglist.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa)
+
+
+"""All trending post admin"""
+@app.route('/admin/alltrend', methods=['GET'])
+def admin_alltrend():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    
+    """the main query for the production"""
+    subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
+    subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
+    subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+    
+    """query post without daily rank"""
+    page = request.args.get('page', 1, type=int)            
+    pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).paginate(page=page, per_page=rows_page)
+    if admin:
+        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, spadmin=spadmin, pstn=pstn)
+    elif spadmin:
+        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, spadmin=spadmin, pstn=pstn)
+    
+
+"""All appointment admin"""
+@app.route('/admin/appointment', methods=['GET'])
+def admin_appointment():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    page = request.args.get('page', 1, type=int)
+    appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
+    if admin:
+        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, appt=appt)
+    elif spadmin:
+        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, appt=appt)
+
+
+"""All payment admin"""
+@app.route('/admin/payment', methods=['GET'])
+def admin_allpment():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    page = request.args.get('page', 1, type=int)
+    pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
+    if admin:
+        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, pymt=pymt)
+    elif spadmin:
+        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, pymt=pymt)
+
+
+"""All subscription admin"""
+@app.route('/admin/subscription', methods=['GET'])
+def admin_subscription():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    page = request.args.get('page', 1, type=int)
+    sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
+    if admin:
+        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, sublist=sublist)
+    elif spadmin:
+        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, sublist=sublist)
+
+
+"""All report admin"""
+@app.route('/admin/report', methods=['GET'])
+def admin_report():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    page = request.args.get('page', 1, type=int)
+    srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
+    if admin:
+        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)
+    elif spadmin:
+        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)

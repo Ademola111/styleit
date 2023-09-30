@@ -172,26 +172,9 @@ Styleit|Profile
                                     
                                 </div>                                
                                 {% endfor %}
+                                <p class="text-center"><a href="{{url_for('postlist')}}">Load more</a></p>
                                 <!-- pagination links -->
-                            <div class="text-center mt-3">
-                                <a href="{{url_for('designerProfile', page=pos.prev_num)}}" class="btn btn-outline-primary {% if pos.page ==  1 %} disabled {% endif %}">&laquo;</a>
-                                <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in pos.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-
-                                {% if page_num %}
-                                <!-- check for active page and set the link to active -->
-                                    {% if pos.page == page_num %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% else %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% endif %}
-                                {% else %}
-                                ...
-                                {% endif %}
-                                {% endfor %}
-                                <a href="{{url_for('designerProfile', page=pos.next_num)}}" class="btn btn-outline-primary {% if pos.page ==  pos.pages %} disabled {% endif %}">&raquo;</a>
-                                <p class="text-right mt-3">Showing Page {{pos.page}} of {{pos.pages}}</p>
-                            </div>
+                            
                             <!-- end pagination -->
                             {% else %}
                             <span>You have no post. Click Create Post to begin </span>
@@ -206,115 +189,99 @@ Styleit|Profile
                                 <h4>Appointment List</h4>
                             </div>
                             <div id="appt" class="row">
-                            {% for bk in getbk.items %}
-                            <div class="col-md-3">
-                                <!-- Button trigger modal -->
-                            
-                                <span class="card mt-2 mb-2 p-3">
-                                    <p><span ><strong>Name:</strong></span>
-                                    <a href="{{url_for('custdetail', id=bk.custbaobj.cust_id)}}"><span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span></a></p>
-                                    {% if bk.ba_status == 'accept' %}
-                                    <p><span><strong>Contact</strong></span> <span>{{bk.custbaobj.cust_phone}}</span></p>
-                                    {% endif %}
-                                    <p><span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span></p>
-                                    <p><span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span></p>
-                                    <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
-                                    <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
-                                    
-                                    <div class="row">
-                                        <div class="d-flex">
-                                        <form action="/appointment/status/{{bk.ba_id}}/" method="POST">
-                                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                            <input type="hidden" name="action" value="accept" readonly>
-                                        <div class="col-6 text-start">
-                                            {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
-                                            <span class="m-2 p-2 btn btn-success">Accepted</span>
-                                            {% else %}
-                                                {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
-                                                <button type="submit" class="m-2 p-2 btn btn-success" id="accept" disabled>Accept</button>
-                                                {% else %}
-                                                <button type="submit" class="m-2 p-2 btn btn-success" id="accept">Accept</button>
-                                                {% endif %}
+                            {% if getbk %}
+                                {% for bk in getbk.items %}
+                                    <div class="col-md-3">
+                                        <!-- Button trigger modal -->
+                                        <span class="card mt-2 mb-2 p-3">
+                                            <p><span ><strong>Name:</strong></span>
+                                            <a href="{{url_for('custdetail', id=bk.custbaobj.cust_id)}}"><span>{{bk.custbaobj.cust_fname}} {{bk.custbaobj.cust_lname}}</span></a></p>
+                                            {% if bk.ba_status == 'accept' %}
+                                            <p><span><strong>Contact</strong></span> <span>{{bk.custbaobj.cust_phone}}</span></p>
                                             {% endif %}
-                                        </div>
-                                        </form>
-                                        {#<form action="/appointment/status/{{bk.ba_id}}/" method="POST">
-                                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                            <input type="hidden" name="action" value="decline" readonly>#}
-                                        <div class="col-6 text-end">
-                                            {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
-                                            <span class="m-2 p-2 btn btn-danger">Declined</span>
-                                            {% else %}
-                                                {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
-                                                <button type="submit" class="m-2 p-2 btn btn-danger" id="decline" disabled>Decline</button>
-                                                {% else %}
-                                                <button type="button" class="m-2 p-2 btn btn-danger" id="decline" data-bs-toggle="modal" data-bs-target="#exampleModal">Decline</button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                        {#</form>#}
-                                        <!-- modal for decline -->
-
-                                        <!-- Modal -->
-                                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Reason for Decline</h1>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
+                                            <p><span><strong>Booking Date:</strong></span> <span>{{bk.ba_bookingDate}}</span></p>
+                                            <p><span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span></p>
+                                            <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
+                                            <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
+                                            
+                                            <div class="row">
+                                                <div class="d-flex">
                                                 <form action="/appointment/status/{{bk.ba_id}}/" method="POST">
                                                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                                    <input type="hidden" name="action" value="decline" readonly>
-                                                    <label for="response">Specify your reason for decline and time of availability</label><br><span style="font-size: 10px; color:grey">E.g. Hi Buddy, I am booked for the month. Kindly book ahead if not urgent. </span>
-                                                    <textarea name="response" id="response" class="form-control" required="required"></textarea>
-                                                
-                                                </div>
-                                                <div class="modal-footer">
-                                                <button type="submit" class="m-2 p-2 btn btn-danger" id="decline">Decline</button>
-                                                </div>
+                                                    <input type="hidden" name="action" value="accept" readonly>
+                                                    <div class="col-6 text-start">
+                                                        {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
+                                                        <span class="m-2 p-2 btn btn-success">Accepted</span>
+                                                        {% else %}
+                                                            {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
+                                                            <button type="submit" class="m-2 p-2 btn btn-success" id="accept" disabled>Accept</button>
+                                                            {% else %}
+                                                            <button type="submit" class="m-2 p-2 btn btn-success" id="accept">Accept</button>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
                                                 </form>
-                                            </div>
-                                            </div>
-                                        </div>
-                                        <!-- end of modal -->
-                                        </div>
-                                        {% if bk.ba_status == 'accept' %}
-                                        <div class="col-md-12">
-                                            <span class="m-2 p-2 text-primary btn"><a href="{{url_for('complete_task', id=bk.ba_id)}}"> Confirm Work Completion</a></span>
-                                        </div>
-                                        {% elif bk.ba_status =='completed' or bk.ba_status =='collected'%}
-                                        <div class="col-md-12">
-                                            <span class="m-2 p-2 text-primary btn">This job have been delivered </span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                     
-                                </span>                               
-                            </div>
-                            {% endfor %}
-                            <!-- pagination links -->
-                            <div class="text-center mt-3">
-                                <a href="{{url_for('designerProfile', page=getbk.prev_num)}}" class="btn btn-outline-primary {% if getbk.page ==  1 %} disabled {% endif %}">&laquo;</a>
-                                <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in getbk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                                                {#<form action="/appointment/status/{{bk.ba_id}}/" method="POST">
+                                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                                    <input type="hidden" name="action" value="decline" readonly>#}
+                                                    <div class="col-6 text-end">
+                                                        {% if bk.ba_status == 'decline' or bk.ba_status=='not done' %}
+                                                        <span class="m-2 p-2 btn btn-danger">Declined</span>
+                                                        {% else %}
+                                                            {% if bk.ba_status == 'accept' or bk.ba_status=='completed' %}
+                                                            <button type="submit" class="m-2 p-2 btn btn-danger" id="decline" disabled>Decline</button>
+                                                            {% else %}
+                                                            <button type="button" class="m-2 p-2 btn btn-danger" id="decline" data-bs-toggle="modal" data-bs-target="#exampleModal">Decline</button>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                {#</form>#}
+                                                <!-- modal for decline -->
 
-                                {% if page_num %}
-                                <!-- check for active page and set the link to active -->
-                                    {% if getbk.page == page_num %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% else %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% endif %}
-                                {% else %}
-                                ...
-                                {% endif %}
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Reason for Decline</h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                        <form action="/appointment/status/{{bk.ba_id}}/" method="POST">
+                                                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                                            <input type="hidden" name="action" value="decline" readonly>
+                                                            <label for="response">Specify your reason for decline and time of availability</label><br><span style="font-size: 10px; color:grey">E.g. Hi Buddy, I am booked for the month. Kindly book ahead if not urgent. </span>
+                                                            <textarea name="response" id="response" class="form-control" required="required"></textarea>
+                                                        
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                        <button type="submit" class="m-2 p-2 btn btn-danger" id="decline">Decline</button>
+                                                        </div>
+                                                        </form>
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                                <!-- end of modal -->
+                                                </div>
+                                                {% if bk.ba_status == 'accept' %}
+                                                <div class="col-md-12">
+                                                    <span class="m-2 p-2 text-primary btn"><a href="{{url_for('complete_task', id=bk.ba_id)}}"> Confirm Work Completion</a></span>
+                                                </div>
+                                                {% elif bk.ba_status =='completed' or bk.ba_status =='collected'%}
+                                                <div class="col-md-12">
+                                                    <span class="m-2 p-2 text-primary btn">This job have been delivered </span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                        </span>
+                                                                    
+                                    </div>
                                 {% endfor %}
-                                <a href="{{url_for('designerProfile', page=getbk.next_num)}}" class="btn btn-outline-primary {% if getbk.page ==  getbk.pages %} disabled {% endif %}">&raquo;</a>
-                                <p class="text-right mt-3">Showing Page {{getbk.page}} of {{getbk.pages}}</p>
-                            </div>
-                            
+                                <p class="text-center mt-3 mb-3"><a href="{{url_for('bkappoint_list')}}">Load more</a></p>   
+                            {% else %}
+                            <p>You haven't complete a task </p>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
@@ -381,37 +348,12 @@ Styleit|Profile
                                                     <span class="col-md-2">
                                                         Add atleast one image to make your post go live on trending
                                                     </span>
-                                                {% endif %}                                            
-                                                
-                                                
-                                            
-                                        </div>
+                                                {% endif %} 
+                                            </div>
                                     </div>
-                                    
-                                    
                                 </div>                                
                                 {% endfor %}
-                                <!-- pagination links -->
-                            <div class="text-center mt-3">
-                                <a href="{{url_for('designerProfile', page=bk.prev_num)}}" class="btn btn-outline-primary {% if bk.page ==  1 %} disabled {% endif %}">&laquo;</a>
-                                <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in bk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-
-                                {% if page_num %}
-                                <!-- check for active page and set the link to active -->
-                                    {% if bk.page == page_num %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% else %}
-                                    <a href="{{url_for('designerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% endif %}
-                                {% else %}
-                                ...
-                                {% endif %}
-                                {% endfor %}
-                                <a href="{{url_for('designerProfile', page=bk.next_num)}}" class="btn btn-outline-primary {% if bk.page ==  bk.pages %} disabled {% endif %}">&raquo;</a>
-                                <p class="text-right mt-3">Showing Page {{bk.page}} of {{bk.pages}}</p>
-                            </div>
-                            <!-- end pagination -->
+                                <p class="text-center mt-3 mb-3"><a href="{{url_for('jobdone')}}">Load more</a></p>
                             {% else %}
                             <span> You have no job completed. </span>
                             {% endif %}

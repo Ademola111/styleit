@@ -269,3 +269,124 @@ $("#post-list").on("scroll", function() {
     }
   }
 });
+
+# """ checking sub status for automatic deactivation """
+# @app.before_request
+# def before_request_func():
+#     desiloggedin = session.get('designer')
+#     des=Designer.query.get(desiloggedin)
+#     today = date.today()
+#     if desiloggedin:
+#         subt=db.session.query(Subscription).filter(Subscription.sub_desiid==desiloggedin, Subscription.sub_status=='active').first()
+#         # print(subt)
+#         # print(today)
+#         # today = '2022-12-01'
+#         if subt != None:
+#             if subt.sub_enddate < str(today):
+#                 subt.sub_status='deactive'
+#                 db.session.commit()
+                
+#                 commenter_email=subt.subdesiobj.desi_email
+#                 custom=subt.subdesiobj.desi_businessName
+#                 recipients={"custom":custom}
+#                 subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
+#         else:
+#             pass
+#     else:
+#         subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate==str(today) ).all()
+        
+#         if subt != None:
+#             for su in subt:
+#                 su.sub_status='deactive'
+#                 db.session.commit()
+                
+#                 commenter_email=su.subdesiobj.desi_email
+#                 custom=su.subdesiobj.desi_businessName
+#                 recipients={"custom":custom}
+#                 subdeactivate_signal.send(app, comment=su, post_author_email=commenter_email, recipients=recipients)
+#         else:
+#             pass
+
+
+
+//Javascript to change multiple divs       
+var alltred=document.getElementById("alltrend");
+var tred=document.getElementById("tred");
+var allappoint=document.getElementById('allappoint');
+var appoint=document.getElementById('appoint');
+var allpayment=document.getElementById('allpayment');
+var payment=document.getElementById('payment');
+var allsub=document.getElementById('allsub');
+var sublist=document.getElementById('sublist');
+var allreport=document.getElementById('allreport');
+var report=document.getElementById('report');
+
+alltred.addEventListener("click", function(){
+  if(tred.style.display==='none'){
+    tred.style.display='block';
+    appoint.style.display='none';
+    payment.style.display='none';
+    sublist.style.display='none';
+    report.style.diplay='none';
+  }else{
+    if(tred.style.display==='block'){
+      tred.style.display='none';
+    }
+  };
+});
+
+allappoint.addEventListener("click", function(){
+  if(appoint.style.display==='none'){
+    appoint.style.display='block';
+    tred.style.display='none';
+    payment.style.display='none';
+    sublist.style.display='none';
+    report.style.diplay='none';
+  }else{
+    if(appoint.style.display==='block'){
+      appoint.style.display='none';
+    }
+  };
+});
+
+allpayment.addEventListener("click", function(){
+  if(payment.style.display==='none'){
+    payment.style.display='block';
+    tred.style.display='none';
+    appoint.style.display='none'; 
+    sublist.style.display='none';
+    report.style.diplay='none';
+  }else{
+    if(payment.style.display==='block'){
+      payment.style.display='none';
+    }
+  };
+});
+
+allsub.addEventListener("click", function(){
+  if(sublist.style.display==='none'){
+    sublist.style.display='block';
+    payment.style.display='none';
+    tred.style.display='none';
+    appoint.style.display='none';
+    report.style.diplay='none';
+  }else{
+    if(sublist.style.display==='block'){
+      sublist.style.display='none';
+    }
+  };
+});
+
+allreport.addEventListener("click", function(){
+  if(report.style.display==='none'){
+    report.style.display='block';
+    sublist.style.display='none';
+    payment.style.display='none';
+    tred.style.display='none';
+    appoint.style.display='none';
+  }else{
+    if(report.style.display==='block'){
+      report.style.display='none';
+    };
+  };
+});

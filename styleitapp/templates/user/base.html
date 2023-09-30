@@ -100,8 +100,9 @@
               {% elif session.get('designer') != None: %}
               <form class="d-flex" id="search" method="POST" action="{{url_for('search')}}">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                <button class="btn btn-outline-success me-2" type="submit">Search</button>
-                <input class="form-control" type="search" name="search" placeholder="Post search" aria-label="Search">
+                
+                <input class="form-control" type="search" name="search" placeholder="Post search" aria-label="Search" required="required">
+                <button class="btn btn-outline-success ms-2" type="submit">Search</button>
               </form>
               <li class="nav-item">
                 <a class="nav-link active" href="{{url_for('trending')}}">Trending</a>
@@ -354,7 +355,7 @@
                 <div class="d-flex justify-content">
                 <span class="card-text ms-2 me-2 col-md-3"><a href="mailto:support@styleit.africa">Support</a></span>
                 <span class="card-text ms-2 me-2 col-md-3"><a href="mailto:contact@styleit.africa">Contact</a></span>
-                <span class="card-text ms-2 me-2 col-md-6"><a href="#">F.A.Q</a></span>
+                <span class="card-text ms-2 me-2 col-md-6"><a href="{{url_for('faq')}}">F.A.Q</a></span>
                 </div>
                 <div class="d-flex justify-content">
                   <span class="card-text ms-2 me-2 col-md-3"><a href="#">Ads</a></span>
@@ -572,6 +573,15 @@
               });
             });
 
+            $('#currency-input').change(function(){
+              const cunt=$('#currency-input').val();
+              const charge = cunt * 0.12;
+              const total = parseInt(cunt) + parseInt(charge);
+              $('#vat').html(charge);
+              $('#cha').val(charge);
+              $('#tot').html(total);
+            });
+
           });
 
 
@@ -704,6 +714,8 @@ if (acno !==null){
     }
   });
 };
+
+
 </script>
 </footer>
   <!-- footer ends -->

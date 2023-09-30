@@ -131,26 +131,9 @@ Styleit|Profile
                                     
                                 </div>
                                 {% endfor %}
-                                <!-- pagination links -->
-                            <div class="text-center mt-3">
-                                <a href="{{url_for('customerProfile', page=mylike.prev_num)}}" class="btn btn-outline-primary {% if mylike.page ==  1 %} disabled {% endif %}">&laquo;</a>
-                                <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in mylike.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                <p class="text-center mt-3 mb-3"><a href="{{url_for('like_list')}}">Load more</a></p>
 
-                                {% if page_num %}
-                                <!-- check for active page and set the link to active -->
-                                    {% if mylike.page == page_num %}
-                                    <a href="{{url_for('customerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% else %}
-                                    <a href="{{url_for('customerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% endif %}
-                                {% else %}
-                                ...
-                                {% endif %}
-                                {% endfor %}
-                                <a href="{{url_for('customerProfile', page=mylike.next_num)}}" class="btn btn-outline-primary {% if mylike.page ==  mylike.pages %} disabled {% endif %}">&raquo;</a>
-                                <p class="text-right mt-3">Showing Page {{mylike.page}} of {{mylike.pages}}</p>
-                            </div>
+                                <!-- pagination links -->
                             <!-- end pagination -->
                             {% else %}
                                 <div class="col-md-12 text-center">
@@ -212,26 +195,9 @@ Styleit|Profile
                                 </span>                               
                             </div>
                             {% endfor %}
+                            <p class="text-center mt-3 mb-3"><a href="{{url_for('appoint')}}">Load more</a></p>
                             <!-- pagination links -->
-                            <div class="text-center mt-3">
-                                <a href="{{url_for('customerProfile', page=getbk.prev_num)}}" class="btn btn-outline-primary {% if getbk.page ==  1 %} disabled {% endif %}">&laquo;</a>
-                                <!-- looping through the number of pages to display a link for each -->
-                                {% for page_num in getbk.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-
-                                {% if page_num %}
-                                <!-- check for active page and set the link to active -->
-                                    {% if getbk.page == page_num %}
-                                    <a href="{{url_for('customerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% else %}
-                                    <a href="{{url_for('customerProfile', page=page_num)}}" class="btn btn-outline-dark">{{page_num}}</a>
-                                    {% endif %}
-                                {% else %}
-                                ...
-                                {% endif %}
-                                {% endfor %}
-                                <a href="{{url_for('customerProfile', page=getbk.next_num)}}" class="btn btn-outline-primary {% if getbk.page ==  getbk.pages %} disabled {% endif %}">&raquo;</a>
-                                <p class="text-right mt-3">Showing Page {{getbk.page}} of {{getbk.pages}}</p>
-                            </div>
+                            
                             {% else %}
                             <div class="col-md-12 text-center">
                                 <span>You have no appointment. Click <a href="{{url_for('book_appointment')}}" class="text-primary">Book Appointment</a> to book now</span><br>
