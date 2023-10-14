@@ -12,6 +12,9 @@ class Posting(db.Model):
     post_delete = db.Column(db.Enum('deleted', 'not deleted'), server_default='not deleted')
     #foreignkey
     post_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
+    post_adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    post_spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
+    
     #relationship
     imagepostobj = db.relationship("Image", back_populates='postimageobj')
     designerobj = db.relationship("Designer", back_populates='designerpostobj')
@@ -20,6 +23,9 @@ class Posting(db.Model):
     likes = db.relationship('Like', back_populates='posts')
     sharepostobj = db.relationship('Share', back_populates='postshareobj')
     postnotifyobj = db.relationship('Notification', back_populates='notifypostobj')
+    postadminobj = db.relationship('Admin', back_populates='adminpostobj')
+    postspadminobj = db.relationship('Superadmin', back_populates='spadminpostobj')
+    
     
 
 class Image(db.Model):
@@ -47,11 +53,15 @@ class Comment(db.Model):
     com_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
     com_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     parent_id = db.Column(db.Integer(), db.ForeignKey('comment.com_id'))
+    com_adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    com_spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
     #relationship
     compostobj = db.relationship('Posting', back_populates='postcomobj')
     comcustobj = db.relationship('Customer', back_populates='custcomobj')
     comdesiobj = db.relationship('Designer', back_populates='desicomobj')
     comnotifyobj = db.relationship('Notification', back_populates='notifycomobj')
+    comadminobj = db.relationship('Admin', back_populates='admincomobj')
+    comspadminobj = db.relationship('Superadmin', back_populates='spaadmincomobj')
     
     
     replies = db.relationship(
@@ -91,6 +101,8 @@ class Customer(db.Model):
     cust_countryid = db.Column(db.Integer(), db.ForeignKey('countries.country_id'))
     cust_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     cust_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
+    cust_adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    cust_spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
     #relationship
     custcountry = db.relationship('Countries', back_populates='countryobjcust')
     stateobj = db.relationship('State', back_populates='statecustomerobj')
@@ -106,6 +118,8 @@ class Customer(db.Model):
     tpaycustobj=db.relationship('Transaction_payment', back_populates='custtpayobj')
     followcustobj = db.relationship('Follow', back_populates='custfollowobj')
     logincustobj = db.relationship('Login', back_populates='custloginobj')
+    custadminobj = db.relationship('Admin', back_populates='admincustobj')
+    custspadminobj = db.relationship('Superadmin', back_populates='spadmincustobj')
     
 
 class State(db.Model): 
@@ -148,6 +162,8 @@ class Designer(db.Model):
     desi_countryid = db.Column(db.Integer(), db.ForeignKey('countries.country_id'))
     desi_stateid = db.Column(db.Integer(), db.ForeignKey('state.state_id'))
     desi_lgaid = db.Column(db.Integer(), db.ForeignKey('lga.lga_id'))
+    desi_adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    desi_spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
     #relationship
     desicountry = db.relationship('Countries', back_populates='countryobj')
     stateobj2 = db.relationship('State', back_populates='statedesignerobj')
@@ -168,11 +184,13 @@ class Designer(db.Model):
     bnkdesiobj = db.relationship('Bank', back_populates='desibnkobj')
     followdesiobj = db.relationship('Follow', back_populates='desifollowobj')
     logindesiobj = db.relationship('Login', back_populates='desiloginobj')
+    desiadminobj = db.relationship('Admin', back_populates='admindesiobj')
+    desispadminobj = db.relationship('Superadmin', back_populates='spadmindesiobj')
             
 
 class Subscription(db.Model):
     sub_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    sub_plan = db.Column(db.Enum('500','1350', '2400','4200'), nullable=False)
+    sub_plan = db.Column(db.String(255), nullable=False)
     sub_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow())
     sub_startdate = db.Column(db.String(255), nullable=True)
     sub_enddate = db.Column(db.String(255), nullable=True)
@@ -233,6 +251,15 @@ class Admin (db.Model):
     admin_address = db.Column(db.Text(), nullable=True)
     admin_secretword = db.Column(db.String(255), nullable=False)
     admin_pic = db.Column(db.String(255), nullable=True)
+    admin_status = db.Column(db.Enum('active', 'deactive'), server_default='active')
+    #Relationship
+    loginadminobj = db.relationship('Login', back_populates='adminloginobj')
+    adminpostobj = db.relationship('Posting', back_populates='postadminobj')
+    admincomobj = db.relationship('Comment', back_populates='comadminobj')
+    admincustobj = db.relationship('Customer', back_populates='custadminobj')
+    admindesiobj = db.relationship('Designer', back_populates='desiadminobj')
+    adminactlogobj = db.relationship('Activitylog', back_populates='actlogadminobj')
+    
 
 class Like(db.Model):
     like_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -260,7 +287,15 @@ class Superadmin (db.Model):
     spadmin_pass = db.Column(db.String(255), nullable=False)
     spadmin_address = db.Column(db.Text(), nullable=True)
     spadmin_secretword = db.Column(db.String(255), nullable=False)
-    spadmin_pic = db.Column(db.String(255), nullable=True)    
+    spadmin_pic = db.Column(db.String(255), nullable=True)
+    spadmin_status = db.Column(db.Enum('active', 'deactive'), server_default='active')
+    # Relationship
+    loginspadminobj = db.relationship('Login', back_populates='spadminloginobj')
+    spadminpostobj = db.relationship('Posting', back_populates='postspadminobj')
+    spaadmincomobj = db.relationship('Comment', back_populates='comspadminobj')
+    spadmincustobj = db.relationship('Customer', back_populates='custspadminobj')
+    spadmindesiobj = db.relationship('Designer', back_populates='desispadminobj')
+    spadminactlogobj = db.relationship('Activitylog', back_populates='actlogspadminobj')
 
 class Share(db.Model):
     share_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -427,9 +462,13 @@ class Login(db.Model):
     #foreignKey
     login_desiid = db.Column(db.Integer(), db.ForeignKey('designer.desi_id'))
     login_custid = db.Column(db.Integer(), db.ForeignKey('customer.cust_id'))
+    login_adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    login_spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
     #relationship
     desiloginobj = db.relationship('Designer', back_populates='logindesiobj')
     custloginobj = db.relationship('Customer', back_populates='logincustobj')
+    adminloginobj = db.relationship('Admin', back_populates='loginadminobj')
+    spadminloginobj = db.relationship('Superadmin', back_populates='loginspadminobj')
 
 
 class Transfer(db.Model):
@@ -469,3 +508,15 @@ class States(db.Model):
 class Cities(db.Model):
     id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
     name=db.Column(db.String(225), nullable=False)
+
+class Activitylog(db.Model):
+    id=db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    adminid = db.Column(db.Integer(), db.ForeignKey('admin.admin_id'))
+    spadminid = db.Column(db.Integer(), db.ForeignKey('superadmin.spadmin_id'))
+    link = db.Column(db.String(2048), nullable=False)
+    date = db.Column(db.DateTime(), default=datetime.datetime.utcnow(), index=True)
+    
+    #relationship
+    actlogspadminobj = db.relationship('Superadmin', back_populates='spadminactlogobj')
+    actlogadminobj = db.relationship('Admin', back_populates='adminactlogobj')
+    

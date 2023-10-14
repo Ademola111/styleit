@@ -99,17 +99,32 @@ Styleit|Profile
                                 </div>
                                 <div class="col-md-4 mt-3 mb-3">
                                     <label><b>State:</b></label>
+                                    {% if cus.stateobj %}
                                     <p>{{cus.stateobj.state_name}}</p>
+                                    {% else %}
+                                    <p>{{cus.cust_state}}</p>
+                                    {% endif %}
+
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-4 mt-3 mb-3">
+                                    {% if cus.lgaobj %}
                                     <label><b>L.G.A:</b></label>
                                     <p>{{cus.lgaobj.lga_name}}</p>
+                                    {% else %}
+                                    <label><b>City:</b></label>
+                                    <p>{{cus.cust_city}}</p>
+                                    {% endif %}
+
                                 </div>
                                 <div class="col-md-4 mt-3 mb-3">
                                     <label><b>Contact Address:</b></label>
                                     <p>{{cus.cust_address}}</p>
+                                </div>
+                                <div class="col-md-4 mt-3 mb-3">
+                                    <label><b>Country:</b></label>
+                                    <p>{{cus.custcountry.country_name}}</p>
                                 </div>
                             </div>
                             

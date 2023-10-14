@@ -83,11 +83,25 @@ Styleit|Login
             </form>
             </div>
 
-            <div class="col-md-4 text-center mt-3 mb-3">
+            <div class="col-md-4 mt-3 mb-3">
                 {% for m in admi %}
                 <div class='row'>
                     <div class="col-md-12">
-                        <span class="m-2 p-2">{{m.admin_fname}}</span> <span class="m-2 p-2">{{m.admin_lname}}</span> <span class="m-2 p-2">{{m.admin_email}}</span><br><span class="m-2 p-2">{{m.admin_pass}}</span> <span class="m-2 p-2">{{m.admin_secretword}}</span>
+                        <form action="{{url_for('admin_deactivate')}}" method="POST">
+                        <span class="m-2 p-2">{{m.admin_fname}}</span> 
+                        <span class="m-2 p-2">{{m.admin_lname}}</span>
+                        <p class="m-2 p-2">{{m.admin_email}}</p>
+                        {#<p class="m-2 p-2">{{m.admin_pass}}</p>#} 
+                        <p class="m-2 p-2">{{m.admin_secretword}}</p>
+                        
+                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                            <input type="hidden" name="admin_dact" value="{{m.admin_id}}">
+                            {% if m.admin_status=='active' %}
+                            <button type="submit" class="form-control mt-2 mb-2 bg-danger">Deactivate</button>
+                            {% else %}
+                            <button type="submit" class="form-control mt-2 mb-2 bg-danger">Activate</button>
+                            {% endif %}
+                        </form>
                     </div>
                 </div>
                 {% endfor %}

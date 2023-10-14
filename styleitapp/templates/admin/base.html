@@ -92,10 +92,10 @@
                 <a class="nav-link active" href="{{url_for('admin_trending')}}">Today's Trend</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('admin_designers')}}">Creatorss</a>
+                <a class="nav-link active" href="{{url_for('admin_designers')}}">Creators</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('admin_customers')}}">Customers</a>
+                <a class="nav-link active" href="{{url_for('admin_customers')}}">Clients</a>
               </li>
               {% elif session.get('superadmin') != None: %}
               <form class="d-flex" id="search" method="POST" action="{{url_for('admin_search')}}">
@@ -110,7 +110,7 @@
                 <a class="nav-link active" href="{{url_for('admin_designers')}}">Creators</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{url_for('admin_customers')}}">Customers</a>
+                <a class="nav-link active" href="{{url_for('admin_customers')}}">Clients</a>
               </li>
               {% endif %}
               </ul>

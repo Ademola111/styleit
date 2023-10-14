@@ -72,12 +72,14 @@ Styleit | Designer Profile
                                         <p>Last Name: <b>{{design.desi_lname}}</b></p>
                                         <p>State: <b>{{design.stateobj2.state_name}}</b></p>
                                         <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                                        <p>Country: <b>{{design.desicountry.country_name}}</b></p>
                                         <span class="me-2"><a href="{{url_for('report', id=design.desi_id)}}">Report</a></span>
                                         {% elif loggedin %}
                                         <p>First Name: <b>{{design.desi_fname}}</b></p>
                                         <p>Last Name: <b>{{design.desi_lname}}</b></p>
                                         <p>State: <b>{{design.stateobj2.state_name}}</b></p>
                                         <p>L.G.A: <b>{{design.lgaobj2.lga_name}}</b></p>
+                                        <p>Country: <b>{{design.desicountry.country_name}}</b></p>
                                         <span class="me-2"><a href="{{url_for('report', id=design.desi_id)}}">Report</a></span>
                                         <span class="me-2" style="margin: 5px; padding: 5px; background-color: rgb(236, 60, 90); border-radius: 5px;"><a href="{{url_for('rating', id=design.desi_id)}}" style=" color: white !important;">Rate Now</a></span>
                                         {% endif %}

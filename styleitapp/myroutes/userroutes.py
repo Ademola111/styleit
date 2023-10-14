@@ -253,8 +253,6 @@ def notebookapp(id):
         return redirect('/designer/profile/')
     
 
-
-
 """subscription notification"""
 @app.route('/notesub/<id>/')
 def notesub(id):
@@ -277,6 +275,18 @@ def notepay(id):
         notif.notify_read='read'
         db.session.commit()
         return redirect('/designer/subplan/')
+
+"""transaction payment notification"""
+@app.route('/notetpay/<id>/')
+def notetpay(id):
+    loggedin = session.get('customer')
+    cus=Customer.query.get(loggedin)
+    if loggedin:
+        notif = db.session.query(Notification).filter(Notification.notify_tpayid==id, Notification.notify_custid==cus.cust_id, Notification.notify_read=='unread').first()
+        notif.notify_read='read'
+        db.session.commit()
+        return redirect('/customer/profile/')
+
 
 
 """All Designers """
@@ -341,7 +351,7 @@ def comment(postid):
             comt=Comment.query.filter_by(com_body=com, com_postid=postid, com_desiid=des.desi_id).first()
             if comt==None:
                 m=Comment(com_body=com, com_postid=postid, com_desiid=des.desi_id)
-                d=Notification(notify_desiid=des.desi_id, notify_postid=postid) 
+                d=Notification(notify_desiid=des.desi_id, notify_postid=postid, notify_read='unread') 
                 m.save()
                 d.save()
                 return redirect(f'/post/{postid}/')
@@ -355,7 +365,7 @@ def comment(postid):
             comt=Comment.query.filter_by(com_body=com, com_postid=postid, com_custid=cus.cust_id).first()
             if comt==None:
                 k=Comment(com_body=com, com_postid=postid, com_custid=cus.cust_id)
-                d=Notification(notify_custid=cus.cust_id, notify_postid=postid) 
+                d=Notification(notify_custid=cus.cust_id, notify_postid=postid, notify_read='unread') 
                 k.save()
                 d.save()
                 commenter=k.query.filter_by(com_postid=postid).first()
@@ -387,7 +397,7 @@ def reply(postid, commentid):
             if comt==None:
                 m=Comment(com_body=repl, com_postid=postid, com_desiid=des.desi_id, parent_id=commentid)
                 m.save()
-                d=Notification(notify_desiid=des.desi_id, notify_comid=commentid ) 
+                d=Notification(notify_desiid=des.desi_id, notify_comid=commentid, notify_read='unread' ) 
                 d.save()
                 commenter=m.query.filter_by(com_postid=postid, parent_id=m.parent_id).first()
                 dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
@@ -407,7 +417,7 @@ def reply(postid, commentid):
             if comt==None:
                 k=Comment(com_body=repl, com_postid=postid, com_custid=cus.cust_id, parent_id=commentid)
                 k.save()
-                d=Notification(notify_custid=cus.cust_id, notify_comid=commentid ) 
+                d=Notification(notify_custid=cus.cust_id, notify_comid=commentid, notify_read='unread' ) 
                 d.save()
                 commenter=k.query.filter_by(com_postid=postid, parent_id=k.parent_id).first()
                 dso=Comment.query.filter_by(com_postid=postid, com_id=commentid).first()
@@ -445,7 +455,7 @@ def like(post_id):
             db.session.add(liking)
             db.session.commit()
             lk=liking.query.filter_by(like_postid=post_id, like_desiid=desiloggedin).first()
-            d=Notification(notify_desiid=desiloggedin, notify_likeid=lk.like_id) 
+            d=Notification(notify_desiid=desiloggedin, notify_likeid=lk.like_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             
@@ -473,7 +483,7 @@ def like(post_id):
             db.session.add(liking)
             db.session.commit()
             lk=liking.query.filter_by(like_postid=post_id, like_desiid=desiloggedin).first()
-            d=Notification(notify_custid=loggedin, notify_likeid=lk.like_id) 
+            d=Notification(notify_custid=loggedin, notify_likeid=lk.like_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             commenter=liking.query.filter_by(like_postid=post_id, like_custid=loggedin).first()
@@ -496,7 +506,7 @@ def share():
             sh=Share(share_webname=name, share_postid=postid, share_desiid=user)
             db.session.add(sh)
             db.session.commit()
-            d=Notification(notify_desiid=user, notify_shareid=sh.share_id) 
+            d=Notification(notify_desiid=user, notify_shareid=sh.share_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             commenter=Share.query.filter_by(share_postid=postid, share_desiid=desiloggedin).first()
@@ -514,7 +524,7 @@ def share():
             sh=Share(share_webname=name, share_postid=postid, share_custid=user)
             db.session.add(sh)
             db.session.commit()
-            d=Notification(notify_custid=user, notify_shareid=sh.share_id) 
+            d=Notification(notify_custid=user, notify_shareid=sh.share_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             
@@ -741,9 +751,6 @@ def customerSignup():
                         return redirect('/user/customer/signup/')
 
 
-
-        
-        
 """Custormer Login"""
 @app.route('/user/customer/login/', methods=['GET', 'POST'])
 def customerLogin():
@@ -810,14 +817,18 @@ def customerforgottenpass():
         else:
             formated = generate_password_hash(pwd)
             cust=Customer.query.filter(Customer.cust_email==email).first()
-            if cust.cust_username == username:
-                cust.cust_pass=formated
-                db.session.commit()
-                flash('password updated successfully', 'success')
-                return redirect('/user/customer/login/')
-            else:
-                flash('invalid busiess name or email address', 'danger')
+            if check_password_hash(cust.cust_pass,pwd):
+                flash('This password have been used earlier','danger')
                 return redirect('/user/customer/forgottenpassword/')
+            else:
+                if cust.cust_username == username:
+                    cust.cust_pass=formated
+                    db.session.commit()
+                    flash('password updated successfully', 'success')
+                    return redirect('/user/customer/login/')
+                else:
+                    flash('invalid busiess name or email address', 'danger')
+                    return redirect('/user/customer/forgottenpassword/')
 
                 
 """Customer Profile"""
@@ -874,10 +885,10 @@ def customerlogout():
         return redirect('/')
         
     if request.method == 'GET':
+        session.pop('customer', None)
         lo=Login.query.filter_by(login_custid=loggedin, logout_date=None).first()
         lo.logout_date=datetime.utcnow()
         db.session.commit()
-        session.pop('customer', None)
         return redirect('/')
 
 
@@ -922,10 +933,10 @@ def book_appointment():
             bookapp=Bookappointment(ba_desiid=dsignername, ba_custid=loggedin, ba_bookingDate=bdate, ba_bookingTime=btime, ba_collectionDate=cdate, ba_collectionTime=ctime)
             db.session.add(bookapp)
             db.session.commit()
-            d=Notification(notify_custid=loggedin, notify_baid=bookapp.ba_id)
+            d=Notification(notify_custid=loggedin, notify_baid=bookapp.ba_id, notify_read='unread')
             db.session.add(d)
             db.session.commit()
-            dd=Notification(notify_desiid=dsignername, notify_baid=bookapp.ba_id)
+            dd=Notification(notify_desiid=dsignername, notify_baid=bookapp.ba_id, notify_read='unread')
             db.session.add(dd)
             db.session.commit()
             
@@ -1069,7 +1080,6 @@ def designerSignup():
                         return redirect('/user/designer/signup/')
 
 
-
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
 def designerLogin():
@@ -1189,14 +1199,18 @@ def designerforgottenpass():
         else:
             formated = generate_password_hash(pwd)
             desi=Designer.query.filter(Designer.desi_email==email).first()
-            if desi.desi_businessName == busname:
-                desi.desi_pass=formated
-                db.session.commit()
-                flash('password updated successfully', 'success')
-                return redirect('/user/designer/login/')
-            else:
-                flash('invalid busiess name or email address', 'danger')
+            if check_password_hash(desi.desi_pass,pwd):
+                flash('This password have been used earlier','danger')
                 return redirect('/user/designer/forgottenpassword/')
+            else:
+                if desi.desi_businessName == busname:
+                    desi.desi_pass=formated
+                    db.session.commit()
+                    flash('password updated successfully', 'success')
+                    return redirect('/user/designer/login/')
+                else:
+                    flash('invalid busiess name or email address', 'danger')
+                    return redirect('/user/designer/forgottenpassword/')
 
 """designer logout session"""
 @app.route('/designer/logout/')
@@ -1206,10 +1220,10 @@ def designerlogout():
         return redirect('/')
 
     if request.method == 'GET':
+        session.pop('designer', None)
         lo=Login.query.filter_by(login_desiid=desiloggedin, logout_date=None).first()
         lo.logout_date=datetime.utcnow()
         db.session.commit()
-        session.pop('designer', None)
         return redirect('/')
 
 """Posting section"""
@@ -1367,14 +1381,14 @@ def subscribe():
             db.session.add(sub)
             db.session.commit()
             subb=Subscription.query.filter_by(sub_ref=refno, sub_desiid=desiloggedin).first()
-            d=Notification(notify_desiid=desiloggedin, notify_subid=subb.sub_id) 
+            d=Notification(notify_desiid=desiloggedin, notify_subid=subb.sub_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             pay = Payment(payment_transNo=refno, payment_amount=planb, payment_desiid=desiloggedin, payment_subid=subb.sub_id)
             db.session.add(pay)
             db.session.commit()
             paey=Payment.query.filter_by(payment_transNo=refno, payment_desiid=desiloggedin).first()
-            d=Notification(notify_desiid=desiloggedin, notify_paymentid=paey.payment_id) 
+            d=Notification(notify_desiid=desiloggedin, notify_paymentid=paey.payment_id, notify_read='unread') 
             db.session.add(d)
             db.session.commit()
             return redirect('/payment/')
@@ -1653,6 +1667,10 @@ def custpayment(id):
                 tpay=Transaction_payment(tpay_transNo=refno, tpay_custid=sender, tpay_desiid=receiver, tpay_amount=total_amount, tpay_baid=id, tpay_currencyicon="NGN")
                 db.session.add(tpay)
                 db.session.commit()
+                pp=Transaction_payment.query.filter_by(tpay_transNo=refno, tpay_custid=loggedin).first()
+                dd=Notification(notify_custid=cus.cust_id, notify_tpayid=pp.tpay_id, notify_read='unread') 
+                db.session.add(dd)
+                db.session.commit()
                 return redirect(f'/confirm_payment/{id}/')
         else:
             if sender !="" and receiver !="" and amt !="" and charges !="":
@@ -1661,6 +1679,10 @@ def custpayment(id):
                 total_amount= int(amt) + int(charges)
                 tpay=Transaction_payment(tpay_transNo=refno, tpay_custid=sender, tpay_desiid=receiver, tpay_amount=total_amount, tpay_baid=id, tpay_currencyicon="$")
                 db.session.add(tpay)
+                db.session.commit()
+                pp=Transaction_payment.query.filter_by(tpay_transNo=refno, tpay_custid=loggedin).first()
+                dd=Notification(notify_custid=cus.cust_id, notify_tpayid=pp.tpay_id, notify_read='unread') 
+                db.session.add(dd)
                 db.session.commit()
                 return redirect(f'/confirm_payment/{id}/')
 

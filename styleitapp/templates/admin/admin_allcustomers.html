@@ -18,8 +18,22 @@ Styleit | All Customers
                             </a></div>
                             <div class="col-md-7 mt-3"><a href="/customers/{{desi.cust_id}}">
                                 <p><b>{{desi.cust_fname}}</b> <b>{{desi.cust_lname}}</b></p>
-                                <p>{{desi.stateobj.state_name}}</p>
-                                <p>{{desi.lgaobj.lga_name}}</p>
+                                {% if desi.lgaobj %}
+                                    <p>L.G.A: {{desi.lgaobj.lga_name}}</p>
+                                {% else %}
+                                    <p>City: {{desi.cust_city}}</p>
+                                {% endif %}
+                                {% if desi.stateobj %}
+                                    <p>State: {{desi.stateobj.state_name}}</p>
+                                {% else %}
+                                    <p>State: {{desi.cust_state}}</p>
+                                {% endif %}                                
+                                <p>Country: {{desi.custcountry.country_name}}</p>
+                                {% if desi.cust_status=='actived' %}
+                                    <p>Status: {{desi.cust_status}}</p>
+                                {% else %}
+                                    <p>Status: {{desi.cust_status}}</p>
+                                {% endif %}
                             </a></div>
                         </div>
                     </div>

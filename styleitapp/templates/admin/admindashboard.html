@@ -61,71 +61,104 @@ Styleit|Profile
         <div class="col-md-9">
            <div class="row">
 
-            <div class="col-md-2 bg-primary">
-                <div class="row">
-                    <div class="col-md-12">
-                        <p id="alltrend" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_alltrend')}}">Trends</a> </span></p>
-                    </div>
-                    <div class="col-md-12 text-center mt-3 mb-3">
-                        <span>Total Trends </span><br><span>{{pstn|length}}</span>
+                <div class="col-md-2 bg-primary mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_alltrend')}}" style="color:white">Trends</a> </span></p>
+                        </div>
+                        <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Trends </span><br><span>{{pstn|length}}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-2 bg-warning">
-                <div class="row">
-                    <div class="col-md-12 ">
-                        <p id="allappoint" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_appointment')}}">Appointments</a></span></p>
-                    </div>
-                    <div class="col-md-12 text-center mt-3 mb-3">
-                        <span>Total Appointments </span><br><span>{{appt|length}}</span>
+                <div class="col-md-2 bg-warning mt-3">
+                    <div class="row">
+                        <div class="col-md-12 ">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_appointment')}}" style="color:white">Appointments</a></span></p>
+                        </div>
+                        <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Appointments </span><br><span>{{appt|length}}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-2 bg-light">
+                <div class="col-md-2 bg-light mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_allpment')}}" style="color:white">Payments</a></span></p>
+                        </div>
+                        <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Payments: </span><br><span>{{pymt|length}}</span>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-md-2 bg-warning mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_subscription')}}" style="color:white">Subscriptions</a></span></p>
+                        </div>
+                        <div class="col-md-12  text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Subscriptions </span><br><span>{{sublist|length}}</span>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-md-2 bg-light mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_report')}}" style="color:white">Reports</a> </span></p>
+                        </div>
+                        <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Reports </span><br><span>{{srepo|length}}</span>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-md-2 bg-primary mt-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_report')}}" style="color:white">Likes</a></span></p>
+                        </div>
+                        <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                            <span>Total Likes </span><br><span>{{lk|length}}</span>
+                        </div>
+                    </div>
+                    
+                </div>
+           </div>
+           <div class="row">
+            <div class="col-md-2 bg-primary mt-3">
                 <div class="row">
                     <div class="col-md-12">
-                        <p id="allpayment" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_allpment')}}">Payments</a></span></p>
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Creators</a></span></p>
                     </div>
-                    <div class="col-md-12 text-center mt-3 mb-3">
-                        <span>Total Payments: </span><br><span>{{pymt|length}}</span>
+                    <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                        <span>Total Creators </span><br><span>{{des|length}}</span>
                     </div>
                 </div>
                 
             </div>
-            <div class="col-md-2 bg-warning">
+            <div class="col-md-2 bg-danger mt-3">
                 <div class="row">
                     <div class="col-md-12">
-                        <p id="allsub" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_subscription')}}">Subscriptions</a></span></p>
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Clients</a></span></p>
                     </div>
-                    <div class="col-md-12  text-center mt-3 mb-3">
-                        <span>Total Subscriptions </span><br><span>{{sublist|length}}</span>
+                    <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                        <span>Total Creators </span><br><span>{{cus|length}}</span>
                     </div>
                 </div>
-                
             </div>
-            <div class="col-md-2 bg-light">
+            <div class="col-md-2 bg-warning mt-3">
                 <div class="row">
                     <div class="col-md-12">
-                        <p id="allreport" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_report')}}">Reports</a> </span></p>
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Daily Activities</a></span></p>
                     </div>
-                    <div class="col-md-12 text-center mt-3 mb-3">
-                        <span>Total Reports </span><br><span>{{srepo|length}}</span>
-                    </div>
-                </div>
-                
-            </div>
-            <div class="col-md-2 bg-primary">
-                <div class="row">
-                    <div class="col-md-12">
-                        <p id="allreport" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_report')}}">Likes</a></span></p>
-                    </div>
-                    <div class="col-md-12 text-center mt-3 mb-3">
-                        <span>Total Likes </span><br><span>{{lk|length}}</span>
+                    <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
+                        <span class="me-2">Task</span><br><span>{{day_data|length}}</span>
                     </div>
                 </div>
-                
             </div>
            </div>
         </div>      

@@ -390,3 +390,80 @@ allreport.addEventListener("click", function(){
     };
   };
 });
+
+"""day, month, year query"""
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+from datetime import datetime, timedelta
+
+# Create an SQLAlchemy engine and session
+engine = create_engine('your_database_connection_string')
+Session = sessionmaker(bind=engine)
+session = Session()
+
+Base = declarative_base()
+
+class ActivityLog(Base):
+    __tablename__ = 'activitylog'
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime)
+    # Other columns in your activitylog table
+
+# Define a date range
+current_date = datetime.now()
+end_date = current_date + timedelta(days=1)  # You can change this for weeks, months, and years
+
+# Query data for the current day
+day_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= current_date,
+    ActivityLog.timestamp < end_date
+).all()
+
+# Query data for the current week
+week_start = current_date - timedelta(days=current_date.weekday())
+week_end = week_start + timedelta(weeks=1)
+week_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= week_start,
+    ActivityLog.timestamp < week_end
+).all()
+
+# Query data for the current month
+month_start = datetime(current_date.year, current_date.month, 1)
+month_end = month_start.replace(month=month_start.month + 1) if month_start.month < 12 else month_start.replace(year=month_start.year + 1, month=1)
+month_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= month_start,
+    ActivityLog.timestamp < month_end
+).all()
+
+# Query data for the current year
+year_start = datetime(current_date.year, 1, 1)
+year_end = datetime(current_date.year + 1, 1, 1)
+year_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= year_start,
+    ActivityLog.timestamp < year_end
+).all()
+
+# Define previous and next periods
+previous_day = current_date - timedelta(days=1)
+next_day = current_date + timedelta(days=1)
+previous_week = current_date - timedelta(weeks=1)
+next_week = current_date + timedelta(weeks=1)
+previous_month = month_start - timedelta(days=1)
+next_month = month_end
+
+# Query data for the previous and next day, week, month, and year
+previous_day_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= previous_day,
+    ActivityLog.timestamp < current_date
+).all()
+
+next_day_data = session.query(ActivityLog).filter(
+    ActivityLog.timestamp >= current_date,
+    ActivityLog.timestamp < next_day
+).all()
+
+# Repeat the process for previous and next week, month, and year
+
+session.close()

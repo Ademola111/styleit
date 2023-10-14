@@ -18,8 +18,18 @@ Styleit | All designers
                             </a></div>
                             <div class="col-md-7 mt-3"><a href="/designer/{{desi.subdesiobj.desi_id}}">
                                 <p><b>{{desi.subdesiobj.desi_businessName}}</b></p>
-                                <p>{{desi.subdesiobj.stateobj2.state_name}}</p>
+                                {% if desi.subdesiobj.stateobj2 %}
+                                    <p>{{desi.subdesiobj.stateobj2.state_name}}</p>
+                                {% else %}
+                                    <p>{{desi.subdesiobj.desi_state}}</p>
+                                {% endif %}
+                                {% if desi.subdesiobj.lgaobj2 %}
                                 <p>{{desi.subdesiobj.lgaobj2.lga_name}}</p>
+                                {% else %}                                    
+                                    <p>{{desi.subdesiobj.desi_city}}</p>
+                                {% endif %}
+                                <p>{{desi.subdesiobj.desicountry.country_name}}</p>
+
                             </a></div>
                         </div>
                     </div>

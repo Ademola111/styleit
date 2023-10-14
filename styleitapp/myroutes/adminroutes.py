@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
-from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer
+from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer, Login, Activitylog
 from styleitapp import Message, mail
 from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
@@ -57,18 +57,29 @@ def admin_login():
             # quering Customer by filtering with email
             adm=db.session.query(Admin).filter(Admin.admin_email==email).first()
             spa=db.session.query(Superadmin).filter(Superadmin.spadmin_email==email).first()           
-            if adm:
-                formated_pwd=adm.admin_pass
+            if adm and adm.admin_status=='active':
                 # checking password hash
-                if formated_pwd==pwd:
+                if check_password_hash(adm.admin_pass,pwd):
                     session['admin']=adm.admin_id
+                    lo=Login(login_email=adm.admin_email, login_adminid=adm.admin_id)
+                    db.session.add(lo)
+                    db.session.commit()
                     return redirect('/admin/dashboard/')
-            elif spa:
-                formated_pwd=spa.spadmin_pass
-                if formated_pwd==pwd:
+                
+            elif spa and spa.spadmin_status=='active':
+                if check_password_hash(spa.spadmin_pass, pwd):
                     session['superadmin']=spa.spadmin_id
+                    lo=Login(login_email=spa.spadmin_email, login_spadminid=spa.spadmin_id)
+                    db.session.add(lo)
+                    db.session.commit()
                     return redirect('/admin/dashboard/')
             else:
+                if adm and adm.admin_status=='deactive':
+                    flash('You have been logged out of the portal. kindly contact the necessary authority', 'warning')
+                    return redirect('/admin/login/')
+                elif spa and spa.spadmin_status=='deactive':
+                    flash('You have been logged out of the portal. kindly contact the necessary authority', 'warning')
+                    return redirect('/admin/login/')
                 flash('kindly supply a valid email address and password', 'warning')
                 return render_template('admin/adminlogin.html', logini=logini, adm=adm, spa=spa)
         else:
@@ -85,7 +96,7 @@ def adminforgottenpass():
         return redirect('/admin/dashboard/')
     
     if request.method == "GET":
-        return render_template('admin/forgottenpassword.html')
+        return render_template('admin/adminforgottenpassword.html')
     
     if request.method == "POST":
         username=request.form.get('username')
@@ -96,20 +107,42 @@ def adminforgottenpass():
         #validating fileds
         if username =="" or email =="" or pwd =="" or cpwd =="":
             flash('One or more field is empty', 'warning')
-            return render_template('admin/forgottenpassword.html')
+            return render_template('admin/adminforgottenpassword.html')
         elif pwd != cpwd:
             flash('invalid credential supplied', 'danger')
             return redirect('/admin/forgottenpassword/')
         else:
             formated = generate_password_hash(pwd)
             cust=Admin.query.filter(Admin.admin_email==email).first()
-            if cust.admin_secretword == username:
-                cust.admin_pass=formated
-                db.session.commit()
-                flash('password updated successfully', 'success')
-                return redirect('/admin/dashboard/')
-            else:
-                flash('invalid busiess name or email address', 'danger')
+            spa=Superadmin.query.filter(Superadmin.spadmin_email==email).first()
+            if cust:                
+                if cust and cust.admin_status=='deactive':
+                    flash('Record cannot be found', 'warning')
+                    return redirect('/admin/forgottenpassword/')
+                elif check_password_hash(cust.admin_pass,pwd):
+                    flash('This password have been used earlier','danger')
+                    return redirect('/admin/forgottenpassword/')
+                else:
+                    if cust.admin_secretword == username:
+                        cust.admin_pass=formated
+                        db.session.commit()
+                        flash('password updated successfully', 'success')
+                        return redirect('/admin/login/')
+            elif spa:                
+                if spa and spa.spadmin_status=='deactive':
+                    flash('Record cannot be found', 'warning')
+                    return redirect('/admin/forgottenpassword/')
+                elif check_password_hash(spa.spadmin_pass,pwd):
+                    flash('This password have been used earlier','danger')
+                    return redirect('/admin/forgottenpassword/')
+                else:
+                    if spa.spadmin_secretword == username:
+                        spa.spadmin_pass=formated
+                        db.session.commit()
+                        flash('password updated successfully', 'success')
+                        return redirect('/admin/login/')
+            else:                 
+                flash('invalid email address', 'danger')
                 return redirect('/admin/forgottenpassword/')
 
 
@@ -121,7 +154,7 @@ def dashboard():
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
     if admin==None and spadmin==None:
-        return redirect('/')
+        return redirect('/adminhome/')
 
     if request.method == 'GET':
         """the main query for the production"""
@@ -136,46 +169,23 @@ def dashboard():
         sublist = Subscription.query.order_by(desc(Subscription.sub_date)).all()
         srepo = Report.query.order_by(desc(Report.report_id)).all()
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
+        des=Designer.query.all()
+        cus=Customer.query.all()
+        
+        # Query data for the current day
+        current_date = datetime.now()
+        end_date = current_date + timedelta(days=1)  # You can change this for weeks, months, and years
         if admin:
             prof=Admin.query.filter(Admin.admin_id==adm.admin_id).first()
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn)
+            day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.adminid==adm.admin_id).all()
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn, des=des, cus=cus, day_data=day_data)
         
         elif spadmin:
             prof=Superadmin.query.filter(Superadmin.spadmin_id==spa.spadmin_id).first()
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn)
+            day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.spadminid==spa.spadmin_id).all()
+            print(day_data)
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn, des=des, cus=cus, day_data=day_data)
     
-    if request.method == 'POST':
-        fname=request.form.get('fname')
-        lname=request.form.get('lname')
-        email=request.form.get('email')
-        phone=request.form.get('phone')
-        address= request.form.get('address')
-        if fname != "" or lname != "" or email != "" or phone != "" or address != "":
-            if admin:                
-                upd=Admin.query.get(admin)
-                upd.cust_fname=fname
-                upd.cust_lname=lname
-                upd.cust_phone=phone
-                upd.cust_email=email
-                upd.cust_address=address
-                db.session.commit()
-                flash('updated successfully', 'success')
-                return redirect('/admin/dashboard/')
-            elif spadmin:                
-                upd=Admin.query.get(spadmin)
-                upd.cust_fname=fname
-                upd.cust_lname=lname
-                upd.cust_phone=phone
-                upd.cust_email=email
-                upd.cust_address=address
-                db.session.commit()
-                flash('updated successfully', 'success')
-                return redirect('/admin/dashboard/')
-        else:
-            flash('one or more filed is empty', 'warning')
-            return redirect('/admin/dashboard/')
-        
-        
 
 """Trending section"""
 @app.route('/admintrending/', methods=['GET', 'POST'])
@@ -247,6 +257,7 @@ def ban():
         return redirect('/')
     
     if request.method=='POST':
+        url=request.url
         postid = request.form.get('postid')
         comid = request.form.get('comid')
         if postid =="":
@@ -256,20 +267,52 @@ def ban():
             flash('file error', 'danger')
             return redirect(f'/adminpost/{postid}/')
         else:
-            if postid:
-                if postid !="":
-                    posi = Posting.query.filter_by(post_id=postid).first()
-                    posi.post_suspend='suspended'
-                    db.session.commit()
-                    msg='success'
-                    return jsonify(msg)
-            if comid:
-                if comid !="":
-                    posi = Comment.query.filter_by(com_id=comid).first()
-                    posi.com_suspend='suspended'
-                    db.session.commit()
-                    msg='success'
-                    return jsonify(msg)
+            if adm:
+                if postid:
+                    if postid !="":
+                        posi = Posting.query.filter_by(post_id=postid).first()
+                        posi.post_suspend='suspended'
+                        posi.post_adminid=adm.admin_id
+                        db.session.commit()
+                        actlog = Activitylog(adminid=adm.admin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='success'
+                        return jsonify(msg)
+                elif comid:
+                    if comid !="":
+                        posi = Comment.query.filter_by(com_id=comid).first()
+                        posi.com_suspend='suspended'
+                        posi.com_adminid=adm.admin_id
+                        db.session.commit()
+                        actlog = Activitylog(adminid=adm.admin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='success'
+                        return jsonify(msg)
+            elif spa:
+                if postid:
+                    if postid !="":
+                        posi = Posting.query.filter_by(post_id=postid).first()
+                        posi.post_suspend='suspended'
+                        posi.post_spadminid=spa.spadmin_id
+                        db.session.commit() 
+                        actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()                       
+                        msg='success'
+                        return jsonify(msg)
+                elif comid:
+                    if comid !="":
+                        posi = Comment.query.filter_by(com_id=comid).first()
+                        posi.com_suspend='suspended'
+                        posi.com_spadminid=spa.spadmin_id
+                        db.session.commit()
+                        actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit() 
+                        msg='success'
+                        return jsonify(msg)
             
         
 
@@ -284,6 +327,7 @@ def trash():
         return redirect('/')
     
     if request.method=='POST':
+        url=request.url
         postid = request.form.get('postid')
         comid = request.form.get('comid')
         if postid =="":
@@ -293,21 +337,52 @@ def trash():
             flash('file error', 'error')
             return redirect(f'/adminpost/{postid}/')
         else:
-            if postid:
-                if postid !="":
-                    posi = Posting.query.filter(Posting.post_id==postid).first()
-                    posi.post_delete='deleted'
-                    db.session.commit()
-                    msg='successfully deleted'
-                    return jsonify(msg)
-                
-            if comid:
-                if comid !="":
-                    posi = Comment.query.filter(Comment.com_id==comid).first()
-                    posi.com_delete='deleted'
-                    db.session.commit()
-                    msg='successfully deleted'
-                    return jsonify(msg)
+            if adm:
+                if postid:
+                    if postid !="":
+                        posi = Posting.query.filter(Posting.post_id==postid).first()
+                        posi.post_delete='deleted'
+                        posi.post_adminid=adm.admin_id
+                        db.session.commit()
+                        actlog = Activitylog(adminid=adm.admin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='successfully deleted'
+                        return jsonify(msg)
+                elif comid:
+                    if comid !="":
+                        posi = Comment.query.filter(Comment.com_id==comid).first()
+                        posi.com_delete='deleted'
+                        posi.com_adminid=adm.admin_id
+                        db.session.commit()
+                        actlog = Activitylog(adminid=adm.admin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='successfully deleted'
+                        return jsonify(msg)
+            elif spa:
+                if postid:
+                    if postid !="":
+                        posi = Posting.query.filter(Posting.post_id==postid).first()
+                        posi.post_delete='deleted'
+                        posi.post_spadminid=spa.spadmin_id
+                        db.session.commit()
+                        actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='successfully deleted'
+                        return jsonify(msg)   
+                elif comid:
+                    if comid !="":
+                        posi = Comment.query.filter(Comment.com_id==comid).first()
+                        posi.com_delete='deleted'
+                        posi.com_spadminid=spa.spadmin_id
+                        db.session.commit()
+                        actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                        db.session.add(actlog)
+                        db.session.commit()
+                        msg='successfully deleted'
+                        return jsonify(msg)
     
 
 """All Designers """
@@ -322,15 +397,11 @@ def admin_designers():
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
         spa=Superadmin.query.get(spadmin)
+        page = request.args.get('page', 1, type=int)
+        design=Designer.query.paginate(page=page, per_page=rows_page)
         if admin:
-            page = request.args.get('page', 1, type=int)
-            design=Designer.query.paginate(page=page, per_page=rows_page)
-            design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)
             return render_template('admin/admindesigners.html', design=design, spa=spa, adm=adm)
-        elif spadmin:
-            page = request.args.get('page', 1, type=int)
-            design=Designer.query.paginate(page=page, per_page=rows_page)
-            design=Subscription.query.filter(Subscription.sub_status=='active').paginate(page=page, per_page=rows_page)
+        elif spadmin:           
             return render_template('admin/admindesigners.html', design=design, spa=spa, adm=adm)
 
 
@@ -346,20 +417,18 @@ def admin_customers():
     if request.method == 'GET':   
         adm=Admin.query.get(admin)
         spa=Superadmin.query.get(spadmin)
+        page = request.args.get('page', 1, type=int)
+        design=Customer.query.paginate(page=page, per_page=rows_page)
         if admin:
-            page = request.args.get('page', 1, type=int)
             # design=Designer.query.paginate(page=page, per_page=rows_page)
-            design=Customer.query.paginate(page=page, per_page=rows_page)
             return render_template('admin/admin_allcustomers.html', design=design, spa=spa, adm=adm)
         elif spadmin:
-            page = request.args.get('page', 1, type=int)
             # design=Designer.query.paginate(page=page, per_page=rows_page)
-            design=Customer.query.paginate(page=page, per_page=rows_page)
             return render_template('admin/admin_allcustomers.html', design=design, spa=spa, adm=adm)
     
 
 """Designers Details """
-@app.route('/designers/<id>/', methods=['GET', 'POST'])
+@app.route('/designers/<id>/', methods=['GET'])
 def admin_desi_detail(id):
     admin = session.get('admin')
     spadmin= session.get('superadmin')
@@ -379,7 +448,7 @@ def admin_desi_detail(id):
             return render_template('admin/admindesignerdetail.html', design=design, spa=spa, adm=adm,)
 
 """Customers Details """
-@app.route('/customers/<id>/', methods=['GET', 'POST'])
+@app.route('/customers/<id>/', methods=['GET'])
 def admin_cust_detail(id):
     admin = session.get('admin')
     spadmin= session.get('superadmin')
@@ -409,9 +478,15 @@ def admin_logout():
     if request.method == 'GET':
         if admin:
             session.pop('admin', None)
+            lo=Login.query.filter_by(login_adminid=admin, logout_date=None).first()
+            lo.logout_date=datetime.utcnow()
+            db.session.commit()            
             return redirect('/adminhome')
         elif spadmin:
             session.pop('superadmin', None)
+            lo=Login.query.filter_by(login_spadminid=spadmin, logout_date=None).first()
+            lo.logout_date=datetime.utcnow()
+            db.session.commit()            
             return redirect('/adminhome')
 
  
@@ -445,45 +520,120 @@ def admin_search():
         wordsearch=Posting.query.outerjoin(Designer, Posting.post_id==Designer.desi_id).filter(Posting.post_title.ilike(f'%{word}%') | Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%') | Designer.desi_fname.ilike(f'%{word}%') | Designer.desi_lname.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
     return render_template('user/search.html', wordsearch=wordsearch, word=word, adm=adm, spa=spa)
 
-@app.route('/deactivat/', methods=['GET', 'POST'])
+@app.route('/deactivat/', methods=['POST'])
 def deactivat():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    
     if request.method == "POST":
+        url=request.url
         desi=request.form.get('desi_id')
         cust=request.form.get('cust_id')
-        if desi:
-            if desi !="":
-                dess=Designer.query.filter_by(desi_id=desi).first()
-                dess.desi_access='deactived'
-                db.session.commit()
-                message='Deactivated'
-                return jsonify(message)
-        elif cust:
-            if cust !="":
-                cust=Customer.query.filter_by(cust_id=cust).first()
-                cust.cust_access='deactived'
-                db.session.commit()
-                message='Deactivated'
-                return jsonify(message)
+        if adm:
+            if desi:
+                if desi !="":
+                    dess=Designer.query.filter_by(desi_id=desi).first()
+                    dess.desi_access='deactived'
+                    dess.desi_adminid=adm.admin_id
+                    db.session.commit()
+                    actlog = Activitylog(adminid=adm.admin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Deactivated'
+                    return jsonify(message)
+            elif cust:
+                if cust !="":
+                    cust=Customer.query.filter_by(cust_id=cust).first()
+                    cust.cust_access='deactived'
+                    cust.cust_adminid=adm.admin_id
+                    db.session.commit()
+                    actlog = Activitylog(adminid=adm.admin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Deactivated'
+                    return jsonify(message)
+        elif spa:
+            if desi:
+                if desi !="":
+                    dess=Designer.query.filter_by(desi_id=desi).first()
+                    dess.desi_access='deactived'
+                    dess.desi_spadminid=spa.spadmin_id
+                    db.session.commit()
+                    actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Deactivated'
+                    return jsonify(message)
+            elif cust:
+                if cust !="":
+                    cust=Customer.query.filter_by(cust_id=cust).first()
+                    cust.cust_access='deactived'
+                    cust.cust_spadminid=spa.spadmin_id
+                    db.session.commit()
+                    actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Deactivated'
+                    return jsonify(message)
 
-@app.route('/activat/', methods=['GET', 'POST'])
+@app.route('/activat/', methods=['POST'])
 def activat():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
     if request.method == "POST":
+        url=request.url
         desi=request.form.get('desi_id')
         cust=request.form.get('cust_id')
-        if desi:
-            if desi !="":
-                dess=Designer.query.filter_by(desi_id=desi).first()
-                dess.desi_access='actived'
-                db.session.commit()
-                message='Activated'
-                return jsonify(message)
-        elif cust:
-            if cust !="":
-                cust=Customer.query.filter_by(cust_id=cust).first()
-                cust.cust_access='actived'
-                db.session.commit()
-                message='Activated'
-                return jsonify(message)
+        if adm:
+            if desi:
+                if desi !="":
+                    dess=Designer.query.filter_by(desi_id=desi).first()
+                    dess.desi_access='actived'
+                    dess.desi_adminid=adm.admin_id
+                    db.session.commit()
+                    actlog = Activitylog(adminid=adm.admin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Activated'
+                    return jsonify(message)
+            elif cust:
+                if cust !="":
+                    cust=Customer.query.filter_by(cust_id=cust).first()
+                    cust.cust_access='actived'
+                    cust.cust_adminid=adm.admin_id
+                    db.session.commit()
+                    actlog = Activitylog(adminid=adm.admin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Activated'
+                    return jsonify(message)
+        elif spa:
+            if desi:
+                if desi !="":
+                    dess=Designer.query.filter_by(desi_id=desi).first()
+                    dess.desi_access='actived'
+                    dess.desi_spadminid=spa.spadmin_id
+                    db.session.commit()
+                    actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Activated'
+                    return jsonify(message)
+            elif cust:
+                if cust !="":
+                    cust=Customer.query.filter_by(cust_id=cust).first()
+                    cust.cust_access='actived'
+                    cust.cust_spadminid=spa.spadmin_id
+                    db.session.commit()
+                    actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
+                    message='Activated'
+                    return jsonify(message)
             
 """admin signup"""
 @app.route('/admin/signup/', methods=['GET', 'POST'])
@@ -846,7 +996,7 @@ def admin_subscription():
 
 
 """All report admin"""
-@app.route('/admin/report', methods=['GET'])
+@app.route('/admin/report/', methods=['GET'])
 def admin_report():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
@@ -858,3 +1008,25 @@ def admin_report():
         return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)
     elif spadmin:
         return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)
+    
+
+"""deactivate admin"""
+@app.route('/admin_deactivate/', methods=['POST', 'GET'])
+def admin_deactivate():
+    spadmin= session.get('superadmin')
+    spa=Superadmin.query.get(spadmin)
+    if request.method == 'POST':
+        jjj=request.form.get('admin_dact')
+        print(jjj)
+        adm=Admin.query.filter(Admin.admin_id==jjj).first()
+        print(adm.admin_status)
+        if adm.admin_status=='active':
+            adm.admin_status='deactive'
+            db.session.commit()
+            return redirect('/admin/login/')
+        elif adm.admin_status=='deactive':
+            adm.admin_status='active'
+            db.session.commit()
+            return redirect('/admin/login/')
+    else:
+        return redirect('/admin/dashboard/')

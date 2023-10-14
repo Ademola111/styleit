@@ -124,7 +124,7 @@
                   <div style="display:none; position:absolute; background-color: whitesmoke; padding:10px; margin:auto;" id="note">
                     {% for nt in noti %}
                     {% if cus.cust_id %}
-                      {% if nt.notifypostobj or nt.notifylikeobj or nt.notifycomobj or nt.notifyshareobj or nt.notifybaobj or  nt.notifysubobj or nt.notifypayobj %}
+                      {% if nt.notifypostobj or nt.notifylikeobj or nt.notifycomobj or nt.notifyshareobj or nt.notifybaobj or  nt.notifysubobj or nt.notifypayobj or nt.notifytpayobj %}
                         <span style="padding:2px; margin:auto;"> 
                           {% if nt.notify_postid and nt.notify_custid==cus.cust_id %}
                           <a href="/posti/{{nt.notifypostobj.post_id}}"><span id="com4" data-value="{{nt.notify_postid}}" style="padding:auto; margin:auto; text-align:left;" >You commented on a post</span></a>
@@ -152,6 +152,14 @@
 
                           {% if nt.notify_baid and nt.notify_custid==cus.cust_id %}
                           <a href="/bookapp/{{nt.notifybaobj.ba_id}}/" id="pin5"><span id="{{nt.notify_baid}}" >You have booked an appointment with {{nt.notifybaobj .desibaobj.desi_businessName}}</span></a>
+                          {% endif %}
+
+                          {% if nt.notify_tpayid and nt.notify_custid==cus.cust_id %}
+                            {% if nt.notifytpayobj.tpay_status == 'paid' %}
+                            <a href="/notetpay/{{nt.notifytpayobj.tpay_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_tpayid}}" value="{{nt.notify_tpayid}}">Your payment is successful</span></a>
+                            {% elif nt.notifytpayobj.tpay_status == 'failed' or nt.notifytpayobj.tpay_status == 'pending' %}
+                            <a href="/notetpay/{{nt.notifytpayobj.tpay_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_tpayid}}" value="{{nt.notify_tpayid}}">Your payment is unsuccessful</span></a>
+                            {% endif %}
                           {% endif %}
                         </span><br>
                       {% endif %}
@@ -232,18 +240,18 @@
 
                           {% if nt.notify_subid and nt.notify_desiid==des.desi_id and nt.notifysubobj.sub_status=="active" %}
                           <a href="/notesub/{{nt.notifysubobj.sub_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_subid}}" value="{{nt.notify_subid}}">You have subscribed to a 
-                              {% if nt.notifysubobj.sub_plan=="500" %}
+                              {% if nt.notifysubobj.sub_plan=="600" %}
                               monthly
-                              {% elif nt.notifysubobj.sub_plan=="1350" %}
+                              {% elif nt.notifysubobj.sub_plan=="1550" %}
                               3 months
-                              {% elif nt.notifysubobj.sub_plan=="2400" %}
+                              {% elif nt.notifysubobj.sub_plan=="2700" %}
                               6 month
-                              {% elif nt.notifysubobj.sub_plan=="4200" %}
+                              {% elif nt.notifysubobj.sub_plan=="4750" %}
                               yearly
                               {% endif %}
                               plan</span></a>
                           {% else %}
-                            {% if nt.notify_desiid==des.desi_id and nt.notifysubobj.sub_status=="active" %}
+                            {% if nt.notify_desiid==des.desi_id and nt.notifysubobj.sub_status=="deactive" %}
                             <a href="/notesub/{{nt.notifysubobj.sub_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_subid}}" value="{{nt.notify_subid}}">Your subscribed plan has expired</span></a>
                             {% endif %} 
                           {% endif %}
@@ -251,7 +259,7 @@
                           {% if nt.notify_paymentid and nt.notify_desiid==des.desi_id %}
                             {% if nt.notifypayobj.payment_status == 'paid' %}
                             <a href="/notepay/{{nt.notifypayobj.payment_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_paymentid}}" value="{{nt.notify_paymentid}}">Your payment is successful</span></a>
-                            {% elif nt.notifypayobj.payment_status == 'failed' %}
+                            {% elif nt.notifypayobj.payment_status == 'failed' or nt.notifypayobj.payment_status == 'pending' %}
                             <a href="/notepay/{{nt.notifypayobj.payment_id}}/"><span style="padding:auto; margin:auto; text-align:left;" id="{{nt.notify_paymentid}}" value="{{nt.notify_paymentid}}">Your payment is unsuccessful</span></a>
                             {% endif %}
                           {% endif %}

@@ -18,7 +18,7 @@
                 <p><span><strong>Booking Time:</strong></span> <span>{{bk.ba_bookingTime}}</span></p>
                 <p><span><strong>Collection Date:</strong></span> <span>{{bk.ba_collectionDate}}</span></p>
                 <p><span><strong>Collection Time:</strong></span> <span>{{bk.ba_collectionTime}}</span></p>
-                
+                <p><span><strong>Country:</strong></span> <span>{{bk.custbaobj.custcountry.country_name}}</span></p>
                 <div class="row">
                     <div class="d-flex">
                     <form action="/appointment/status/{{bk.ba_id}}/" method="POST">
