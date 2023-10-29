@@ -53,6 +53,7 @@ Styleit|Profile
                 <div class="col-md-12">
                     <p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('admin_login')}}"><span class="ms-3">Add New Admin </span></a></p>
                     <p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('admin_general_mail')}}"><span class="ms-3">General Mail </span></a></p>
+                    <p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('staff_activity')}}"><span class="ms-3">Staff Activities </span></a></p>
                     {#<p id="Nad" style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><a href="{{url_for('admin_login')}}"><span class="ms-3">Bonus Sub for all </span></a></p>#}
                 </div>
             </div>
@@ -83,7 +84,7 @@ Styleit|Profile
                     </div>
                 </div>
 
-                <div class="col-md-2 bg-light mt-3">
+                <div class="col-md-2 bg-primary mt-3">
                     <div class="row">
                         <div class="col-md-12">
                             <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_allpment')}}" style="color:white">Payments</a></span></p>
@@ -94,7 +95,7 @@ Styleit|Profile
                     </div>
                     
                 </div>
-                <div class="col-md-2 bg-warning mt-3">
+                <div class="col-md-2 bg-danger mt-3">
                     <div class="row">
                         <div class="col-md-12">
                             <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_subscription')}}" style="color:white">Subscriptions</a></span></p>
@@ -116,7 +117,7 @@ Styleit|Profile
                     </div>
                     
                 </div>
-                <div class="col-md-2 bg-primary mt-3">
+                <div class="col-md-2 bg-danger mt-3">
                     <div class="row">
                         <div class="col-md-12">
                             <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="{{url_for('admin_report')}}" style="color:white">Likes</a></span></p>
@@ -124,12 +125,11 @@ Styleit|Profile
                         <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
                             <span>Total Likes </span><br><span>{{lk|length}}</span>
                         </div>
-                    </div>
-                    
+                    </div>                    
                 </div>
            </div>
            <div class="row">
-            <div class="col-md-2 bg-primary mt-3">
+            <div class="col-md-2 bg-warning mt-3">
                 <div class="row">
                     <div class="col-md-12">
                         <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Creators</a></span></p>
@@ -140,7 +140,7 @@ Styleit|Profile
                 </div>
                 
             </div>
-            <div class="col-md-2 bg-danger mt-3">
+            <div class="col-md-2 bg-primary mt-3">
                 <div class="row">
                     <div class="col-md-12">
                         <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Clients</a></span></p>
@@ -155,10 +155,56 @@ Styleit|Profile
                     <div class="col-md-12">
                         <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Daily Activities</a></span></p>
                     </div>
-                    <div class="col-md-12 text-center mt-3 mb-3" style="color:rgb(0, 0, 0)">
-                        <span class="me-2">Task</span><br><span>{{day_data|length}}</span>
+                    <div class="col-md-12 text-center" style="color:rgb(0, 0, 0)">
+                        <span class="me-2" id="today">Today's Task</span><br>
+                        <span id="days">{{day_data|length}}</span>
+                        <p class="col-md-12 text-center" style="color:rgb(0, 0, 0); display: flex; justify-content: space-between;">
+                            <span id="prevday">Prev</span><span id="nextday">Next</span>
+                        </p>
                     </div>
                 </div>
+            </div>
+            <div class="col-md-2 bg-light mt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Weekly Activities</a></span></p>
+                    </div>
+                    <div class="col-md-12 text-center" style="color:rgb(0, 0, 0)">
+                        <span class="me-2" id="week">Week Total Task</span><br>
+                        <span id="weeks">{{week_data|length}}</span>
+                        <p class="col-md-12 text-center" style="color:rgb(0, 0, 0); display: flex; justify-content: space-between;">
+                            <span id="prevweek">Prev</span><span id="nextweek">Next</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 bg-danger mt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white; font-size: 15px;">Monthly Activities</a></span></p>
+                    </div>
+                    <div class="col-md-12 text-center" style="color:rgb(0, 0, 0)">
+                        <span class="me-2" id="month">This Month Task</span><br>
+                        <span id="months">{{month_data|length}}</span>
+                        <p class="col-md-12 text-center" style="color:rgb(0, 0, 0); display: flex; justify-content: space-between;">
+                            <span id="prevmonth">Prev</span><span id="nextmonth">Next</span>
+                        </p>
+                    </div>
+                </div>                    
+            </div>
+            <div class="col-md-2 bg-light mt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p style="background-color:rgb(219, 27, 194); border-top-left-radius: 20px; border-bottom-left-radius: 20px;"><span class="ms-3"><a href="#" style="color:white">Yearly Activities</a></span></p>
+                    </div>
+                    <div class="col-md-12 text-center" style="color:rgb(0, 0, 0)">
+                        <span class="me-2" id="year">This YearTask</span><br>
+                        <span id="years">{{year_data|length}}</span>
+                        <p class="col-md-12 text-center" style="color:rgb(0, 0, 0); display: flex; justify-content: space-between;">
+                            <span id="prevyear">Prev</span><span id="nextyear">Next</span>
+                        </p>
+                    </div>
+                </div>                    
             </div>
            </div>
         </div>      

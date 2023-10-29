@@ -370,6 +370,133 @@
               });
             });
 
+            // Previous day activity
+            $('#prevday').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/prev/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#days').html(message)
+                  $('#today').html("Previous Day Task")
+                }
+              });
+            });
+            // Next day activity
+            $('#nextday').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/next/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#days').html(message)
+                  $('#today').html("Next Day Task")
+                }
+              });
+            });
+
+            // Previous weekend activity
+            $('#prevweek').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/prevweek/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#weeks').html(message)
+                  $('#week').html("Previous Week Task")
+                }
+              });
+            });
+
+            // next weekend activity
+            $('#nextweek').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/nextweek/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#weeks').html(message)
+                  $('#week').html("Next Week Task")
+                }
+              });
+            });
+
+            // Previous month activity
+            $('#prevmonth').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/prevmonth/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#months').html(message)
+                  $('#month').html("Previous Month Task")
+                }
+              });
+            });
+
+            // next month activity
+            $('#nextmonth').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/nextmonth/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#months').html(message)
+                  $('#month').html("Next MonthTask")
+                }
+              });
+            });
+
+            // Previous Year activity
+            $('#prevyear').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/prevyear/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#years').html(message)
+                  $('#year').html("Previous Year Task")
+                }
+              });
+            });
+
+            // next year activity
+            $('#nextyear').click(function(){
+              var csrf = "{{csrf_token()}}";
+              var data = {"csrf_token":csrf};
+              $.ajax({
+                url:'/activity/nextyear/',
+                data:data,
+                type:'POST',
+                success:function(message){
+                  console.log(message)
+                  $('#years').html(message)
+                  $('#year').html("Next Year Task")
+                }
+              });
+            });
+
           });
 
 function comban(id){

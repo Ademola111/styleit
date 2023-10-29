@@ -31,6 +31,7 @@ Styleit|Profile
                 <h5>Transfer Receipt</h5>
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <p><span><b>Created At:</b></span> <span>{{data['data']['createdAt']}}</span></p>
+                <input type="hidden" name="refno" value="{{Tns.tf_reference }}">
                 {% if Tns.tf_reference %}
                 <p><span><b>Reference:</b></span> <span>{{Tns.tf_reference }}</span></p>
                 {% elif session['refno'] %}

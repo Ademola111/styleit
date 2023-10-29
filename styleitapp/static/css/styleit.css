@@ -170,9 +170,9 @@ border-radius: 50px;
   background-color: rgb(146, 64, 146);
 }
 
-#profile, #tog{
+/* #profile, #tog{ 
   background-color: rgba(122, 5, 133, 0.384);
-}
+}*/
 
 #pro, #Lik, #Unlik{
     color: rgb(0, 0, 0);
@@ -190,7 +190,7 @@ border-radius: 50px;
   }
 }
 
-#Liked{
+/* #Liked{
   background-color: rgb(245, 221, 89);
   font-family: styleitregular;
 }
@@ -198,7 +198,7 @@ border-radius: 50px;
 #Unliked{
   background-color: rgb(102, 245, 89);
   font-family: styleitregular;
-}
+} */
 
 
 @media all and (max-width:480px){

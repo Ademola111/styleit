@@ -175,18 +175,246 @@ def dashboard():
         # Query data for the current day
         current_date = datetime.now()
         end_date = current_date + timedelta(days=1)  # You can change this for weeks, months, and years
+        # Query data for the current week
+        week_start = current_date - timedelta(days=current_date.weekday())
+        week_end = week_start + timedelta(weeks=1)
+        # Query data for the current month
+        month_start = datetime(current_date.year, current_date.month, 1)
+        month_end = month_start.replace(month=month_start.month + 1) if month_start.month < 12 else month_start.replace(year=month_start.year + 1, month=1)
+        # Query data for the current year
+        year_start = datetime(current_date.year, 1, 1)
+        year_end = datetime(current_date.year + 1, 1, 1)
         if admin:
             prof=Admin.query.filter(Admin.admin_id==adm.admin_id).first()
+            # daily achtivity
             day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.adminid==adm.admin_id).all()
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn, des=des, cus=cus, day_data=day_data)
+            # Weekly activity
+            week_data = db.session.query(Activitylog).filter(Activitylog.date >= week_start, Activitylog.date < week_end, Activitylog.adminid==adm.admin_id).all()
+            # Monthly Activity
+            month_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < month_end, Activitylog.adminid==adm.admin_id).all()
+            # Yearly activities
+            year_data = db.session.query(Activitylog).filter(Activitylog.date >= year_start, Activitylog.date < year_end, Activitylog.adminid==adm.admin_id).all()
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn, des=des, cus=cus, day_data=day_data, week_data=week_data, month_data=month_data, year_data=year_data)
         
         elif spadmin:
             prof=Superadmin.query.filter(Superadmin.spadmin_id==spa.spadmin_id).first()
+            # dailt actitity
             day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.spadminid==spa.spadmin_id).all()
-            print(day_data)
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn, des=des, cus=cus, day_data=day_data)
+            # Weekly activity
+            week_data = db.session.query(Activitylog).filter(Activitylog.date >= week_start, Activitylog.date < week_end, Activitylog.spadminid==spa.spadmin_id).all()
+            # Monthly Activity
+            month_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < month_end, Activitylog.spadminid==spa.spadmin_id).all()
+            # Yearly activities
+            year_data = db.session.query(Activitylog).filter(Activitylog.date >= year_start, Activitylog.date < year_end, Activitylog.spadminid==spa.spadmin_id).all()
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn, des=des, cus=cus, day_data=day_data, week_data=week_data,  month_data=month_data, year_data=year_data)
     
 
+"""previous day activity"""
+@app.route('/activity/prev/', methods=['POST'])
+def previous_day():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+        # Query data for the current day
+        current_date = datetime.now()
+        # Define previous and next periods
+        previous_day = current_date - timedelta(days=1)
+        if admin:
+            previous_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', previous_day), extract('day', Activitylog.date) < extract('day', current_date), Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_day_data))
+            return message
+        elif spadmin:
+            previous_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', previous_day), extract('day', Activitylog.date) < extract('day', current_date), Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_day_data))
+            return message
+            
+
+"""next day activity"""
+@app.route('/activity/next/', methods=['POST'])
+def next_day():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+        # Query data for the current day
+        current_date = datetime.now()
+        # Define previous and next periods
+        next_day = current_date + timedelta(days=1)
+        if admin:
+            next_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), extract('day', Activitylog.date) < extract('day', next_day), Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(next_day_data))
+            return message
+        elif spadmin:
+            next_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), extract('day', Activitylog.date) < extract('day', next_day), Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(next_day_data))
+            return message
+
+
+"""previous week activity"""
+@app.route('/activity/prevweek/', methods=['POST'])
+def previous_week():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        previous_week = current_date - timedelta(weeks=1)
+        endweek= previous_week + timedelta(days=6)
+        if admin:
+            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_week, Activitylog.date < endweek, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+        elif spadmin:
+            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_week, Activitylog.date <  endweek, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+        
+                
+"""next week activity"""
+@app.route('/activity/nextweek/', methods=['POST'])
+def next_week():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        next_week = current_date + timedelta(weeks=1)
+        if admin:
+            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= next_week, Activitylog.date < current_date, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+        elif spadmin:
+            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= next_week, Activitylog.date <  current_date, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+
+"""previous month activity"""
+@app.route('/activity/prevmonth/', methods=['POST'])
+def previous_month():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        month_start = datetime(current_date.year, current_date.month, 1)
+        previous_month = month_start - timedelta(days=1)
+        if admin:
+            previous_month_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_month, Activitylog.date < month_start, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_month_data))
+            return message
+        elif spadmin:
+            previous_month_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_month, Activitylog.date < month_start, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_month_data))
+            return message
+        
+                
+"""next week activity"""
+@app.route('/activity/nextmonth/', methods=['POST'])
+def next_month():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        month_start = datetime(current_date.year, current_date.month, 1)
+        month_end = month_start.replace(month=month_start.month + 1) if month_start.month < 12 else month_start.replace(year=month_start.year + 1, month=1)
+        next_month = month_start + timedelta(days=1)
+        if admin:
+            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < next_month, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+        elif spadmin:
+            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date <  next_month, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_week_data))
+            return message
+        
+"""previous year activity"""
+@app.route('/activity/prevyear/', methods=['POST'])
+def previous_year():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        current_year=current_date.year
+        previous_year = current_date.replace(year=current_date.year - 1)
+        if admin:
+            previous_year_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_year, Activitylog.date < current_year, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_year_data))
+            return message
+        elif spadmin:
+            previous_year_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_year, Activitylog.date < current_year, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_year_data))
+            return message
+        
+                
+"""next year activity"""
+@app.route('/activity/nextyear/', methods=['POST'])
+def next_year():
+    admin = session.get('admin')
+    spadmin= session.get('superadmin')
+    adm=Admin.query.get(admin)
+    spa=Superadmin.query.get(spadmin)
+    if admin==None and spadmin==None:
+        return redirect('/adminhome/')
+    
+    if request.method == 'POST':
+         # Query data for the current date
+        current_date = datetime.now()
+        # Define previous periods
+        current_year=current_date.year
+        next_year = current_date.replace(year=current_date.year + 1)
+        # year_end = datetime(current_date.year + 1, 1, 1)
+        if admin:
+            previous_year_data = db.session.query(Activitylog).filter(Activitylog.date >= next_year, Activitylog.date < current_year, Activitylog.adminid==adm.admin_id).all()
+            message=json.dumps(len(previous_year_data))
+            return message
+        elif spadmin:
+            previous_year_data =db.session.query(Activitylog).filter(Activitylog.date >= current_year, Activitylog.date < current_year, Activitylog.spadminid==spa.spadmin_id).all()
+            message=json.dumps(len(previous_year_data))
+            return message
+        
+        
+                       
 """Trending section"""
 @app.route('/admintrending/', methods=['GET', 'POST'])
 def admin_trending():
@@ -698,8 +926,7 @@ def adminsignup():
 def searchref():
     admin = session.get('admin')
     spadmin= session.get('superadmin')
-    adm=Admin.query.get(admin)
-    spa=Superadmin.query.get(spadmin)
+    url=request.url
     if admin and request.method=='POST':
         nomba=request.form.get('searchref')
         if nomba != "":
@@ -712,10 +939,16 @@ def searchref():
                 if pymt:
                     msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
                     message=json.dumps(msg)
+                    actlog = Activitylog(adminid=admin, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
                     return message
                 elif typmt:
                     msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
+                    actlog = Activitylog(adminid=admin, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
                     return message
         else:
             message={"message":"your refno is incorrect"}
@@ -732,11 +965,17 @@ def searchref():
                 if pymt:
                     msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
                     message=json.dumps(msg)
+                    actlog = Activitylog(spadminid=spadmin, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
                     return message
                 elif typmt:
                     msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
                     print(message)
+                    actlog = Activitylog(spadminid=spadmin, link=url)
+                    db.session.add(actlog)
+                    db.session.commit()
                     return message
         else:
             message={"message":"your refno is incorrect"}
@@ -745,14 +984,15 @@ def searchref():
         return redirect('/adminhome')
     
 """approve payment"""
-@app.route('/approve/<id>/', methods=['POST', 'GET'])
+@app.route('/approve/<id>/', methods=['GET'])
 def approve_payment(id):
     admin = session.get('admin')
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
+    linkurl=request.url
     
-    if admin:
+    if admin and request.method=='GET' or spadmin and request.method=='GET':        
         typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
         desi=typm.desitpayobj.desi_id
         sendname=typm.custtpayobj.cust_fname + " " + typm.custtpayobj.cust_lname
@@ -760,42 +1000,52 @@ def approve_payment(id):
         bnkcode = Bankcodes.query.filter_by(name=bnk.bnk_bankname).first()
         ac= bnk.bnk_acno
         accd=bnkcode.code
+        Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
+        # confirm account number and bank code
         url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
         payload = {}
         headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
         response = requests.request("GET", url, headers=headers, data=payload)
         res=response.json()
-        
-        if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
-            data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
-            url = "https://api.paystack.co/transferrecipient"
-            headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
-            response = requests.request("post", url, headers=headers, data=json.dumps(data))
-            res2=response.json()
-            Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
-            if Tns==None:
-                refno = int(random.random()*10000000) 
-                session['refno'] = refno
-                
-                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
-                db.session.add(tf)
-                db.session.commit()
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
-            elif Tns.tf_reference==None:
-                refno = int(random.random()*10000000) 
-                session['refno'] = refno
-                
-                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
-                db.session.add(tf)
-                db.session.commit()
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        print(res)
+        # generating transfer reciept
+        # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
+        data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+        url2 = "https://api.paystack.co/transferrecipient"
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("post", url2, headers=headers, data=json.dumps(data))
+        res2=response.json()
+        print(res2)
+        if Tns==None:
+            refno = int(random.random()*10000000) 
+            session['refno'] = refno
             
-            elif Tns.tf_reference !=None:
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            db.session.add(tf)
+            db.session.commit()
+            actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
+            db.session.add(actlog)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        elif Tns.tf_reference==None:
+            refno = int(random.random()*10000000) 
+            session['refno'] = refno
+            
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            db.session.add(tf)
+            db.session.commit()
+            actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
+            db.session.add(actlog)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        
+        elif Tns.tf_reference !=None:
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno)
-    elif spadmin:
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
+    
+    elif spadmin and request.method=='GET':        
         typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
         desi=typm.desitpayobj.desi_id
         sendname=typm.custtpayobj.cust_fname + " " + typm.custtpayobj.cust_lname
@@ -803,41 +1053,51 @@ def approve_payment(id):
         bnkcode = Bankcodes.query.filter_by(name=bnk.bnk_bankname).first()
         ac= bnk.bnk_acno
         accd=bnkcode.code
+        Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
+        # confirm account number and bank code
         url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
         payload = {}
         headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
         response = requests.request("GET", url, headers=headers, data=payload)
         res=response.json()
-        
-        if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
-            data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
-            url = "https://api.paystack.co/transferrecipient"
-            headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
-            response = requests.request("post", url, headers=headers, data=json.dumps(data))
-            res2=response.json()
-            Tns=Transfer.query.filter_by(tf_tpayreference=typm.tpay_transNo).first()
-            if Tns==None:
-                refno = int(random.random()*10000000) 
-                session['refno'] = refno
-                
-                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
-                db.session.add(tf)
-                db.session.commit()
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
-            elif Tns.tf_reference==None:
-                refno = int(random.random()*10000000) 
-                session['refno'] = refno
-                
-                tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
-                db.session.add(tf)
-                db.session.commit()
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        print(res)
+        # generating transfer reciept
+        # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
+        data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+        url2 = "https://api.paystack.co/transferrecipient"
+        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        response = requests.request("post", url2, headers=headers, data=json.dumps(data))
+        res2=response.json()
+        print(res2)
+        if Tns==None:
+            refno = int(random.random()*10000000) 
+            session['refno'] = refno
             
-            elif Tns.tf_reference !=None:
-                return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            db.session.add(tf)
+            db.session.commit()
+            actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
+            db.session.add(actlog)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        elif Tns.tf_reference==None:
+            refno = int(random.random()*10000000) 
+            session['refno'] = refno
+            
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            db.session.add(tf)
+            db.session.commit()
+            actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
+            db.session.add(actlog)
+            db.session.commit()
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+        
+        elif Tns.tf_reference !=None:
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
+
 
 """initiating transfer of payment"""
 @app.route('/sendfund/', methods=['GET', 'POST'])
@@ -846,18 +1106,29 @@ def send_fund():
     spadmin= session.get('superadmin')
     adm=Admin.query.get(admin)
     spa=Superadmin.query.get(spadmin)
-    refno=session.get('refno')
+    linkurl=request.url
     if request.method=="GET":
         return redirect('/admin/logout/')
     
     if admin and request.method=='POST':
-        tf=Transfer.query.filter_by(tf_reference=refno).first()
+        refrno=request.form.get('refno')
+        tf=Transfer.query.filter_by(tf_reference=refrno).first()
         data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
         url = "https://api.paystack.co/transfer"
         headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
         print(response.text)
-        return "transfer successful"
+        actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
+        db.session.add(actlog)
+        db.session.commit()
+        rspjson = json.loads(response.text)
+        print(rspjson)
+        if rspjson.get('status') == True:
+            authurl = rspjson['data']["transfer_code"]
+            return redirect(authurl)
+        else:
+            return "Please try again"
+        
     elif spadmin and request.method=='POST':
         refno=request.form.get('refno')
         tf=Transfer.query.filter_by(tf_reference=refno).first()
@@ -866,7 +1137,11 @@ def send_fund():
         headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
         print(response.text)
+        actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
+        db.session.add(actlog)
+        db.session.commit()
         rspjson = json.loads(response.text) 
+        print(rspjson)
         if rspjson.get('status') == True:
             authurl = rspjson['data']["transfer_code"]
             return redirect(authurl)
@@ -1015,6 +1290,7 @@ def admin_report():
 def admin_deactivate():
     spadmin= session.get('superadmin')
     spa=Superadmin.query.get(spadmin)
+    url=request.url
     if request.method == 'POST':
         jjj=request.form.get('admin_dact')
         print(jjj)
@@ -1023,10 +1299,32 @@ def admin_deactivate():
         if adm.admin_status=='active':
             adm.admin_status='deactive'
             db.session.commit()
+            actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+            db.session.add(actlog)
+            db.session.commit()
             return redirect('/admin/login/')
         elif adm.admin_status=='deactive':
             adm.admin_status='active'
             db.session.commit()
+            actlog = Activitylog(spadminid=spa.spadmin_id, link=url)
+            db.session.add(actlog)
+            db.session.commit()
             return redirect('/admin/login/')
     else:
         return redirect('/admin/dashboard/')
+
+
+@app.route('/staffactivity', methods=['GET'])
+def staff_activity():
+    spadmin= session.get('superadmin')
+    spa=Superadmin.query.get(spadmin)
+    
+    if spadmin==None:
+        return redirect('/')
+    
+    if request.method=='GET':
+        current_date = datetime.now()
+        target_month = current_date.month
+        target_year = current_date.year
+        result = db.session.query(Admin, func.sum(Activitylog.adminid).label('total_activities')).join(Activitylog).group_by(Admin.admin_id, extract('month', Activitylog.date)==target_month, func.extract('year', Activitylog.date) == target_year).order_by(func.sum(Activitylog.adminid).desc()).all()
+        return render_template('admin/activity.html', spadmin=spadmin,result=result, spa=spa, month=target_month, year=target_year)

@@ -22,13 +22,13 @@ Styleit|Profile
         </div>
         
         <div class="col-md-3 text-center" id="profile" onclick="divchange()">
-            <span id="pro"><i class="fas fa-user"></i> Profile</span>
+            <span id="pro"><i class="fas fa-user me-2"></i> Profile</span>
         </div>
         <div class="col-md-4 text-center" id="Liked" onclick="divchange2()">
-            <span id="Lik" class="mt-3 mb-3"><i class="fas fa-pen"></i> Post</span>
+            <span id="Lik" class="mt-3 mb-3"><i class="fas fa-pen me-2"></i> Post</span>
         </div>
         <div class="col-md-4 text-center" id="Unliked" onclick="divchange3()">
-            <span id="Unlik" class="mt-3 mb-3"><i class="fas fa-clipboard"></i> Booking</span>
+            <span id="Unlik" class="mt-3 mb-3"><i class="fas fa-clipboard me-2"></i> Booking</span>
         </div>
         
     </div>
@@ -47,29 +47,29 @@ Styleit|Profile
                         {% endif %}
 
                         {% if des.desi_status=='actived': %}
-                        <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Online</i></span>
+                        <span id="online" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt m-2"></i> <i>Online</i></span>
                         {% else %}
-                        <span id="online2" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt"></i> <i>Offline</i></span>
+                        <span id="online2" class="col-md-12 m-2 p-2"><i class="fa fa-user-alt m-2"></i> <i>Offline</i></span>
                         {% endif %}
-                        <span id="logout"><a href="{{url_for('designerlogout')}}"><i class="fa fa-sign-out"></i> Logout</a></span>
+                        <span id="logout"><a href="{{url_for('designerlogout')}}"><i class="fa fa-sign-out m-2"></i> Logout</a></span>
                     </div>
 
                     <div class="col-md-12" id="profilebottom">
-                        <span id="settings" class="generalface2"><a href="#"><i class="fa fa-cog"></i> Settings</a></span>
-                        <span id="edit" onclick="divchange4()" class="generalface2"><a href="#"><i class="fas fa-user-edit"></i> Edit</a></span>
+                        <span id="settings" class="generalface2"><a href="#"><i class="fa fa-cog m-2"></i> Settings</a></span>
+                        <span id="edit" onclick="divchange4()" class="generalface2"><a href="#"><i class="fas fa-user-edit m-2"></i> Edit</a></span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12 mt-3 mb-3">
                         {% if subt.sub_status == 'active' %}
-                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen"></i> Create a Post</span></a></p>
-                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('posting')}}"><span class="m-1 p-1" id="createpost"><i class="fas fa-pen m-2"></i> Create a Post</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card m-2"></i> Subscription</span></a></p>
                         {% else %}
                         <p><span style="color:rgb(255, 255, 255); margin:2px; font-size:10px;">Subcription Expired. Subcribe to remain visible to your customers</span></p>
-                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card"></i> Subscription</span></a></p>
+                        <p class="mt-3 mb-3 generalface2"><a href="{{url_for('subplan')}}"><span class="m-1 p-1" id="subscription"><i class="fas fa-credit-card m-2"></i> Subscription</span></a></p>
                         
                         {% endif %}
-                        <p class="mt-3 mb-3 generalface2" onclick="divchange5()"><span id="tasks" class="m-1 p-1"><i class="fa fa-tasks"></i> Task History</span></p>
+                        <p class="mt-3 mb-3 generalface2" onclick="divchange5()"><span id="tasks" class="m-1 p-1"><i class="fa fa-tasks m-2"></i> Task History</span></p>
                     </div>
                 </div>
                 <div class="row">
