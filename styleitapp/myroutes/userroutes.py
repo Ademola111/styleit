@@ -8,6 +8,7 @@ from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
 from styleitapp.models import Designer, State, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Report, Rating, Newsletter, Job, Transaction_payment, Bank, Follow, Login, Bankcodes, State, Lga, Countries, States, Cities
+from styleitapp.junk import styleit, spamming
 from styleitapp.forms import CustomerLoginForm, DesignerLoginForm
 from styleitapp import Message, mail
 from styleitapp.token import generate_confirmation_token, confirm_token
@@ -31,7 +32,7 @@ def home():
         today = date.today()
         print(str(today))
         if today:
-            subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate==str(today)).all()
+            subt=db.session.query(Subscription).filter(Subscription.sub_status=='active', Subscription.sub_enddate ==str(today)).all()
             
             if subt != None:
                 for su in subt:
@@ -1079,6 +1080,24 @@ def designerSignup():
                             return redirect(url_for('unconfirmed'))
                         return redirect('/user/designer/signup/')
 
+"""checking sub status for automatic deactivation"""
+@app.before_request
+def before_request_func():
+    desiloggedin = session.get('designer')
+    des=Designer.query.get(desiloggedin)
+    if desiloggedin:
+        subt=db.session.query(Subscription).filter(Subscription.sub_desiid==des.desi_id, Subscription.sub_status=='active').first()
+        today = date.today()
+        if subt != None:
+            if subt.sub_enddate < str(today):
+                subt.sub_status="deactive"
+                db.session.commit()
+                commenter_email=subt.subdesiobj.desi_email
+                custom=subt.subdesiobj.desi_businessName
+                recipients={"custom":custom}
+                subdeactivate_signal.send(app, comment=subt, post_author_email=commenter_email, recipients=recipients)
+        else:
+            pass
 
 """Designer Login"""
 @app.route('/user/designer/login/', methods=['GET', 'POST'])
@@ -1410,7 +1429,7 @@ def payment():
     else:
         data = {"email":des.desi_email,"amount":pymt.payment_amount*100, "reference":pymt.payment_transNo}
 
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
 
         response = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, data=json.dumps(data))
 
@@ -1427,7 +1446,7 @@ def paystack():
     reference = request.args.get('reference')
     refno = session.get('refno')
     #update our database 
-    headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+    headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
 
     response = requests.get(f"https://api.paystack.co/transaction/verify/{reference}", headers=headers)
     rsp =response.json()#in json format
@@ -1706,7 +1725,7 @@ def confirm_custpayment(id):
         else:
             data = {"email":cus.cust_email,"amount":pymt.tpay_amount*100, "reference":pymt.tpay_transNo}
 
-            headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+            headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
 
             response = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, data=json.dumps(data))
 

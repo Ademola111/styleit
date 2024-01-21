@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
+from styleitapp.junk import styleit, spamming
 from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer, Login, Activitylog
 from styleitapp import Message, mail
 from styleitapp.forms import AdminLoginForm, AdminSignupForm
@@ -1004,7 +1005,7 @@ def approve_payment(id):
         # confirm account number and bank code
         url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
         payload = {}
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("GET", url, headers=headers, data=payload)
         res=response.json()
         print(res)
@@ -1012,7 +1013,7 @@ def approve_payment(id):
         # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
         data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
         url2 = "https://api.paystack.co/transferrecipient"
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url2, headers=headers, data=json.dumps(data))
         res2=response.json()
         print(res2)
@@ -1057,7 +1058,7 @@ def approve_payment(id):
         # confirm account number and bank code
         url = f"https://api.paystack.co/bank/resolve?account_number={ac}&bank_code={accd}"
         payload = {}
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("GET", url, headers=headers, data=payload)
         res=response.json()
         print(res)
@@ -1065,7 +1066,7 @@ def approve_payment(id):
         # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
         data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
         url2 = "https://api.paystack.co/transferrecipient"
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url2, headers=headers, data=json.dumps(data))
         res2=response.json()
         print(res2)
@@ -1115,7 +1116,7 @@ def send_fund():
         tf=Transfer.query.filter_by(tf_reference=refrno).first()
         data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
         url = "https://api.paystack.co/transfer"
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
         print(response.text)
         actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
@@ -1134,7 +1135,7 @@ def send_fund():
         tf=Transfer.query.filter_by(tf_reference=refno).first()
         data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
         url = "https://api.paystack.co/transfer"
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
         print(response.text)
         actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
@@ -1159,7 +1160,7 @@ def verifytransfer():
         url = "https://api.paystack.co/transfer/{id_or_code}"
 
         payload = {}
-        headers = {"Content-Type": "application/json","Authorization":"Bearer sk_test_9ebd9bc239bcde7a0f43e2eab48b18ef1910356f"}
+        headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
 
         response = requests.request("GET", url, headers=headers, data=payload)
 
