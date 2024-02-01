@@ -8,7 +8,11 @@ from flask_socketio import emit, disconnect
 
 from styleitapp import app, db
 from styleitapp.junk import styleit, spamming
-from styleitapp.models import Designer, Customer, Posting, Image, Comment, Like, Share, Bookappointment, Subscription, Payment, Notification, Admin, Superadmin, Report, Transaction_payment, Bank, Bankcodes, Transfer, Login, Activitylog
+from styleitapp.models import (Designer, Customer, Posting, Image, 
+                               Comment, Like, Share, Bookappointment, 
+                               Subscription, Payment, Admin, Superadmin, 
+                               Report, Transaction_payment, Bank, 
+                               Bankcodes, Transfer, Login, Activitylog)
 from styleitapp import Message, mail
 from styleitapp.forms import AdminLoginForm, AdminSignupForm
 
@@ -44,7 +48,8 @@ def admin_login():
     # rendering login template
     if request.method == 'GET':
         admi=Admin.query.all()
-        return render_template('admin/adminlogin.html', logini=logini, admin=admin, spadmin=spadmin, spa=spa, adm=adm, adsignup=adsignup, admi=admi)
+        return render_template('admin/adminlogin.html', logini=logini, admin=admin, 
+                               spadmin=spadmin, spa=spa, adm=adm, adsignup=adsignup, admi=admi)
     
     if request.method == "POST":
         email=request.form.get('email')
@@ -76,10 +81,12 @@ def admin_login():
                     return redirect('/admin/dashboard/')
             else:
                 if adm and adm.admin_status=='deactive':
-                    flash('You have been logged out of the portal. kindly contact the necessary authority', 'warning')
+                    flash('You have been logged out of the portal. kindly contact the necessary authority', 
+                          'warning')
                     return redirect('/admin/login/')
                 elif spa and spa.spadmin_status=='deactive':
-                    flash('You have been logged out of the portal. kindly contact the necessary authority', 'warning')
+                    flash('You have been logged out of the portal. kindly contact the necessary authority', 
+                          'warning')
                     return redirect('/admin/login/')
                 flash('kindly supply a valid email address and password', 'warning')
                 return render_template('admin/adminlogin.html', logini=logini, adm=adm, spa=spa)
@@ -159,12 +166,24 @@ def dashboard():
 
     if request.method == 'GET':
         """the main query for the production"""
-        subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-        subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-        subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+        subq_likes = db.session.query(Like.like_postid, 
+                                      func.count(Like.like_id).label('like_count')
+                                      ).group_by(Like.like_postid).subquery()
+        subq_comments = db.session.query(Comment.com_postid, 
+                                         func.count(Comment.com_id).label('com_count')
+                                         ).group_by(Comment.com_postid).subquery()
+        subq_shares = db.session.query(Share.share_postid, 
+                                       func.count(Share.share_id).label('share_count')
+                                       ).group_by(Share.share_postid).subquery()
         
         """query post without daily rank"""           
-        pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).all()
+        pstn = (db.session.query(Posting)
+                .outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid)
+                .outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid)
+                .outerjoin(subq_shares,Posting.post_id==subq_shares.c.share_postid)
+                .filter(Posting.post_id==Image.image_postid)
+                .order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), 
+                          desc(subq_shares.c.share_count), desc(Posting.post_date)).all())
         appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).all()
         pymt=Payment.query.order_by(desc(Payment.payment_id)).all()
         sublist = Subscription.query.order_by(desc(Subscription.sub_date)).all()
@@ -181,33 +200,65 @@ def dashboard():
         week_end = week_start + timedelta(weeks=1)
         # Query data for the current month
         month_start = datetime(current_date.year, current_date.month, 1)
-        month_end = month_start.replace(month=month_start.month + 1) if month_start.month < 12 else month_start.replace(year=month_start.year + 1, month=1)
+        month_end = (month_start.replace(month=month_start.month + 1) 
+                     if month_start.month < 12 
+                     else month_start.replace
+                     (year=month_start.year + 1, month=1))
         # Query data for the current year
         year_start = datetime(current_date.year, 1, 1)
         year_end = datetime(current_date.year + 1, 1, 1)
         if admin:
             prof=Admin.query.filter(Admin.admin_id==adm.admin_id).first()
             # daily achtivity
-            day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.adminid==adm.admin_id).all()
+            day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', current_date), 
+                (extract('day', Activitylog.date) < extract('day', end_date)), 
+                Activitylog.adminid==adm.admin_id).all()
             # Weekly activity
-            week_data = db.session.query(Activitylog).filter(Activitylog.date >= week_start, Activitylog.date < week_end, Activitylog.adminid==adm.admin_id).all()
+            week_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= week_start, 
+                Activitylog.date < week_end, 
+                Activitylog.adminid==adm.admin_id).all()
             # Monthly Activity
-            month_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < month_end, Activitylog.adminid==adm.admin_id).all()
+            month_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= month_start, 
+                Activitylog.date < month_end, 
+                Activitylog.adminid==adm.admin_id).all()
             # Yearly activities
-            year_data = db.session.query(Activitylog).filter(Activitylog.date >= year_start, Activitylog.date < year_end, Activitylog.adminid==adm.admin_id).all()
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, pymt=pymt, sublist=sublist, pstn=pstn, des=des, cus=cus, day_data=day_data, week_data=week_data, month_data=month_data, year_data=year_data)
+            year_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= year_start, 
+                Activitylog.date < year_end, 
+                Activitylog.adminid==adm.admin_id).all()
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, 
+                                   srepo=srepo, spa=spa, adm=adm, prof=prof, lk=lk, appt=appt, 
+                                   pymt=pymt, sublist=sublist, pstn=pstn, des=des, cus=cus, 
+                                   day_data=day_data, week_data=week_data, month_data=month_data, 
+                                   year_data=year_data)
         
         elif spadmin:
             prof=Superadmin.query.filter(Superadmin.spadmin_id==spa.spadmin_id).first()
             # dailt actitity
-            day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), (extract('day', Activitylog.date) < extract('day', end_date)), Activitylog.spadminid==spa.spadmin_id).all()
+            day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', current_date), 
+                (extract('day', Activitylog.date) < extract('day', end_date)), 
+                Activitylog.spadminid==spa.spadmin_id).all()
             # Weekly activity
-            week_data = db.session.query(Activitylog).filter(Activitylog.date >= week_start, Activitylog.date < week_end, Activitylog.spadminid==spa.spadmin_id).all()
+            week_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= week_start, Activitylog.date < week_end, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             # Monthly Activity
-            month_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < month_end, Activitylog.spadminid==spa.spadmin_id).all()
+            month_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= month_start, Activitylog.date < month_end, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             # Yearly activities
-            year_data = db.session.query(Activitylog).filter(Activitylog.date >= year_start, Activitylog.date < year_end, Activitylog.spadminid==spa.spadmin_id).all()
-            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, sublist=sublist, prof=prof, pstn=pstn, des=des, cus=cus, day_data=day_data, week_data=week_data,  month_data=month_data, year_data=year_data)
+            year_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= year_start, Activitylog.date < year_end, 
+                Activitylog.spadminid==spa.spadmin_id).all()
+            return render_template('admin/admindashboard.html', admin=admin, spadmin=spadmin, srepo=srepo, 
+                                   spa=spa, adm=adm, lk=lk, appt=appt, pymt=pymt, 
+                                   sublist=sublist, prof=prof, pstn=pstn, des=des, 
+                                   cus=cus, day_data=day_data, week_data=week_data,  
+                                   month_data=month_data, year_data=year_data)
     
 
 """previous day activity"""
@@ -226,11 +277,17 @@ def previous_day():
         # Define previous and next periods
         previous_day = current_date - timedelta(days=1)
         if admin:
-            previous_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', previous_day), extract('day', Activitylog.date) < extract('day', current_date), Activitylog.adminid==adm.admin_id).all()
+            previous_day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', previous_day), 
+                extract('day', Activitylog.date) < extract('day', current_date), 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_day_data))
             return message
         elif spadmin:
-            previous_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', previous_day), extract('day', Activitylog.date) < extract('day', current_date), Activitylog.spadminid==spa.spadmin_id).all()
+            previous_day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', previous_day), 
+                extract('day', Activitylog.date) < extract('day', current_date), 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_day_data))
             return message
             
@@ -251,11 +308,17 @@ def next_day():
         # Define previous and next periods
         next_day = current_date + timedelta(days=1)
         if admin:
-            next_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), extract('day', Activitylog.date) < extract('day', next_day), Activitylog.adminid==adm.admin_id).all()
+            next_day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', current_date), 
+                extract('day', Activitylog.date) < extract('day', next_day), 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(next_day_data))
             return message
         elif spadmin:
-            next_day_data = db.session.query(Activitylog).filter(extract('day', Activitylog.date) >= extract('day', current_date), extract('day', Activitylog.date) < extract('day', next_day), Activitylog.spadminid==spa.spadmin_id).all()
+            next_day_data = db.session.query(Activitylog).filter(
+                extract('day', Activitylog.date) >= extract('day', current_date), 
+                extract('day', Activitylog.date) < extract('day', next_day), 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(next_day_data))
             return message
 
@@ -277,11 +340,17 @@ def previous_week():
         previous_week = current_date - timedelta(weeks=1)
         endweek= previous_week + timedelta(days=6)
         if admin:
-            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_week, Activitylog.date < endweek, Activitylog.adminid==adm.admin_id).all()
+            previous_week_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_week, 
+                Activitylog.date < endweek, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
         elif spadmin:
-            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_week, Activitylog.date <  endweek, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_week_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_week, 
+                Activitylog.date <  endweek, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
         
@@ -302,11 +371,15 @@ def next_week():
         # Define previous periods
         next_week = current_date + timedelta(weeks=1)
         if admin:
-            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= next_week, Activitylog.date < current_date, Activitylog.adminid==adm.admin_id).all()
+            previous_week_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= next_week, Activitylog.date < current_date, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
         elif spadmin:
-            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= next_week, Activitylog.date <  current_date, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_week_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= next_week, Activitylog.date <  current_date, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
 
@@ -327,11 +400,15 @@ def previous_month():
         month_start = datetime(current_date.year, current_date.month, 1)
         previous_month = month_start - timedelta(days=1)
         if admin:
-            previous_month_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_month, Activitylog.date < month_start, Activitylog.adminid==adm.admin_id).all()
+            previous_month_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_month, Activitylog.date < month_start, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_month_data))
             return message
         elif spadmin:
-            previous_month_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_month, Activitylog.date < month_start, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_month_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_month, Activitylog.date < month_start, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_month_data))
             return message
         
@@ -351,14 +428,20 @@ def next_month():
         current_date = datetime.now()
         # Define previous periods
         month_start = datetime(current_date.year, current_date.month, 1)
-        month_end = month_start.replace(month=month_start.month + 1) if month_start.month < 12 else month_start.replace(year=month_start.year + 1, month=1)
+        month_end = (month_start.replace(month=month_start.month + 1) 
+                     if month_start.month < 12 
+                     else month_start.replace(year=month_start.year + 1, month=1))
         next_month = month_start + timedelta(days=1)
         if admin:
-            previous_week_data = db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date < next_month, Activitylog.adminid==adm.admin_id).all()
+            previous_week_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= month_start, Activitylog.date < next_month, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
         elif spadmin:
-            previous_week_data =db.session.query(Activitylog).filter(Activitylog.date >= month_start, Activitylog.date <  next_month, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_week_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= month_start, Activitylog.date <  next_month, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_week_data))
             return message
         
@@ -379,11 +462,15 @@ def previous_year():
         current_year=current_date.year
         previous_year = current_date.replace(year=current_date.year - 1)
         if admin:
-            previous_year_data = db.session.query(Activitylog).filter(Activitylog.date >= previous_year, Activitylog.date < current_year, Activitylog.adminid==adm.admin_id).all()
+            previous_year_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_year, Activitylog.date < current_year, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_year_data))
             return message
         elif spadmin:
-            previous_year_data =db.session.query(Activitylog).filter(Activitylog.date >= previous_year, Activitylog.date < current_year, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_year_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= previous_year, Activitylog.date < current_year, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_year_data))
             return message
         
@@ -406,11 +493,15 @@ def next_year():
         next_year = current_date.replace(year=current_date.year + 1)
         # year_end = datetime(current_date.year + 1, 1, 1)
         if admin:
-            previous_year_data = db.session.query(Activitylog).filter(Activitylog.date >= next_year, Activitylog.date < current_year, Activitylog.adminid==adm.admin_id).all()
+            previous_year_data = db.session.query(Activitylog).filter(
+                Activitylog.date >= next_year, Activitylog.date < current_year, 
+                Activitylog.adminid==adm.admin_id).all()
             message=json.dumps(len(previous_year_data))
             return message
         elif spadmin:
-            previous_year_data =db.session.query(Activitylog).filter(Activitylog.date >= current_year, Activitylog.date < current_year, Activitylog.spadminid==spa.spadmin_id).all()
+            previous_year_data =db.session.query(Activitylog).filter(
+                Activitylog.date >= current_year, Activitylog.date < current_year, 
+                Activitylog.spadminid==spa.spadmin_id).all()
             message=json.dumps(len(previous_year_data))
             return message
         
@@ -432,26 +523,53 @@ def admin_trending():
         
         if admin:
             """the main query for the production"""
-            subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-            subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-            subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+            subq_likes = db.session.query(Like.like_postid, 
+                                          func.count(Like.like_id).label('like_count')
+                                          ).group_by(Like.like_postid).subquery()
+            subq_comments = db.session.query(Comment.com_postid, 
+                                             func.count(Comment.com_id).label('com_count')
+                                             ).group_by(Comment.com_postid).subquery()
+            subq_shares = db.session.query(Share.share_postid, 
+                                           func.count(Share.share_id).label('share_count')
+                                           ).group_by(Share.share_postid).subquery()
             
             
             """query post with daily rank this is for production"""
-            pstn2 = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today)).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
+            pstn2 = (db.session.query(Posting)
+                     .outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid)
+                     .outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid)
+                     .outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid)
+                     .filter(extract('day', Posting.post_date) == extract('day', today), 
+                             extract('month', Posting.post_date) == extract('month', today), 
+                             extract('year', Posting.post_date) == extract('year', today))
+                     .order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), 
+                               desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all())
             lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-            return render_template('admin/admintrending.html', pstn2=pstn2, admin=admin, spadmin=spadmin, spa=spa, adm=adm, lk=lk)
+            return render_template('admin/admintrending.html', pstn2=pstn2, admin=admin, spadmin=spadmin, 
+                                   spa=spa, adm=adm, lk=lk)
             
         elif spadmin:
             """the main query for the production"""
-            subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-            subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-            subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+            subq_likes = (db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count'))
+                          .group_by(Like.like_postid).subquery())
+            subq_comments = (db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count'))
+                             .group_by(Comment.com_postid).subquery())
+            subq_shares = (db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count'))
+                           .group_by(Share.share_postid).subquery())
             
             """query post with daily rank this is for production"""
-            pstn2 = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(extract('day', Posting.post_date) == extract('day', today), extract('month', Posting.post_date) == extract('month', today), extract('year', Posting.post_date) == extract('year', today)).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all()
+            pstn2 = (db.session.query(Posting)
+                     .outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid)
+                     .outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid)
+                     .outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid)
+                     .filter(extract('day', Posting.post_date) == extract('day', today), 
+                             extract('month', Posting.post_date) == extract('month', today), 
+                             extract('year', Posting.post_date) == extract('year', today))
+                     .order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), 
+                               desc(subq_shares.c.share_count), desc(Posting.post_date)).limit(1000).all())
             lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
-            return render_template('admin/admintrending.html', pstn2=pstn2, admin=admin, spadmin=spadmin, spa=spa, adm=adm, lk=lk)
+            return render_template('admin/admintrending.html', pstn2=pstn2, admin=admin, spadmin=spadmin, 
+                                   spa=spa, adm=adm, lk=lk)
         
             
 """ post detail session """
@@ -465,14 +583,17 @@ def admin_post(id):
         return redirect('/')
 
     if request.method == 'GET':
-        pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid, Posting.post_id==id).first()
+        pstn=db.session.query(Posting).filter(Posting.post_id==Image.image_postid, 
+                                              Posting.post_id==id).first()
         compost = Posting.query.filter_by(post_id=id).first_or_404()
-        comnt=db.session.query(Comment).filter(Comment.com_postid==compost.post_id).order_by(Comment.path.asc()).all()
+        comnt=db.session.query(Comment).filter(Comment.com_postid==
+                                               compost.post_id).order_by(Comment.path.asc()).all()
         share = db.session.query(Share).filter(Share.share_postid==compost.post_id).all()
         lk=Like.query.filter(Like.like_postid==Posting.post_id).all()
         for i in lk:
             print(i)
-        return render_template('admin/adminpost.html', spadmin=spadmin, admin=admin, adm=adm,spa=spa,comnt=comnt, pstn=pstn, share=share, i=i)
+        return render_template('admin/adminpost.html', spadmin=spadmin, admin=admin, adm=adm, 
+                               spa=spa,comnt=comnt, pstn=pstn, share=share, i=i)
 
 
 """ban section"""
@@ -742,11 +863,25 @@ def admin_search():
     if admin:
         word=request.form.get('search')
         page = request.args.get('page', 1, type=int)
-        wordsearch=Posting.query.outerjoin(Designer, Posting.post_id==Designer.desi_id).filter(Posting.post_title.ilike(f'%{word}%') | Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%') | Designer.desi_fname.ilike(f'%{word}%') | Designer.desi_lname.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
+        wordsearch=(Posting.query.outerjoin(Designer, Posting.post_id==Designer.desi_id)
+                    .filter(Posting.post_title.ilike(f'%{word}%') | 
+                            Posting.post_body.ilike(f'%{word}%') | 
+                            Designer.desi_businessName.ilike(f'%{word}%') | 
+                            Designer.desi_fname.ilike(f'%{word}%') | 
+                            Designer.desi_lname.ilike(f'%{word}%'))
+                    .order_by(desc(Posting.post_id))
+                    .paginate(page=page, per_page=rows_per_page))
     elif spadmin:
         word=request.form.get('search')
         page = request.args.get('page', 1, type=int)
-        wordsearch=Posting.query.outerjoin(Designer, Posting.post_id==Designer.desi_id).filter(Posting.post_title.ilike(f'%{word}%') | Posting.post_body.ilike(f'%{word}%') | Designer.desi_businessName.ilike(f'%{word}%') | Designer.desi_fname.ilike(f'%{word}%') | Designer.desi_lname.ilike(f'%{word}%')).order_by(desc(Posting.post_id)).paginate(page=page, per_page=rows_per_page)
+        wordsearch=(Posting.query.outerjoin(Designer, Posting.post_id==Designer.desi_id)
+                    .filter(Posting.post_title.ilike(f'%{word}%') | 
+                            Posting.post_body.ilike(f'%{word}%') | 
+                            Designer.desi_businessName.ilike(f'%{word}%') | 
+                            Designer.desi_fname.ilike(f'%{word}%') | 
+                            Designer.desi_lname.ilike(f'%{word}%'))
+                    .order_by(desc(Posting.post_id))
+                    .paginate(page=page, per_page=rows_per_page))
     return render_template('user/search.html', wordsearch=wordsearch, word=word, adm=adm, spa=spa)
 
 @app.route('/deactivat/', methods=['POST'])
@@ -884,7 +1019,8 @@ def adminsignup():
         original_name=pic.filename
 
 
-        if fname=="" or lname=="" or secretword=="" or email=="" or phone=="" or pwd=="" or cpwd=="" or address=="" or gender=="":
+        if (fname=="" or lname=="" or secretword=="" or email=="" or 
+            phone=="" or pwd=="" or cpwd=="" or address=="" or gender==""):
             flash('One or more field is empty', 'danger')
             return redirect('/admin/signup/')
     
@@ -916,7 +1052,10 @@ def adminsignup():
                         saveas = str(fn) + extension[1]
                         pic.save(f'styleitapp/static/images/profile/admin/{saveas}')
                         # committing to Customer table
-                        k=Admin(admin_fname=fname, admin_secretword=secretword, admin_lname=lname, admin_gender=gender, admin_phone=phone, admin_email=eemail, admin_pass=formated, admin_address=address, admin_pic=saveas)
+                        k=Admin(admin_fname=fname, admin_secretword=secretword, 
+                                admin_lname=lname, admin_gender=gender, admin_phone=phone, 
+                                admin_email=eemail, admin_pass=formated, 
+                                admin_address=address, admin_pic=saveas)
                         db.session.add(k)
                         db.session.commit()
                         return redirect('/admin/signup/')
@@ -938,14 +1077,25 @@ def searchref():
                 return message
             else:
                 if pymt:
-                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
+                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, 
+                         "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, 
+                         "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, 
+                         "payment_subid":pymt.payment_subid, 
+                         "desipaymentobj":pymt.desipaymentobj.desi_businessName}
                     message=json.dumps(msg)
                     actlog = Activitylog(adminid=admin, link=url)
                     db.session.add(actlog)
                     db.session.commit()
                     return message
                 elif typmt:
-                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, 
+                         "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, 
+                         "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, 
+                         "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, 
+                         "desitpayobj":typmt.desitpayobj.desi_businessName, 
+                         "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, 
+                         "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, 
+                         "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
                     actlog = Activitylog(adminid=admin, link=url)
                     db.session.add(actlog)
@@ -964,14 +1114,25 @@ def searchref():
                 return message
             else:
                 if pymt:
-                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, "payment_subid":pymt.payment_subid, "desipaymentobj":pymt.desipaymentobj.desi_businessName}
+                    msg={"payment_id":pymt.payment_id, "payment_transNo":pymt.payment_transNo, 
+                         "payment_transdate":str(pymt.payment_transdate), "payment_amount":pymt.payment_amount, 
+                         "payment_status":pymt.payment_status, "payment_desiid":pymt.payment_desiid, 
+                         "payment_subid":pymt.payment_subid, 
+                         "desipaymentobj":pymt.desipaymentobj.desi_businessName}
                     message=json.dumps(msg)
                     actlog = Activitylog(spadminid=spadmin, link=url)
                     db.session.add(actlog)
                     db.session.commit()
                     return message
                 elif typmt:
-                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, "desitpayobj":typmt.desitpayobj.desi_businessName, "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, "tpay_currencyicon":typmt.tpay_currencyicon}
+                    msg={"tpay_id":typmt.tpay_id, "tpay_transNo":typmt.tpay_transNo, 
+                         "tpay_transdate":str(typmt.tpay_transdate), "tpay_amount":typmt.tpay_amount, 
+                         "tpay_status":typmt.tpay_status, "tpay_desiid":typmt.tpay_desiid, 
+                         "tpay_custid":typmt.tpay_custid, "tpay_baid":typmt.tpay_baid, 
+                         "desitpayobj":typmt.desitpayobj.desi_businessName, 
+                         "custtpayobj":typmt.custtpayobj.cust_fname, "custtpayobj2":typmt.custtpayobj.cust_lname, 
+                         "tpaybaobj":typmt.tpaybaobj.ba_paystatus, "tpaybaobj2":typmt.tpaybaobj.ba_custstatus, 
+                         "tpay_currencyicon":typmt.tpay_currencyicon}
                     message=json.dumps(msg)
                     print(message)
                     actlog = Activitylog(spadminid=spadmin, link=url)
@@ -1011,7 +1172,10 @@ def approve_payment(id):
         print(res)
         # generating transfer reciept
         # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
-        data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+        data = {"type": "nuban", "name": res['data']['account_name'], 
+                "account_number": res['data']['account_number'], "bank_code": accd, 
+                "currency": "NGN", "email":typm.desitpayobj.desi_email, 
+                "description":"payment for the just conculeded service"}
         url2 = "https://api.paystack.co/transferrecipient"
         headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url2, headers=headers, data=json.dumps(data))
@@ -1021,30 +1185,53 @@ def approve_payment(id):
             refno = int(random.random()*10000000) 
             session['refno'] = refno
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], 
+                        tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], 
+                        tf_receiverAcName=res2['data']['details']['account_name'], 
+                        tf_receiverAcNo=res2['data']['details']['account_number'], 
+                        tf_receiverbankName=res2['data']['details']['bank_name'], 
+                        tf_receiverEmail=res2['data']['email'], 
+                        tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), 
+                        tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], 
+                        tf_message=res2['message'], tf_depositor=sendname, 
+                        tf_tpayid=typm.tpay_id, tf_status='pending', 
+                        tf_tpayreference=typm.tpay_transNo)
             db.session.add(tf)
             db.session.commit()
             actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
             db.session.add(actlog)
             db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, 
+                                   spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         elif Tns.tf_reference==None:
             refno = int(random.random()*10000000) 
             session['refno'] = refno
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], 
+                        tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], 
+                        tf_receiverAcName=res2['data']['details']['account_name'], 
+                        tf_receiverAcNo=res2['data']['details']['account_number'], 
+                        tf_receiverbankName=res2['data']['details']['bank_name'], 
+                        tf_receiverEmail=res2['data']['email'], 
+                        tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), 
+                        tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], 
+                        tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, 
+                        tf_status='pending', tf_tpayreference=typm.tpay_transNo)
             db.session.add(tf)
             db.session.commit()
             actlog = Activitylog(adminid=adm.admin_id, link=linkurl)
             db.session.add(actlog)
             db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, 
+                                   desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         
         elif Tns.tf_reference !=None:
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, 
+                                   spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, 
+                                   spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
     
     elif spadmin and request.method=='GET':        
         typm=Transaction_payment.query.filter_by(tpay_transNo=id).first()
@@ -1064,7 +1251,9 @@ def approve_payment(id):
         print(res)
         # generating transfer reciept
         # if res['data']['account_number']==bnk.bnk_acno and res['data']['account_name']==bnk.bnk_acname.upper():
-        data = {"type": "nuban", "name": res['data']['account_name'], "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
+        data = {"type": "nuban", "name": res['data']['account_name'], 
+                "account_number": res['data']['account_number'], "bank_code": accd, "currency": "NGN", 
+                "email":typm.desitpayobj.desi_email, "description":"payment for the just conculeded service"}
         url2 = "https://api.paystack.co/transferrecipient"
         headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url2, headers=headers, data=json.dumps(data))
@@ -1074,30 +1263,53 @@ def approve_payment(id):
             refno = int(random.random()*10000000) 
             session['refno'] = refno
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], 
+                        tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], 
+                        tf_receiverAcName=res2['data']['details']['account_name'], 
+                        tf_receiverAcNo=res2['data']['details']['account_number'], 
+                        tf_receiverbankName=res2['data']['details']['bank_name'], 
+                        tf_receiverEmail=res2['data']['email'], 
+                        tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), 
+                        tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], 
+                        tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, 
+                        tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            
             db.session.add(tf)
             db.session.commit()
             actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
             db.session.add(actlog)
             db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, 
+                                   spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         elif Tns.tf_reference==None:
             refno = int(random.random()*10000000) 
             session['refno'] = refno
             
-            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], tf_receiverAcName=res2['data']['details']['account_name'], tf_receiverAcNo=res2['data']['details']['account_number'], tf_receiverbankName=res2['data']['details']['bank_name'], tf_receiverEmail=res2['data']['email'], tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, tf_status='pending', tf_tpayreference=typm.tpay_transNo)
+            tf=Transfer(tf_createdAt=res2['data']['createdAt'], tf_updatedAt=res2['data']['updatedAt'], 
+                        tf_reference=refno, tf_RecipientCode=res2['data']['recipient_code'], 
+                        tf_receiverAcName=res2['data']['details']['account_name'], 
+                        tf_receiverAcNo=res2['data']['details']['account_number'], 
+                        tf_receiverbankName=res2['data']['details']['bank_name'], 
+                        tf_receiverEmail=res2['data']['email'], 
+                        tf_amountRemited=(typm.tpay_amount) - (typm.tpay_amount * 0.2), 
+                        tf_integrationCode=res2['data']['integration'], tf_receiptId=res2['data']['id'], 
+                        tf_message=res2['message'], tf_depositor=sendname, tf_tpayid=typm.tpay_id, 
+                        tf_status='pending', tf_tpayreference=typm.tpay_transNo)
             db.session.add(tf)
             db.session.commit()
             actlog = Activitylog(spadminid=spa.spadmin_id, link=linkurl)
             db.session.add(actlog)
             db.session.commit()
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, 
+                                   desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         
         elif Tns.tf_reference !=None:
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, 
+                                   desi=desi, typm=typm, bnk=bnk, data=res2, Tns=Tns)
         else:
             flash("Invalid Name and Account Number. Please check again", 'warning')
-            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
+            return render_template('admin/approvepayment.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, 
+                                   desi=desi, typm=typm, bnk=bnk, data=res2, refno=refno, Tns=Tns)
 
 
 """initiating transfer of payment"""
@@ -1114,7 +1326,8 @@ def send_fund():
     if admin and request.method=='POST':
         refrno=request.form.get('refno')
         tf=Transfer.query.filter_by(tf_reference=refrno).first()
-        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
+        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, 
+                "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
         url = "https://api.paystack.co/transfer"
         headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
@@ -1133,7 +1346,8 @@ def send_fund():
     elif spadmin and request.method=='POST':
         refno=request.form.get('refno')
         tf=Transfer.query.filter_by(tf_reference=refno).first()
-        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
+        data = {"amount":tf.tf_amountRemited, "reference":tf.tf_reference, 
+                "recipient":tf.tf_RecipientCode, "reason":tf.tf_message}
         url = "https://api.paystack.co/transfer"
         headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("post", url, headers=headers, data=json.dumps(data))
@@ -1145,6 +1359,7 @@ def send_fund():
         print(rspjson)
         if rspjson.get('status') == True:
             authurl = rspjson['data']["transfer_code"]
+            print(authurl)
             return redirect(authurl)
         else:
             return "Please try again"
@@ -1213,17 +1428,28 @@ def admin_alltrend():
     spa=Superadmin.query.get(spadmin)
     
     """the main query for the production"""
-    subq_likes = db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count')).group_by(Like.like_postid).subquery()
-    subq_comments = db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count')).group_by(Comment.com_postid).subquery()
-    subq_shares = db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count')).group_by(Share.share_postid).subquery()
+    subq_likes = (db.session.query(Like.like_postid, func.count(Like.like_id).label('like_count'))
+                  .group_by(Like.like_postid).subquery())
+    subq_comments = (db.session.query(Comment.com_postid, func.count(Comment.com_id).label('com_count'))
+                     .group_by(Comment.com_postid).subquery())
+    subq_shares = (db.session.query(Share.share_postid, func.count(Share.share_id).label('share_count'))
+                   .group_by(Share.share_postid).subquery())
     
     """query post without daily rank"""
     page = request.args.get('page', 1, type=int)            
-    pstn = db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid).outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid).outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid).filter(Posting.post_id==Image.image_postid).order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), desc(subq_shares.c.share_count), desc(Posting.post_date)).paginate(page=page, per_page=rows_page)
+    pstn = (db.session.query(Posting).outerjoin(subq_likes, Posting.post_id==subq_likes.c.like_postid)
+            .outerjoin(subq_comments, Posting.post_id==subq_comments.c.com_postid)
+            .outerjoin(subq_shares, Posting.post_id==subq_shares.c.share_postid)
+            .filter(Posting.post_id==Image.image_postid)
+            .order_by(desc(subq_likes.c.like_count), desc(subq_comments.c.com_count), 
+                      desc(subq_shares.c.share_count), desc(Posting.post_date))
+            .paginate(page=page, per_page=rows_page))
     if admin:
-        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, spadmin=spadmin, pstn=pstn)
+        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, 
+                               spadmin=spadmin, pstn=pstn)
     elif spadmin:
-        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, spadmin=spadmin, pstn=pstn)
+        return render_template('admin/admin_alltrend.html', spa=spa, adm=adm, admin=admin, 
+                               spadmin=spadmin, pstn=pstn)
     
 
 """All appointment admin"""
@@ -1236,9 +1462,11 @@ def admin_appointment():
     page = request.args.get('page', 1, type=int)
     appt=Bookappointment.query.order_by(desc(Bookappointment.ba_id)).paginate(page=page, per_page=rows_page)
     if admin:
-        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, appt=appt)
+        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, appt=appt)
     elif spadmin:
-        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, appt=appt)
+        return render_template('admin/admin_appointments.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, appt=appt)
 
 
 """All payment admin"""
@@ -1251,9 +1479,11 @@ def admin_allpment():
     page = request.args.get('page', 1, type=int)
     pymt=Payment.query.order_by(desc(Payment.payment_id)).paginate(page=page, per_page=rows_page)
     if admin:
-        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, pymt=pymt)
+        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, pymt=pymt)
     elif spadmin:
-        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, pymt=pymt)
+        return render_template('admin/admin_payment.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, pymt=pymt)
 
 
 """All subscription admin"""
@@ -1266,9 +1496,11 @@ def admin_subscription():
     page = request.args.get('page', 1, type=int)
     sublist = Subscription.query.order_by(desc(Subscription.sub_date)).paginate(page=page, per_page=rows_per_page)
     if admin:
-        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, sublist=sublist)
+        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, sublist=sublist)
     elif spadmin:
-        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, sublist=sublist)
+        return render_template('admin/admin_subscription.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, sublist=sublist)
 
 
 """All report admin"""
@@ -1281,9 +1513,11 @@ def admin_report():
     page = request.args.get('page', 1, type=int)
     srepo = Report.query.order_by(desc(Report.report_id)).paginate(page=page, per_page=rows_per_page)
     if admin:
-        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)
+        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, srepo=srepo)
     elif spadmin:
-        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, spa=spa, adm=adm, srepo=srepo)
+        return render_template('admin/admin_report.html', admin=admin, spadmin=spadmin, 
+                               spa=spa, adm=adm, srepo=srepo)
     
 
 """deactivate admin"""
@@ -1327,5 +1561,10 @@ def staff_activity():
         current_date = datetime.now()
         target_month = current_date.month
         target_year = current_date.year
-        result = db.session.query(Admin, func.sum(Activitylog.adminid).label('total_activities')).join(Activitylog).group_by(Admin.admin_id, extract('month', Activitylog.date)==target_month, func.extract('year', Activitylog.date) == target_year).order_by(func.sum(Activitylog.adminid).desc()).all()
-        return render_template('admin/activity.html', spadmin=spadmin,result=result, spa=spa, month=target_month, year=target_year)
+        result = (db.session.query(Admin, func.sum(Activitylog.adminid).label('total_activities'))
+                  .join(Activitylog)
+                  .group_by(Admin.admin_id, func.extract('month', Activitylog.date)==target_month, 
+                            func.extract('year', Activitylog.date) == target_year)
+                  .order_by(func.sum(Activitylog.adminid).desc()).all())
+        return render_template('admin/activity.html', spadmin=spadmin,result=result, spa=spa, 
+                               month=target_month, year=target_year)
