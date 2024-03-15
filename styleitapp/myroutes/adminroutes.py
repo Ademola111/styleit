@@ -1385,7 +1385,8 @@ def finalizetransfer():
         return redirect('/')
 
     if request.method=='GET':
-        return render_template('admin/otp.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa)
+        transfercode = session.get('transfer_code')
+        return render_template('admin/otp.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, transfercode=transfercode)
 
     if request.method == 'POST':
         transfercode = session.get('transfer_code')
@@ -1413,8 +1414,7 @@ def verifytransfer():
         return redirect('/')
 
     if request.method=='GET':
-        response=[]
-        return render_template('admin/otp.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, response=response)
+        return render_template('admin/otp.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa)
 
     if request.method == 'POST':
         code = request.form.get('otp')
@@ -1423,9 +1423,16 @@ def verifytransfer():
         payload = {}
         headers = {"Content-Type": "application/json","Authorization":f"Bearer {spamming}"}
         response = requests.request("GET", url, headers=headers, data=payload)
-
         print(response.text)
-        return render_template('admin/otp.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, response=response)
+        resoutput = json.loads(response.text)
+        if resoutput['status'] == True:
+            # return "Transfer Successful."
+            flash('Transfer Successful','success')
+            return render_template('admin/verifytransfer.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, result=resoutput)
+        else:
+            flash('Transfer Unuccessful','danger')
+            return render_template('admin/verifytransfer.html', admin=admin, spadmin=spadmin, adm=adm, spa=spa, result=resoutput)
+
 
 @csrf.exempt
 @app.route('/webhookupdate/', methods=['POST'])

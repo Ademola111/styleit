@@ -8,7 +8,8 @@ class Config(object):
 
 class ProductionConfig(Config):
     """connecting database"""
-    SQLALCHEMY_DATABASE_URI="mysql+mysqlconnector://root@127.0.0.1/styleit"
+    # SQLALCHEMY_DATABASE_URI="mysql+mysqlconnector://root@127.0.0.1/styleit"
+    SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://stylghqa_Ademola:oOS56M0RXsDu@localhost/stylghqa_styleit"
     # SQLALCHEMY_DATABASE_URI="mysql+mysqlconnector://root@127.0.0.1/style"
     SQLALCHEMY_TRACK_MODIFICATIONS=True
 
